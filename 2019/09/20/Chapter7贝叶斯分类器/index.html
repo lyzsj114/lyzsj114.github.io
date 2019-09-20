@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="《机器学习》," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文内容：  贝叶斯决策论 极大似然估计 朴素贝叶斯分类器 半朴素贝叶斯分类器 贝叶斯网  结构 学习 推断  EM算法 附录  参数估计">
+<meta name="keywords" content="《机器学习》">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chapter7 贝叶斯分类器">
+<meta property="og:url" content="http://www.zzforgood.top/2019/09/20/Chapter7贝叶斯分类器/index.html">
+<meta property="og:site_name" content="ZZ&#39;s blog">
+<meta property="og:description" content="本文内容：  贝叶斯决策论 极大似然估计 朴素贝叶斯分类器 半朴素贝叶斯分类器 贝叶斯网  结构 学习 推断  EM算法 附录  参数估计">
+<meta property="og:image" content="https://i.loli.net/2019/09/09/Le2QEzWRKsHxYdo.png">
+<meta property="og:image" content="https://i.loli.net/2019/09/10/H7msyJlokT64UxQ.jpg">
+<meta property="og:updated_time" content="2019-09-20T05:07:46.901Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter7 贝叶斯分类器">
+<meta name="twitter:description" content="本文内容：  贝叶斯决策论 极大似然估计 朴素贝叶斯分类器 半朴素贝叶斯分类器 贝叶斯网  结构 学习 推断  EM算法 附录  参数估计">
+<meta name="twitter:image" content="https://i.loli.net/2019/09/09/Le2QEzWRKsHxYdo.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.zzforgood.top/2019/09/20/Chapter7贝叶斯分类器/"/>
+
+
+
+
+
+  <title>Chapter7 贝叶斯分类器 | ZZ's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6b5e45c68a522dd41c8336cf7a956273";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZ's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.zzforgood.top/2019/09/20/Chapter7贝叶斯分类器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zero Zone">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZ's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Chapter7 贝叶斯分类器</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-20T12:39:16+08:00">
+                2019-09-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/09/20/Chapter7贝叶斯分类器/" class="leancloud_visitors" data-flag-title="Chapter7 贝叶斯分类器">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文内容：</p>
+<ul>
+<li>贝叶斯决策论</li>
+<li>极大似然估计</li>
+<li>朴素贝叶斯分类器</li>
+<li>半朴素贝叶斯分类器</li>
+<li>贝叶斯网
+<ul>
+<li>结构</li>
+<li>学习</li>
+<li>推断</li>
+</ul></li>
+<li>EM算法</li>
+<li>附录
+<ul>
+<li>参数估计</li>
+</ul></li>
+</ul>
+<a id="more"></a>
+<h2 id="贝叶斯决策论">7.1 贝叶斯决策论</h2>
+<p><strong>贝叶斯决策论</strong>（Bayesian decision theory）：是在概率框架下实施决策的基本方法。对于分类任务来说，在所有相关概率都已知的理想情况下，贝叶斯决策论考虑如何基于这些概率核误判损失来选择最优的类别标记。</p>
+<p>以多分类任务为例：</p>
+<p>假设有<span class="math inline">\(N\)</span>种可能的类别标记，即<span class="math inline">\(\gamma=\{c_1,c_2,\dots,c_N\}\)</span>，<span class="math inline">\(\lambda_{ij}\)</span>是将一个真实的<span class="math inline">\(c_j\)</span>样本误分类为<span class="math inline">\(c_j\)</span>所产生的损失，基于后验概率<span class="math inline">\(P(c_i|x)\)</span>可获得将样本<span class="math inline">\(x\)</span>分类为<span class="math inline">\(c_i\)</span>所产生的<em>期望损失</em>（expected loss），即在样本<span class="math inline">\(x\)</span>上的“<em>条件风险</em>”（conditional risk）</p>
+<p><span class="math display">\[R(c_i|x) = \sum^N_{j=1}\lambda_{ij}P(c_i|x)\]</span></p>
+<p>目标：找到一个最小化总体风险的判定准则：<span class="math inline">\(\chi \mapsto \gamma\)</span></p>
+<p><span class="math display">\[R(h) = \mathbb{E}_x[R(h(x)|x)]\]</span></p>
+<p>由此，即可得到<em>贝叶斯判定准则</em>（Bayes decision rule）：为最小化总体风险，只需在每个样本上选择能使条件风险<span class="math inline">\(R(c|x)\)</span>最小的类别标记，即</p>
+<p><span class="math display">\[h^*(x) = \argmin_{c \in \gamma}R(c|x)\]</span></p>
+<p>此时，$h<sup>* <span class="math inline">\(称为*贝叶斯最优分类器*（Bayes optimal classifier），对应的总体风险\)</span>R(h</sup>* )$称为<em>贝叶斯风险</em>（Bayes risk）。则该模型精度的理论上限为<span class="math inline">\(1-R(h^*)\)</span>。误判概率<span class="math inline">\(\lambda_{ij}\)</span>为</p>
+<p><span class="math display">\[\lambda_{ij}=\begin{cases} 0, &amp;\text{ if } i=j; \\ 1, &amp; \text{ otherwise.}\end{cases}\]</span></p>
+<p>于是，条件风险为</p>
+<p><span class="math display">\[R(c|x) = 1-P(c|x)\]</span></p>
+<p>最小化分类错误的贝叶斯最优分类器为</p>
+<p><span class="math display">\[h^*(x) = \argmax_{c \in \gamma} P(c|x)\]</span></p>
+<p>即对每个样本<span class="math inline">\(x\)</span>，选择能使后验概率<span class="math inline">\(P(c|x)\)</span>最大的类别标记。</p>
+<p>由此可知，要想通过贝叶斯判定准则得到最小化风险的贝叶斯分类器，需要求得其后验概率<span class="math inline">\(P(c|x)\)</span>。所以，此时机器学习的目标在于利用有限的样本集尽可能准确地估计出后验概率<span class="math inline">\(P(c|x)\)</span>。对后验概率的估计主要分为两种策略：</p>
+<ul>
+<li><p><strong>判别式模型</strong>（discriminative models）：给定<span class="math inline">\(x\)</span>，可直接建模<span class="math inline">\(P(c|x)\)</span>来预测。例：决策树、BP神经网络、支持向量机等；</p></li>
+<li><p><strong>生成式模型</strong>（generative models）：先对联合概率分布<span class="math inline">\(P(x,c)\)</span>建模，然后再由此获得<span class="math inline">\(P(c|x)\)</span>。</p></li>
+</ul>
+<p>基于贝叶斯定理，<span class="math inline">\(P(c|x)\)</span>可写为</p>
+<p><span class="math display">\[P(c|x)= \frac{P(c)P(x|c)}{P(x)}\]</span></p>
+<p>其中，<span class="math inline">\(P(c)\)</span>是类“<em>先验</em>”（prior）概率；<span class="math inline">\(P(x|c)\)</span>是样本<span class="math inline">\(x\)</span>相对于类标记<span class="math inline">\(c\)</span>的<em>类条件概率</em>（class-conditional probablity），或称为“<em>似然</em>”（likelihood）；<span class="math inline">\(P(x)\)</span>是用于归一化的“<em>证据</em>”（evidence）因子。显然，<span class="math inline">\(P(x)\)</span>与类标记无关，因此估计<span class="math inline">\(P(c|x)\)</span>的问题即转化为基于训练数据<span class="math inline">\(D\)</span>估计先验概率<span class="math inline">\(P(c)\)</span>和似然<span class="math inline">\(P(x|c)\)</span>。</p>
+<p>类先验概率<span class="math inline">\(P(c)\)</span>直接通过大数定律，用各类样本出现的频率进行估计。</p>
+<p>而类条件概率<span class="math inline">\(P(x|c)\)</span>，由于其涉及关于<span class="math inline">\(x\)</span>全部属性的联合概率，直接根据样本出现的频率来估计将会遇到严重的困难。例如，假设样本有<span class="math inline">\(d\)</span>个属性且都为二值，则样本空间将有<span class="math inline">\(2^d\)</span>种可能的取值。一般地，样本数<span class="math inline">\(m&lt;2^d\)</span>，这就造成很多样本的取值在训练集中未能出现，导致将其概率直接判为0，而事实上通常来说“未被观测到” <span class="math inline">\(\neq\)</span> “出现概率为零”。</p>
+<h2 id="极大似然估计">7.2 极大似然估计</h2>
+<p>估计类的条件概率的一种常用策略为：先假定样本具有某种确定的概率分布形式，再基于训练样本对概率分布的参数进行估计。记类别<span class="math inline">\(c\)</span>的类条件概率为<span class="math inline">\(P(x|c)\)</span>，且<span class="math inline">\(P(x|c)\)</span>具有确定的形式被参数向量<span class="math inline">\(\theta_c\)</span>唯一确定。因此我们的目标是利用数据集<span class="math inline">\(D\)</span>估计<span class="math inline">\(\theta_c\)</span>，而<span class="math inline">\(P(x|c)\)</span>可记为<span class="math inline">\(P(x|\theta_c)\)</span>。</p>
+<p>事实上，概率模型的训练过程就是<em>参数估计</em>（parameter estimation）过程。此节中介绍的<em>极大似然估计</em>（Maximum Likelihood Estimation，简称MLE），是频率主义学派<span class="math inline">\(^{[1]}\)</span>根据数据采样估计概率分布参数的经典方法。</p>
+<p>令<span class="math inline">\(D_c\)</span>表示训练集<span class="math inline">\(D\)</span>中第<span class="math inline">\(c\)</span>类样本组成的集合，假设其为独立同分布，则参数<span class="math inline">\(\theta_c\)</span>对于数据集<span class="math inline">\(D_c\)</span>的似然是</p>
+<p><span class="math display">\[P(D_c|\theta_c) = \prod_{x \in D_c}P(x|\theta_c)\]</span></p>
+<p>对<span class="math inline">\(\theta\)</span>进行极大似然估计，即寻找能最大化似然<span class="math inline">\(P(D_c|\theta_c)\)</span>的参数值<span class="math inline">\(\hat \theta_c\)</span>。也就是说，寻找使训练集数据出现概率最大的参数值<span class="math inline">\(\hat \theta_c\)</span>。</p>
+<p>同时，为避免上式中的连乘操作出现溢出，通常使用<em>对数似然</em>（log-likelihood）</p>
+<p><span class="math display">\[LL(\theta_c) = \sum_{x \in D_c} \log P(x|\theta_c)\]</span></p>
+<p>此时参数<span class="math inline">\(\theta_c\)</span>的极大似然估计<span class="math inline">\(\hat \theta_c\)</span>为</p>
+<p><span class="math display">\[\hat \theta_c = \argmax_{\theta_c} LL(\theta_c)\]</span></p>
+<p>需要注意的是，这种参数化的方法虽然能够使类条件概率估计变得相对简单，但其估计结果严重依赖于假设的总体分布形式是否符合潜在的概率分布形式。</p>
+<h2 id="朴素贝叶斯分类器">7.3 朴素贝叶斯分类器</h2>
+<p>在<strong>7.1 贝叶斯决策论</strong>中发现，基于贝叶斯公式估计后验概率<span class="math inline">\(P(c|x)\)</span>的主要困难在于：<span class="math inline">\(P(c|x)\)</span>是所有属性上的联合概率，仅使用有限的训练样本集难以直接估计得到。而<em>朴素贝叶斯分类器</em>（naive Bayes classifier）采用“<em>属性条件独立性假设</em>”来避开计算所有属性上的联合概率。</p>
+<p><strong>属性独立性假设</strong>（attribute conditional independence assumption）：每个属性独立地对分类结果发生影响。在此假设下，可以将原贝叶斯模型重写为</p>
+<p><span class="math display">\[P(c|x) = \frac{P(c)}{P(x)}\prod^d_{i=1} P(x_i|c)\]</span></p>
+<p>于是根据属性独立性假设，构造朴素贝叶斯分类器</p>
+<p><span class="math display">\[h_{nb}(x) = \argmax_{c \in \gamma} P(c) \prod^d_{i=1} P(x_i|c)\]</span></p>
+<p>令<span class="math inline">\(D_c\)</span>表示训练集<span class="math inline">\(D\)</span>中第<span class="math inline">\(c\)</span>类样本组成的集合，其中</p>
+<p><span class="math display">\[P(c) = \frac{|D_c|}{|D|}\]</span></p>
+<ul>
+<li>对离散属性而言，令<span class="math inline">\(D_{c,x_i}\)</span>表示<span class="math inline">\(D_c\)</span>中在第<span class="math inline">\(i\)</span>个属性上取值为<span class="math inline">\(x_i\)</span>的样本组成的集合，则有 <span class="math display">\[P(x_i|c) = \frac{|D_{c,x_i}|}{|D_c|}\]</span></li>
+<li>对连续属性而言，可用概率密度函数代替<span class="math inline">\(P(x_i|c)\)</span>，假定<span class="math inline">\(p(x_i|c) \sim \Nu(\mu_{c,i}, \sigma^2_{c,i})\)</span></li>
+</ul>
+<p>值得注意的是，只有在样本量足够多时，才能作出有意义的估计。</p>
+<p>在试验中可以发现，可能会出现某些未出现过的属性值组合，其概率将会被直接判别为零，显然这是个不合理的现象。为了避免其他属性携带的信息直接被未出现过的属性“抹去”，需要在估计概率值时进行“<em>平滑</em>”（smoothing）处理，而“<em>拉普拉斯修正</em>”是比较常用的方法之一。</p>
+<p><strong>拉普拉斯修正</strong>（Laplacian correction）：令<span class="math inline">\(N\)</span>表示训练集<span class="math inline">\(D\)</span>中可能的类别数，<span class="math inline">\(N_i\)</span>表示第<span class="math inline">\(i\)</span>个属性可能的取值数，则<span class="math inline">\(P(c)\)</span>和<span class="math inline">\(P(x_i|c)\)</span>分别修正为</p>
+<p><span class="math display">\[\hat P(c) = \frac{|D_c|+1}{|D|+N},\]</span></p>
+<p><span class="math display">\[\hat P(x_i|c) = \frac{|D_{c,x_i}|+1}{|D_c|+N_i}.\]</span></p>
+<p>在较大的训练集中，拉普拉斯修正所造成的偏差将变得可忽略，使估计值更加接近实际值。</p>
+<p>在现实使用中，朴素贝叶斯分类器有多种使用方式：</p>
+<ul>
+<li>任务对预测速度有要求，利用给定的训练集，事先计算并储存好要使用到的概率估计，在使用时以查表的方式调用即可；</li>
+<li>任务数据更替频繁，采用“<em>懒惰学习</em>”（lazy learning）方式，即在预测时再对模型进行训练。</li>
+<li>任务数据不断增加，采用增量学习的方式，即在现有估值的基础上，仅对新增样本涉及的属性进行概率值的计数修正。</li>
+</ul>
+<h2 id="半朴素贝叶斯分类器">7.4 半朴素贝叶斯分类器</h2>
+<p>在<strong>7.3 朴素贝叶斯分类器</strong>一节中提出，使用属性独立性假设避免计算复杂的联合概率密度，但由于属性独立性假设在现实中很难成立，使用时将会损失大量信息。于是，提出了折中的“<em>半朴素贝叶斯分类器</em>”学习方法。</p>
+<p><strong>半朴素贝叶斯分类器</strong>（semi-naive Bayes classifier）：基本思想在于，对考虑完全的联合概率密度和属性独立之间进行折中，即考虑一部分属性间的相互依赖。“<em>独依赖估计</em>”（One-Dependent Estimator，简称ODE）是半朴素贝叶斯分类器最常用的一种策略，即假设每个属性在类别之外最多仅依赖于一个其他属性</p>
+<p><span class="math display">\[P(c|x) \propto P(c)\prod^d_{i=1}P(x_i|c,pa_i)\]</span></p>
+<p>其中，<span class="math inline">\(pa_i\)</span>为属性<span class="math inline">\(x_i\)</span>所依赖的属性，称为<span class="math inline">\(x_i\)</span>的父属性。针对某一属性，确定父属性之后即可确定该属性的估计概率值<span class="math inline">\(P(x_i|c,pa_i)\)</span>。而对父属性的选取有多种方法，不同的方法将产生不同的独依赖分类器。</p>
+<figure>
+<img src="https://i.loli.net/2019/09/09/Le2QEzWRKsHxYdo.png" alt="朴素贝叶斯与两种半朴素的比较"><figcaption>朴素贝叶斯与两种半朴素的比较</figcaption>
+</figure>
+<p><strong>SPODE方法</strong>（Super-Parent ODE）：最直接的方法。直接假设所有属性都依赖于同一个属性，称作“<em>超父</em>”（super-parent），然后通过交叉验证等模型选择方法确定超父属性。</p>
+<p><strong>TAN方法</strong>（Tree Argumented naive Bayes）：在<em>最大带权生成树</em>（maximum weighted spanning tree）算法的基础上，通过下列步骤将属性间的依赖关系约简为树形结构：</p>
+<ol type="1">
+<li>计算任意两个属性之间的条件互信息（conditional mutual information）<span class="math display">\[I(x_i,x_j|y) = \sum_{x_i,x_j;c \in \gamma}P(x_i,x_j|c) \log \frac{P(x_i,x_j|c)}{P(x_i|c)P(x_j|c)};\]</span></li>
+<li>以属性为结点构建完全图，任意两结点间的权重设置为<span class="math inline">\(I(x_i,x_j|y)\)</span>；</li>
+<li>构建此完全图的最大带权生成树，挑选根变量，将边设置为有向；</li>
+<li>加入类别结点<span class="math inline">\(y\)</span>，增加从<span class="math inline">\(y\)</span>到每个属性的有向边。</li>
+</ol>
+<p>其中，条件互信息<span class="math inline">\(I(x_i,x_j|y)\)</span>刻画了属性<span class="math inline">\(x_i\)</span>和<span class="math inline">\(x_j\)</span>在已知类别情况下的相关性，因此，通过最大生成树算法，TAN实际上仅保留了强相关属性之间的依赖性。</p>
+<p><strong>AODE</strong>（Average One-Dependence Estimator）：一种基于集成学习机制、更为强大的独依赖分类器，尝试将每个属性作为超父来构建SPODE，然后将那些具有足够训练数据支撑的SPODE集成起来作为最终结果，即</p>
+<p><span class="math display">\[P(c|x) \propto \sum^d_{i=1,|D_{x_i}| \geqslant m&#39;} P(c,x_i) \prod^d_{j=1} P(x_j|c,x_i)\]</span></p>
+<p>其中，<span class="math inline">\(D_{x_i}\)</span>是在第<span class="math inline">\(i\)</span>个属性上取值为<span class="math inline">\(x_i\)</span>的样本的集合，<span class="math inline">\(m&#39;\)</span>为阈值常数。显然，AODE需估计<span class="math inline">\(P(c,x_i)\)</span>和<span class="math inline">\(P(x_j|c,x_i)\)</span>，则有</p>
+<p><span class="math display">\[\hat P(c,x_i) = \frac{|D_{c,x_i}|+1}{|D|+ N \times N_i}\]</span></p>
+<p><span class="math display">\[\hat P(x_j|c,x_i) = \frac{|D_{c,x_i,x_j}|+1}{|D_{c,x_i}|+N_j}\]</span></p>
+<p>其中，<span class="math inline">\(N\)</span>是<span class="math inline">\(D\)</span>中可能的类别数，<span class="math inline">\(N_i\)</span>是第<span class="math inline">\(i\)</span>个属性可能的取值数，<span class="math inline">\(D_{c,x_i}\)</span>是类别为<span class="math inline">\(c\)</span>且在第<span class="math inline">\(i\)</span>个属性上取值为<span class="math inline">\(x_i\)</span>的样本集合，<span class="math inline">\(D_{c,x_i,x_j}\)</span>是类别为c且在第<span class="math inline">\(i\)</span>和第<span class="math inline">\(j\)</span>个属性取值分别为<span class="math inline">\(x_i\)</span>和<span class="math inline">\(x_j\)</span>的样本集合。</p>
+<p>同理，还可将独依赖进一步放松到多个属性依赖的“高阶依赖”，即将<span class="math inline">\(pa_i\)</span>替换为同时包含多个属性的<span class="math inline">\(pa_i\)</span>向量，从而将ODE拓展为kDE。而随着k的增加，准确估计概率<span class="math inline">\(P(x_i|y,pa_i)\)</span>所需的训练样本将以指数级增加。</p>
+<h2 id="贝叶斯网">7.5 贝叶斯网</h2>
+<p>贝叶斯网（Bayesian network）又称<em>信念网</em>（belief network），借助<em>有向无环图</em>（Directed Acyclic Graph，简称DAG）来刻画属性之间的依赖关系，并使用<em>条件概率表</em>（Conditional Probability Table，简称CPT）描述属性的联合概率分布。</p>
+<p>贝叶斯网<span class="math inline">\(B\)</span>由两部分构成：结构<span class="math inline">\(G\)</span>和参数<span class="math inline">\(\Theta\)</span>，即有<span class="math inline">\(B = \left \langle G,\Theta \right \rangle\)</span>。网格结构<span class="math inline">\(G\)</span>是一个有向无环图，其每个结点对应一个属性，连线表示二者之间具有直接依赖关系；参数<span class="math inline">\(\Theta\)</span>为依赖关系的量化，对应依赖的权重。假设属性<span class="math inline">\(x_i\)</span>在<span class="math inline">\(G\)</span>中的结点为<span class="math inline">\(\pi_i\)</span>，则<span class="math inline">\(\Theta\)</span>包含了每个属性的条件概率表</p>
+<p><span class="math display">\[\theta_{x_i|\pi_i} = P_B(x_i|\pi_i)\]</span></p>
+<h3 id="结构">7.5.1 结构</h3>
+<p>贝叶斯网的结构有效地表达了属性间的独立性。给定父结点集，贝叶斯网假设每个属性与它的非后裔属性独立，则对<span class="math inline">\(B = \left \langle G,\Theta \right \rangle\)</span>，属性<span class="math inline">\(x_1,x_2,\dots,x_d\)</span>的联合概率密度为</p>
+<p><span class="math display">\[P_B(x_1,x_2,\dots,x_d) = \prod^d_{i=1}P(x_i|\pi_i) = \prod^d_{i=1}\theta_{x_i|pi_i}\]</span></p>
+<p>其中，<span class="math inline">\(x_2\)</span>和<span class="math inline">\(x_3\)</span>在<span class="math inline">\(x_1\)</span>的值确定时相互独立，被称为条件独立性，记作<span class="math inline">\(x_2 \perp x_3 | x_1\)</span>。此外存在<em>边际独立性</em>（marginal independence）的情况，例如在V型结构中，<span class="math inline">\(x_4\)</span>的值未知时，<span class="math inline">\(x_1\)</span>和<span class="math inline">\(x_2\)</span>相互独立；在<span class="math inline">\(x_4\)</span>的值已知时，<span class="math inline">\(x_1\)</span>和<span class="math inline">\(x_2\)</span>必不独立，这种情况记作<span class="math inline">\(x_1 \rVert x_2\)</span>。下为验证：</p>
+<p><span class="math display">\[\begin{aligned} P(x_1,x_2) &amp;= \sum_{x_4}P(x_1,x_2,x_4) \\ &amp;= \sum_{x_4}P(x_4|x_1,x_2)P(x_1)P(x_2) \\ &amp;= P(x_1)P(x_2)\end{aligned}\]</span></p>
+<p>在贝叶斯网中有三种典型的依赖关系：同父结构、V型结构、顺序结构。</p>
+<figure>
+<img src="https://i.loli.net/2019/09/10/H7msyJlokT64UxQ.jpg" alt="贝叶斯网典型依赖关系"><figcaption>贝叶斯网典型依赖关系</figcaption>
+</figure>
+<p>常用“<em>有向分离</em>”（D-seperation），对有向图中的依赖关系进行分析：</p>
+<ul>
+<li>找出所有V型结构，在V型结构的两个父结点间加一条无向边；</li>
+<li>将有向边转化为无向边.</li>
+</ul>
+<p>由此产生“<em>道德图</em>”（moral graph），连接父结点的过程被称为<em>道德化</em>（moralization）。</p>
+<p>假定道德图中存在变量<span class="math inline">\(x\)</span>，<span class="math inline">\(y\)</span>和变量集合<span class="math inline">\(z=\{z_i\}\)</span>，如果<span class="math inline">\(x\)</span>，<span class="math inline">\(y\)</span>在<span class="math inline">\(z\)</span>被去除后，分属两个连通的分支，则可说明<span class="math inline">\(x \perp y|z\)</span>。需要注意的是，在划分前需要对图剪枝，仅保留有向图中<span class="math inline">\(x\)</span>，<span class="math inline">\(y\)</span>，<span class="math inline">\(z\)</span>及它们的父结点。</p>
+<h3 id="学习">7.5.2 学习</h3>
+<p>贝叶斯网的学习首要目标即寻找结构最恰当的贝叶斯网。常使用“<em>评分搜索</em>”实现：</p>
+<p>首先，定义<em>评分函数</em>（score function），以评估贝叶斯网与训练数据的契合程度。评分函数中包含了对希望构造的贝叶斯网的偏好。</p>
+<p>常用评分函数一般基于信息论准则，此类准则将学习问题看作数据压缩的过程，所以最优的贝叶斯网结构应对应最小的综合编码长度，这种方法被称为“<em>最小描述长度</em>”（Minimum Description Length，简称MDL）准则。</p>
+<p>给定训练集<span class="math inline">\(D=\{x_1,x_2,\dots,x_m\}\)</span>，贝叶斯网<span class="math inline">\(B = \left \langle G,\Theta \right \rangle\)</span>在<span class="math inline">\(D\)</span>上的评分函数可写为</p>
+<p><span class="math display">\[S(B|D) = f(\theta)|B| - LL(B|D)\]</span></p>
+<p>其中，<span class="math inline">\(B\)</span>是贝叶斯网的参数个数；<span class="math inline">\(f(\theta)\)</span>表示描述每个参数<span class="math inline">\(\theta\)</span>所需的编码位数；而</p>
+<p><span class="math display">\[LL(B|D) = \sum^m_{i=1} \log P_B(x_i)\]</span></p>
+<p>是贝叶斯网<span class="math inline">\(B\)</span>的对数似然。其评分函数第一项是计算编码贝叶斯网<span class="math inline">\(B\)</span>所需的编码位数，第二项是计算<span class="math inline">\(B\)</span>所对应的概率分布<span class="math inline">\(P_B\)</span>对<span class="math inline">\(D\)</span>的描述有多好。从统计学角度理解，一项为结构风险，另一项为经验风险。</p>
+<p><strong>AIC评分函数</strong>（Akaike Information Criterion score function）：使<span class="math inline">\(f(\theta) = 1\)</span>，即可得到AIC评分函数</p>
+<p><span class="math display">\[\text{AIC}(B|D) = |B| - LL(B|D)\]</span></p>
+<p><strong>BIC评分函数</strong>（Beyesian Information Criterion score function）：使<span class="math inline">\(f(\theta) = \frac{1}{2}\log m\)</span>，即可得到BIC评分函数</p>
+<p><span class="math display">\[\text{BIC}(B|D) = \frac{\log m}{2}|B| - LL(B|D)\]</span></p>
+<p>特殊地，使<span class="math inline">\(f(\theta) = 0\)</span>时，评分函数退化为负对数似然，同时，学习任务退化为极大似然估计。</p>
+<p>最后，只要确定网络结构<span class="math inline">\(G\)</span>，评分函数第一项为常数，即将最小化<span class="math inline">\(s(B|D)\)</span>转化为对参数<span class="math inline">\(\Theta\)</span>的极大似然估计。而参数<span class="math inline">\(\Theta\)</span>可以通过训练集数据的经验估计获得</p>
+<p><span class="math display">\[\theta_{x_i|\pi_i} = P(x_i|\pi_i)\]</span></p>
+<p>因此，仅需对结构网络进行搜索，即可在训练集上计算得到最优参数。但是，在所有可能的结构中搜索最优贝叶斯网结构是NP难问题，所以需要特殊方法求近似解：</p>
+<ul>
+<li>贪心算法，从某个网络结构出发，每次调整一条边，直到评分函数值不再降低；</li>
+<li>给网络结构增加约束来削减搜索空间，如TAN中限制为树结构。</li>
+</ul>
+<h3 id="推断">7.5.3 推断</h3>
+<p>在训练好贝叶斯网模型之后，就能用来回答“<em>查询</em>”（query），即通过一些属性变量的观测值来推测其他属性变量的取值。而通过已知变量的观测值来推测待查询变量的过程被称为“<em>推断</em>”（inference），已知变量观测值称为“<em>证据</em>”（evidence）。</p>
+<p>在理想状态下，可以直接根据贝叶斯网定义的联合概率分布精确计算其后验概率，但这样的“精确推断”是NP难的。因此需要作出“近似推断”，在实际应用中，常用<em>吉布斯采样</em>（Gibbs sampling）来完成（另常用<em>变分推断</em>）。</p>
+<p><strong>吉布斯采样</strong>（Gibbs sampling）：一种随机抽样方法。</p>
+<p>有待查询变量<span class="math inline">\(Q=\{Q_1,Q_2,\dots,Q_n\}\)</span>，证据变量<span class="math inline">\(E=\{E_1,E_2,\dots,E_n\}\)</span>取值为<span class="math inline">\(e=\{e_1,e_2,\dots,e_n\}\)</span>。目标是计算后验概率<span class="math inline">\(P(Q=q|E=e)\)</span>，其中<span class="math inline">\(q=\{q_1,q_2,\dots,q_n\}\)</span>。</p>
+<p>吉布斯算法首先产生一个与证据<span class="math inline">\(E=e\)</span>一致的样本<span class="math inline">\(q^0\)</span>作为初始点，然后每步从当前样本出发产生下一个样本。即先设<span class="math inline">\(q^t=q^{t-1}\)</span>，然后逐个改变其中的非证据变量并抽样取值，采样概率根据贝叶斯网和其他变量的当前取值（即<span class="math inline">\(Z=z\)</span>）计算获得。经过<span class="math inline">\(T\)</span>次采样得到的与<span class="math inline">\(q\)</span>一致的样本共有<span class="math inline">\(n_q\)</span>个，则可近似估算出后验概率：</p>
+<p><span class="math display">\[P(Q=q|E=e) \simeq \frac{n_q}{T}\]</span></p>
+<p>实质上，可以看出，在吉布斯采样中，每一步都仅依赖于前一步的状态，即符合<em>马尔科夫链</em>（Markov chain）模型，其在贝叶斯网所有变量的联合状态空间与证据<span class="math inline">\(E=e\)</span>一致的子空间中。在一定条件下，无论从什么状态开始，马尔可夫链在第<span class="math inline">\(t\)</span>步的状态分布在<span class="math inline">\(t \to \infin\)</span>时必收敛于一个<em>平稳分布</em>（stationary distribution）；对于吉布斯采样来说，这个分布恰好是<span class="math inline">\(P(Q|E=e)\)</span>。因此，在<span class="math inline">\(T\)</span>很大时，吉布斯采样相当于根据<span class="math inline">\(P(Q|E=e)\)</span>采样，从而保证了上式收敛于<span class="math inline">\(P(Q=q|E=e)\)</span>。以下为具体流程：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">输入：贝叶斯网B=&lt;G,Theta&gt;；</div><div class="line">      采样次数T；</div><div class="line">      证据变量E及其取值e；</div><div class="line">      待查询变量Q及其取值q；</div><div class="line">过程：</div><div class="line">nq = 0</div><div class="line">q0 = 对Q随机赋值</div><div class="line">for i = 1,2,...,T do</div><div class="line">    for Qi in Q do</div><div class="line">        Z = E U Q \ &#123;Qi&#125;</div><div class="line">        z = e U q(t-1) \ &#123;qi(t-1)&#125;</div><div class="line">        根据B计算分布PB(Qi|Z=z)</div><div class="line">        qi(t) = 根据PB(Qi|Z=z)采样所获Qi取值</div><div class="line">        q(t) = 将q(t-1)中的qi(t-1)用qi(t)替换</div><div class="line">    end for</div><div class="line">    if qt = q then</div><div class="line">        nq = nq + 1</div><div class="line">    end if</div><div class="line">end for</div><div class="line">输出：P(Q=q|E=e) ≈ nq/T</div></pre></td></tr></table></figure>
+<p>需要注意的是，马尔可夫链趋于平稳分布的过程很慢，导致吉布斯采样算法的收敛速度较慢。此外，如果贝叶斯网中存在极端概率，即0或1时，不能保证马尔可夫链一定能收敛，会导致吉布斯采样给出错误的估计。</p>
+<h2 id="em算法">7.6 EM算法</h2>
+<p>为解决在现实中需要使用未观测到的数据的训练样本，对模型的参数进行估计的问题，引入“<em>隐变量</em>”（latent variable），即未观察的变量的概念。</p>
+<p>在已观测变量集<span class="math inline">\(X\)</span>，隐变量集<span class="math inline">\(Z\)</span>，模型参数<span class="math inline">\(\Theta\)</span>的假设下，对<span class="math inline">\(\Theta\)</span>进行极大似然估计，函数</p>
+<p><span class="math display">\[LL(\Theta |X,Z)=\ln P(X,Z|\Theta )\]</span></p>
+<p>显然，由于<span class="math inline">\(Z\)</span>是隐变量，上式无法求解。此时可以考虑通过计算<span class="math inline">\(Z\)</span>的期望，来最大化已观察数据的对数“<em>边际似然</em>”（marginal likelihood）</p>
+<p><span class="math display">\[LL(\Theta,X) = \ln P(X|\Theta) = \ln \sum_Z P(X,Z|\Theta)\]</span></p>
+<p>对参数隐变量进行估计常用的方法是EM（Expectation-Maximization）算法，它是一种迭代的方法。</p>
+<p>EM算法原型：</p>
+<p>以初始值<span class="math inline">\(\Theta^0\)</span>为起点，对边际似然函数，可迭代执行以下步骤直至收敛：</p>
+<ul>
+<li>基于<span class="math inline">\(\Theta^t\)</span>推断隐变量<span class="math inline">\(Z\)</span>的期望，记为<span class="math inline">\(Z^t\)</span>；</li>
+<li>基于已观测变量<span class="math inline">\(X\)</span>和<span class="math inline">\(Z^t\)</span>对参数<span class="math inline">\(\Theta\)</span>做极大似然估计，记为<span class="math inline">\(\Theta ^{t+1}\)</span>.</li>
+</ul>
+<p>进一步，若我们不是取<span class="math inline">\(Z\)</span>的期望，而是基于<span class="math inline">\(\Theta^t\)</span>计算隐变量<span class="math inline">\(Z\)</span>的概率分布<span class="math inline">\(P(Z|X,\Theta^t)\)</span>，则EM算法的两个步骤是：</p>
+<ul>
+<li>E步（Expectation）：以当前参数<span class="math inline">\(\Theta^t\)</span>推断隐变量分布<span class="math inline">\(P(Z|X,\Theta^t)\)</span>，并计算对数似然<span class="math inline">\(LL(\Theta|X,Z)\)</span>关于<span class="math inline">\(Z\)</span>的期望；</li>
+<li>M步（Maximization）：寻找最大化期望似然，即<span class="math display">\[\Theta^{t+1} = \argmax_\Theta Q(\Theta|\Theta^t).\]</span></li>
+</ul>
+<p>直观而言，最终EM算法将收敛到局部最优解，因此也可用梯度下降等优化算法对隐变量估计问题求解，但由于求和的项数将随着隐变量的数目以指数级上升，会给梯度计算带来麻烦；而EM算法则可以看作一种非梯度优化方法。</p>
+<h2 id="附录">附录</h2>
+<h3 id="参数估计">[1] 参数估计</h3>
+<p>统计学界的两个学派对参数估计提供不同的方案：</p>
+<ul>
+<li>频率主义学派：参数虽然未知，但却是客观存在的固定值，因此，可以通过优化似然函数等准则确定参数值；</li>
+<li>贝叶斯学派：参数是未观察到的随机变量，其本身也存在分布，因此，可以通过假定参数服从一个先验分布，然后基于训练集计算参数的后验分布。</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/《机器学习》/" rel="tag"># 《机器学习》</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/20/Chapter3线性模型/" rel="next" title="Chapter3 线性模型">
+                <i class="fa fa-chevron-left"></i> Chapter3 线性模型
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/20/Chapter6支持向量机/" rel="prev" title="Chapter6 支持向量机">
+                Chapter6 支持向量机 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Zero Zone</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯决策论"><span class="nav-number">1.</span> <span class="nav-text">7.1 贝叶斯决策论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#极大似然估计"><span class="nav-number">2.</span> <span class="nav-text">7.2 极大似然估计</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#朴素贝叶斯分类器"><span class="nav-number">3.</span> <span class="nav-text">7.3 朴素贝叶斯分类器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#半朴素贝叶斯分类器"><span class="nav-number">4.</span> <span class="nav-text">7.4 半朴素贝叶斯分类器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#贝叶斯网"><span class="nav-number">5.</span> <span class="nav-text">7.5 贝叶斯网</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#结构"><span class="nav-number">5.1.</span> <span class="nav-text">7.5.1 结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#学习"><span class="nav-number">5.2.</span> <span class="nav-text">7.5.2 学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#推断"><span class="nav-number">5.3.</span> <span class="nav-text">7.5.3 推断</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#em算法"><span class="nav-number">6.</span> <span class="nav-text">7.6 EM算法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">7.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参数估计"><span class="nav-number">7.1.</span> <span class="nav-text">[1] 参数估计</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zero Zone</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("wK5oOR6TzGguECTJdAa7L4aR-gzGzoHsz", "s9qatI3Dt50rrnzgEq2ylhbi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="《机器学习》," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文内容：  间隔与支持向量 对偶问题 核函数 软间隔与正则化 支持向量回归 核方法 附录  拉格朗日乘数法 二次规划">
+<meta name="keywords" content="《机器学习》">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chapter6 支持向量机">
+<meta property="og:url" content="http://www.zzforgood.top/2019/09/20/Chapter6支持向量机/index.html">
+<meta property="og:site_name" content="ZZ&#39;s blog">
+<meta property="og:description" content="本文内容：  间隔与支持向量 对偶问题 核函数 软间隔与正则化 支持向量回归 核方法 附录  拉格朗日乘数法 二次规划">
+<meta property="og:image" content="https://i.loli.net/2019/09/03/mGFb8kqxBOV2rfv.png">
+<meta property="og:image" content="https://i.loli.net/2019/09/03/7DM1bECXtJpILxa.png">
+<meta property="og:image" content="https://i.loli.net/2019/09/10/1dl4hAucpwbI6oQ.jpg">
+<meta property="og:image" content="https://i.loli.net/2019/09/07/oLuOtFQmWiyA14H.png">
+<meta property="og:updated_time" content="2019-09-20T05:06:21.120Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter6 支持向量机">
+<meta name="twitter:description" content="本文内容：  间隔与支持向量 对偶问题 核函数 软间隔与正则化 支持向量回归 核方法 附录  拉格朗日乘数法 二次规划">
+<meta name="twitter:image" content="https://i.loli.net/2019/09/03/mGFb8kqxBOV2rfv.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.zzforgood.top/2019/09/20/Chapter6支持向量机/"/>
+
+
+
+
+
+  <title>Chapter6 支持向量机 | ZZ's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6b5e45c68a522dd41c8336cf7a956273";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZ's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.zzforgood.top/2019/09/20/Chapter6支持向量机/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zero Zone">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZ's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Chapter6 支持向量机</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-20T12:39:16+08:00">
+                2019-09-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/09/20/Chapter6支持向量机/" class="leancloud_visitors" data-flag-title="Chapter6 支持向量机">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文内容：</p>
+<ul>
+<li>间隔与支持向量</li>
+<li>对偶问题</li>
+<li>核函数</li>
+<li>软间隔与正则化</li>
+<li>支持向量回归</li>
+<li>核方法</li>
+<li>附录
+<ul>
+<li>拉格朗日乘数法</li>
+<li>二次规划</li>
+</ul></li>
+</ul>
+<a id="more"></a>
+<h2 id="间隔与支持向量">6.1 间隔与支持向量</h2>
+<p>对给定的训练集<span class="math inline">\(D = \{(x_1,y_1),(x_2,y_2),\dots,(x_m,y_m)\}, \ y_i \in \{-1,+1\}\)</span>，在样本空间中找到一个划分超平面，将不同类别的样本分开。</p>
+<figure>
+<img src="https://i.loli.net/2019/09/03/mGFb8kqxBOV2rfv.png" alt="存在多个划分超平面将两类训练样本分开"><figcaption>存在多个划分超平面将两类训练样本分开</figcaption>
+</figure>
+<p>直观而言，应该是红色线的划分效果最好，因为该划分超平面对训练样本的局部扰动的“容忍”性最好。如果因训练集的局限性或噪声的因素，导致样本点更加接近划分超平面的话，对红色线划分结果影响最小，因此其鲁棒性最强，对未见过的示例泛化性能最好。</p>
+<p>在样本空间中，划分超平面可以用如下线性方程描述：</p>
+<p><span class="math display">\[\omega^T x + b = 0\]</span></p>
+<p>其中<span class="math inline">\(\omega = (\omega_1;\omega_2;;\dots;\omega_d)\)</span>为法向量，决定超平面的方向；<span class="math inline">\(b\)</span>为位移项，决定超平面与原点间的距离。将由<span class="math inline">\(\omega\)</span>、<span class="math inline">\(b\)</span>确定的超平面记作<span class="math inline">\((\omega,b)\)</span>，则样本中任意点到超平面的距离可写为</p>
+<p><span class="math display">\[r = \frac{|\omega^T x + b|}{\left \| \omega \right \|}\]</span></p>
+<p>假设一个能对样本集正确分类的超平面<span class="math inline">\((\omega,b)\)</span>，对于<span class="math inline">\((x_i,y_i) \in D\)</span>，若<span class="math inline">\(y_i=+1\)</span>，则有<span class="math inline">\(\omega^T x + b &gt; 0\)</span>；若<span class="math inline">\(y_i = -1\)</span>，则有<span class="math inline">\(\omega^T x + b &lt; 0\)</span>。令</p>
+<p><span class="math display">\[\begin{cases}
+\omega^T x + b \geqslant +1&amp; ,\text{  } y_i= +1, \\
+\omega^T x + b \leqslant +1 &amp; ,\text{  } y_i= -1.
+\end{cases}\]</span></p>
+<p>距离超平面距离最近的几个样本使上式等号成立，其被称为“<em>支持向量</em>”（support vector），如下图所示。</p>
+<figure>
+<img src="https://i.loli.net/2019/09/03/7DM1bECXtJpILxa.png" alt="支持向量与间隔"><figcaption>支持向量与间隔</figcaption>
+</figure>
+<p>其中，被圈中的点所对应的特征向量即为支持向量，而<span class="math inline">\(\gamma\)</span>表示两个异类支持向量到超平面距离之和，被称为“<em>间隔</em>”（margin）。</p>
+<p><span class="math display">\[\gamma = \frac{2}{\left \| \omega \right \|}\]</span></p>
+<p>根据分析，当超平面的间隔最大时，该超平面即为最优划分超平面。则</p>
+<p><span class="math display">\[\max _{\omega,b} \frac{2}{\left \| \omega \right \|}\]</span></p>
+<p><span class="math display">\[s.t.~~y_i(\omega^T x_i + b) \geqslant 1, ~~ i = 1,2,\dots,m.\]</span></p>
+<p>显然，为了最大化间隔，需要最小化<span class="math inline">\(\left \| \omega \right \|^{-1}\)</span>，等价于最小化<span class="math inline">\(\left \| \omega \right \|^2\)</span>。所以，目标可以转化为</p>
+<p><span class="math display">\[\min _{\omega,b} \frac{1}{2} \left \| \omega \right \|^2\]</span></p>
+<p><span class="math display">\[s.t. ~~ y_i(\omega^T x_i + b) \geqslant 1, ~~ i = 1,2,\dots,m.\]</span></p>
+<p>这就是<em>支持向量机</em>（Support Vector Machine，简称SVM）的基本型。</p>
+<h2 id="对偶问题">6.2 对偶问题</h2>
+<p>我们希望通过求解上述SVM的基本型来得到大间隔划分超平面所对应的模型</p>
+<p><span class="math display">\[f(x) = \omega^T x + b\]</span></p>
+<p>其中<span class="math inline">\(\omega\)</span>和<span class="math inline">\(b\)</span>是模型参数。显然，SVM的基本型是一个<em>凸二次规划</em>（convex quadratic programming）问题，将使用如下方法进行求解。</p>
+<p>将支持向量机中的划分超平面看作约束条件，并将SVM的基本型转化为其拉格朗日对偶函数（<span class="math inline">\(\alpha _i \geqslant 0, i = 1,2,\dots,m\)</span>）<span class="math inline">\(^{[1]}\)</span></p>
+<p><span class="math display">\[L(\omega,b,\alpha) = \frac{1}{2} \left \| \omega \right \|^2 + \sum^m_{i=1} \alpha_i[1-y_i(\omega^Tx_i + b)]\]</span></p>
+<p>令<span class="math inline">\(L(\omega,b,\alpha)\)</span>对<span class="math inline">\(\omega\)</span>和<span class="math inline">\(b\)</span>的偏导为零可得</p>
+<p><span class="math display">\[\omega = \sum^m_{i=1} \alpha_i y_i x_i\]</span></p>
+<p><span class="math display">\[\sum^m_{i=1} \alpha_i y_i = 0\]</span></p>
+<p>将两式作为对偶函数的约束条件代入，可将<span class="math inline">\(L(\omega,b,\alpha)\)</span>中的<span class="math inline">\(\omega\)</span>和<span class="math inline">\(b\)</span>消去，于是SVM基本型的对偶问题即为</p>
+<p><span class="math display">\[\max_\alpha \sum^m_{i=1} \alpha_i - \frac{1}{2} \sum^m_{i=1} \sum^m_{j=1}\alpha_i \alpha_j y_i y_j x_i^T x_j\]</span></p>
+<p><span class="math display">\[s.t. \ \ \sum^m_{i=1} \alpha_i y_i = 0,\]</span></p>
+<p><span class="math display">\[\alpha_i \geqslant 0, \ \ i = 1,2,\dots,m.\]</span></p>
+<p>解出<span class="math inline">\(\alpha\)</span>后，即可得到模型</p>
+<p><span class="math display">\[f(x) = \omega^T x + b = \sum^m_{i=1} \alpha_i y_i x_i^T x_i + b\]</span></p>
+<p>同时，还需注意到的是，在原问题转化为拉格朗日对偶问题过程中，需要额外满足约束条件——KKT条件，即</p>
+<p><span class="math display">\[\begin{cases} \alpha_i \geqslant 0 \\ y_if(x_i) - 1 \geqslant 0 \\ \alpha_i(y_if(x_i)-1) = 0 \end{cases}\]</span></p>
+<p>显然，当<span class="math inline">\(y_if(x_i) = 1\)</span>时，<span class="math inline">\(\alpha_i &gt; 0\)</span>，这时该点才会对问题产生影响；否则，<span class="math inline">\(y_if(x_i) \neq 1\)</span>，<span class="math inline">\(\alpha_i = 0\)</span>，对问题无影响。又因为<span class="math inline">\(y_if(x_i)=1\)</span>时，即为样本点在最大间隔边界上的情况，即对应支持向量，所以这种训练方法被称为支持向量机。</p>
+<p>总而言之，支持向量机在训练完成后，大部分的训练样本都不需要保留，最终模型仅与支持向量有关。</p>
+<p>而在过程中，SVM基本型的对偶问题显然是一个二次规划问题<span class="math inline">\(^{[2]}\)</span>，虽然可以直接使用二次规划算法对其求解，但考虑该问题具有特殊性，于是有人提出了针对于此类问题的高效算法，其中SMO是一个著名的代表。</p>
+<p><strong>序列最小优化算法</strong>（Sequential Minimal Optimization）：基本思路为，先固定<span class="math inline">\(\alpha_i\)</span>之外的所有参数，求<span class="math inline">\(\alpha_i\)</span>上的极值，由于存在约束<span class="math inline">\(\sum^m_{i=1} \alpha_i y_i = 0\)</span>，若固定<span class="math inline">\(\alpha_i\)</span>之外的其他变量，则<span class="math inline">\(\alpha_i\)</span>可由其他变量导出。于是，SMO每次选择两个变量<span class="math inline">\(\alpha_i\)</span>和<span class="math inline">\(\alpha_j\)</span>，并固定其他参数。之后，SMO不断执行如下两步直至收敛：</p>
+<ul>
+<li>随机选取两变量<span class="math inline">\(\alpha_i\)</span>，<span class="math inline">\(\alpha_j\)</span>；</li>
+<li>固定<span class="math inline">\(\alpha_i\)</span>，<span class="math inline">\(\alpha_j\)</span>之外的参数，并求解二次规划，获得更新后的<span class="math inline">\(\alpha_i\)</span>和<span class="math inline">\(\alpha_j\)</span>值.</li>
+</ul>
+<p>在固定其他变量的前提下，试验证明，如果选取的<span class="math inline">\(\alpha_i\)</span>、<span class="math inline">\(\alpha_j\)</span>中有一个不符合KKT条件，在迭代后目标函数将会增大。直观而言，该变量对KKT条件违背的越大，更新后的目标函数值增加越大。因此，SMO先选取违背KKT条件最大的变量，和使目标函数增长最快的变量。这里SMO采用了启发式算法：选取对应样本之间间隔最大的两变量，以此代替复杂度较高的比较目标函数增幅操作。直观的解释是：两个差别很大的变量，与对应两个十分相似的变量相比，对它们进行更新会带给目标函数值更大的变化。</p>
+<p>SMO算法的高效之处在于，其固定其他参数后，仅考虑<span class="math inline">\(\alpha_i\)</span>、<span class="math inline">\(\alpha_j\)</span>两个变量时，优化过程十分高效。</p>
+<p>仅考虑<span class="math inline">\(\alpha_i\)</span>、<span class="math inline">\(\alpha_j\)</span>两个变量时，上述对偶问题中的约束条件可重写为</p>
+<p><span class="math display">\[\alpha_i y_i + \alpha_j y_j = c \ \ , \ \ \alpha_i \geqslant 0 \ \ , \ \ \alpha_j \geqslant 0\]</span></p>
+<p>其中</p>
+<p><span class="math display">\[ c = -\sum^m_{k \neq i,j} \alpha_k y_k\]</span></p>
+<p>是使<span class="math inline">\(\sum^m_{i=1} \alpha_i y_i\)</span>成立的常数。用</p>
+<p><span class="math display">\[\alpha_i y_i + \alpha_j y_j = c\]</span></p>
+<p>消去上述对偶问题目标函数中的变量<span class="math inline">\(\alpha_j\)</span>，此时仅有约束<span class="math inline">\(\alpha_i \geqslant 0\)</span>，于是得到具有闭式解的二次规划问题，可以高效地计算出更新后的<span class="math inline">\(\alpha_i\)</span>、<span class="math inline">\(\alpha_j\)</span>。</p>
+<p>之后，可以通过对任意支持向量<span class="math inline">\((x_s,y_s)\)</span>的条件<span class="math inline">\(y_s f(x_s) = 1\)</span>来求解<span class="math inline">\(b\)</span>的值，即</p>
+<p><span class="math display">\[y_s(\sum^m_{i \in S} \alpha_i y_i x^T_ix_s + b) = 1\]</span></p>
+<p>其中，<span class="math inline">\(S = \{i|\alpha_i &gt; 0, i = 1,2,\dots,m\}\)</span>，是所有支持向量的下标集。显然，可以通过取任意的支持向量对<span class="math inline">\(b\)</span>的值求解，但有一种更鲁棒的解法，就是对所有支持向量计算得到的<span class="math inline">\(b\)</span>取平均值</p>
+<p><span class="math display">\[b = \frac{1}{|S|}\sum_{s \in S}(\frac{1}{y_s} - \sum_{i \in S}\alpha_iy_ix_i^Tx_s)\]</span></p>
+<h2 id="核函数">6.3 核函数</h2>
+<p>一般地，在原始样本空内不存在一个能正确划分两类样本的超平面（“异或”问题）。对此，可通过非线性映射将样本从原始空间映射到更高维的特征空间，使样本在这个特征空间内线性可分。</p>
+<p><span class="math display">\[x \mapsto \phi(x)\]</span></p>
+<p>如果原始空间是有限维，即属性数有限，那么必然存在一个高维特征空间使样本可分。在特征空间划分超平面所对应的模型</p>
+<p><span class="math display">\[f(x) = \omega^T \phi(x) + b\]</span></p>
+<p>于是，原问题可改写为</p>
+<p><span class="math display">\[\min_{w,b} \frac{1}{2} \left \| \omega \right \|\]</span></p>
+<p><span class="math display">\[s.t. \ \ \ y_i(\omega^T \phi(x) + b) \geqslant 1\]</span></p>
+<p>那么，其对偶问题为</p>
+<p><span class="math display">\[\max_\alpha \sum^m_{i=1}\alpha_i - \frac{1}{2} \sum^m_{i=1}\sum^m_{j=1} \alpha_i \alpha_j y_i y_j \phi(x_i)^T \phi(x_j)\]</span></p>
+<p><span class="math display">\[\!\!\! s.t. \ \ \ \sum^m_{i=1} \alpha_i y_i = 0 \ ,\]</span></p>
+<p><span class="math display">\[\alpha_i \geqslant 0 \ , \ i = 1,2,\dots,m. \]</span></p>
+<p>由于是在<span class="math inline">\(\phi(x)\)</span>构造的高维空间内，计算<span class="math inline">\(\phi(x_i)^T \phi(x_j)\)</span>内积通常是极为困难的。为了避开这个障碍，通过定义核函数</p>
+<p><span class="math display">\[\kappa(x_i,x_j) = \phi(x_i)^T \phi(x_j)\]</span></p>
+<p>用<span class="math inline">\(\kappa(x_i,x_j)\)</span>代替其复杂的高维运算，使其在原始空间内进行计算，这种方法称为“<em>核技巧</em>”（kernel trick）。</p>
+<p>进而，对偶函数可重写为</p>
+<p><span class="math display">\[\max_\alpha \sum^m_{i=1}\alpha_i - \frac{1}{2} \sum^m_{i=1} \sum^m_{j=1} \alpha_i \alpha_j y_i y_j \kappa(x_i,x_j)\]</span></p>
+<p><span class="math display">\[\!\!\! s.t. \ \ \ \sum^m_{i=1} \alpha_i y_i = 0 \ ,\]</span></p>
+<p><span class="math display">\[\alpha_i \geqslant 0 \ , \ i = 1,2,\dots,m. \]</span></p>
+<p>解得<span class="math inline">\(\alpha_i\)</span>后，可得到</p>
+<p><span class="math display">\[\begin{aligned} f(x) &amp;= \omega ^T \phi (x) + b \\ &amp;= \sum^m_{i=1} \alpha_iy_i \phi(x_i)^T \phi(x) + b \\ &amp;= \sum^m_{i=1} \alpha_i y_i \kappa(x_i,x) + b \end{aligned}\]</span></p>
+<p>显然，模型最优解可通过训练样本的核函数展开，这一展式亦称为“<em>支持向量展式</em>”（support vector expansion）。下面讨论核函数的确定及其性质。</p>
+<p><strong>核函数 定理1</strong> 令<span class="math inline">\(\chi\)</span>为输入空间，<span class="math inline">\(\kappa(\cdot,\cdot)\)</span>是定义在<span class="math inline">\(\chi \times \chi\)</span>上的对称函数（即<span class="math inline">\(f(x_i,x_j) = f(x_j,x_i)\)</span>的函数），则<span class="math inline">\(\kappa\)</span>是核函数当且仅当对于任意数据<span class="math inline">\(D = \{x_1,x_2,\dots,x_m\}\)</span>，“<em>核矩阵</em>”（kernel matrix）总是正定的：</p>
+<p><span class="math display">\[K = \begin{bmatrix}
+\kappa(x_1,x_1) &amp; \dots &amp; \kappa(x_1,x_j) &amp; \dots &amp; \kappa(x_1,x_m)\\
+\vdots &amp; \ddots &amp; \vdots &amp; \ddots &amp; \vdots\\
+\kappa(x_i,x_1) &amp; \dots &amp; \kappa(x_i,x_j) &amp; \dots &amp; \kappa(x_i,x_m)\\
+\vdots &amp; \ddots &amp; \vdots &amp; \ddots &amp; \vdots\\
+\kappa(x_m,x_1) &amp; \dots &amp; \kappa(x_m,x_j) &amp; \dots &amp; \kappa(x_m,x_m)
+\end{bmatrix}\]</span></p>
+<p>上述定理表明，只要一个对称函数所对应的核矩阵是半正定的，它就能作为核函数使用。实际上，对任意的核矩阵都能找到一个映射关系<span class="math inline">\(\phi\)</span>与之对应。也就是说，任何一个核函数都隐式地定义了一个称为“<em>再生核希尔伯特空间</em>”（Reproducing Kernel Hilbert Space，简称RKHS）的特征空间。</p>
+<p>经过上述分析，我们希望样本能在特征空间内线性可分，因此，支持向量机的性能与特征空间的选取有很大的关系。一般地，我们不知道特征映射的形式，也就无从选择合适的核函数，而且核函数只是隐式地定义了这个特征空间。所以，“核函数选择”是支持向量机中的最大变数。</p>
+<blockquote>
+<p>这方面有一些基本经验，例如对文本数据通常采用线性核，情况不明时可先尝试高斯核，以下是常用核函数表</p>
+</blockquote>
+<figure>
+<img src="https://i.loli.net/2019/09/10/1dl4hAucpwbI6oQ.jpg" alt="常用核函数"><figcaption>常用核函数</figcaption>
+</figure>
+<p>此外，核函数还可以通过组合得到，如：</p>
+<ul>
+<li>若<span class="math inline">\(\kappa_1\)</span>和<span class="math inline">\(\kappa_2\)</span>为核函数，则对于任意正数<span class="math inline">\(\gamma_1\)</span>、<span class="math inline">\(\gamma_2\)</span>，其线性组合<span class="math display">\[\gamma_1 \kappa_1 + \gamma_2 \kappa_2\]</span>也是核函数；</li>
+<li>若<span class="math inline">\(\kappa_1\)</span>和<span class="math inline">\(\kappa_2\)</span>为核函数，则核函数的直积<span class="math display">\[\kappa_1 \bigotimes \kappa_2(x,z) = \kappa_1(x,z)\kappa_2(x,z)\]</span>也是核函数；</li>
+<li>若<span class="math inline">\(\kappa_1\)</span>为核函数，则对于任意函数<span class="math inline">\(g(x)\)</span>，<span class="math display">\[\kappa(x,z) = g(x)\kappa_1(x,z)g(z)\]</span>也是核函数。</li>
+</ul>
+<h2 id="软间隔与正则化">6.4 软间隔与正则化</h2>
+<p>前面的讨论中，一直假定训练样本在训练空间或特征空间中是线性可分的，但在现实任务中，往往很难确定合适的核函数，并且即便找到了，这个结果也有过拟合的可能。</p>
+<p>缓解该问题的一个办法是允许支持向量机在一些样本上出错，因此，引入“<em>软间隔</em>”（soft margin）的概念。</p>
+<p>我们将之前所使用的间隔概念，即满足约束条件</p>
+<p><span class="math display">\[\begin{cases} \omega^T x_i + b \geqslant +1, &amp; y_i = +1; \\ \omega^T x_i + b \leqslant -1, &amp; y_i = -1. \end{cases}\]</span></p>
+<p>称为“<em>硬间隔</em>”（hard margin）。相对地，软间隔则允许一部分样本不满足约束。</p>
+<p>当然在能够最大化间隔的同时，要尽量减少不满足约束的样本个数，由此问题优化目标可重写为</p>
+<p><span class="math display">\[\min_{\omega,b} \frac{1}{2} \left \| \omega \right \|^2 + C\sum^m_{i=1} \ell _{0/1}(y_i(\omega^Tx_i + b)-1)\]</span></p>
+<p>其中<span class="math inline">\(C&gt;0\)</span>是一个常数，<span class="math inline">\(\ell_{0/1}\)</span>是“0/1损失函数”。</p>
+<p><span class="math display">\[y = \begin{cases} 1 ,&amp; \text{if  } \  z &lt; 0; \\ 0,&amp; \text{otherwise.} \end{cases}\]</span></p>
+<p>显然，当<span class="math inline">\(C \to \infin\)</span>时，所有的样本点均需满足约束条件；而<span class="math inline">\(C\)</span>取有限值时，可以在一定范围内接受部分样本不满足约束。</p>
+<p>按照惯例，<span class="math inline">\(\ell_{0/1}\)</span>具有非凸、不连续等不太好的数学性质，所以需要使用其他损失函数来代替，以便于问题的求解。代替的函数被称为“<em>替代损失</em>”（surrogate loss），替代损失函数一般是连续的凸函数，且是<span class="math inline">\(\ell_{0/1}\)</span>的上界。</p>
+<figure>
+<img src="https://i.loli.net/2019/09/07/oLuOtFQmWiyA14H.png" alt="三种损失函数"><figcaption>三种损失函数</figcaption>
+</figure>
+<p>上图中的损失函数分别对应：</p>
+<ul>
+<li>红色，0/1损失函数：<span class="math inline">\(\ell_{0/1}(z)\)</span>；</li>
+<li>黑色，hinge损失：<span class="math inline">\(\ell_{hinge}(z) = \max(0,1-z)\)</span>；</li>
+<li>绿色，指数损失（exponential loss）：<span class="math inline">\(\ell_{exp}(z) = \exp(-z)\)</span>；</li>
+<li>绿色，对率损失（logistic loss）：<span class="math inline">\(\ell_{log}(z) = log(1+\exp(-z))\)</span>.</li>
+</ul>
+<p>采用hinge损失代替0/1损失，同时引入松弛变量<span class="math inline">\(\xi_i \geqslant 0\)</span>，得到常用的“软间隔支持向量机”</p>
+<p><span class="math display">\[\min_{\omega,b,\xi_i} \frac{1}{2} \left \| \omega \right \|^2 + C \sum^m_{i=1} \xi_i\]</span></p>
+<p><span class="math display">\[\text{s.t. }\ y_i(\omega^Tx_i + b) \geqslant 1-\xi_i\]</span></p>
+<p><span class="math display">\[\xi \geqslant 0, \ \ i=1,2,\dots,m.\]</span></p>
+<p>其中<span class="math inline">\(\xi_i = max(0,1-y_i(\omega^Tx_i + b))\)</span>。之后的计算与之前无损失函数时的相同，区别仅为此时<span class="math inline">\(0 \leqslant \alpha \leqslant C\)</span>，其他过程详见<strong>6.3 核函数</strong>一节。</p>
+<p>值得注意的是，在使用对率损失代替0/1损失时，得到的模型类似于对率回归模型。实际上，支持向量机与对率回归的优化目标相近，通常情况下性能也相仿。但相比之下，一方面，对率回归的输出具有概率意义；可直接用于多分类任务。另一方面，hinge损失的特性使支持向量机的解具有稀疏性，而对率损失是光滑单调的递减函数，不具备类似支持向量机的概念，所以其需要依赖更多的训练样本，预测开销更大。</p>
+<p>使用其他的损失函数替代0/1损失函数所得到的模型，其特点与替代损失函数直接相关，但它们具有一个共性：优化目标中的第一项用来描述划分超平面的“间隔”大小，另一项用来表述训练集上的误差，可写为更一般的形式</p>
+<p><span class="math display">\[\min_f \Omega(f) + C\sum^m_{i=1} \ell(f(x_i),y_i)\]</span></p>
+<p>其中<span class="math inline">\(\Omega(f)\)</span>称为“<em>结构风险</em>”（strutural risk），由模型<span class="math inline">\(f\)</span>的性质决定；第二项<span class="math inline">\(\sum^m_{i=1} \ell(f(x_i),y_i)\)</span>称为“<em>经验风险</em>”（empirical risk），由模型和训练数据的契合程度决定；<span class="math inline">\(C\)</span>用于对二者进行折中，为引入使用者的意图提供途径，同时有助于削减假设空间，降低了过拟合的风险。上式代表的问题称为“<em>正则化</em>”（regularization）问题，<span class="math inline">\(\Omega(f)\)</span>称为正则化项，<span class="math inline">\(C\)</span>称为正则化常数。<span class="math inline">\(L_p\)</span>范数是常用的正则化项，其中<span class="math inline">\(L_0\)</span>、<span class="math inline">\(L_1\)</span>范数倾向于<span class="math inline">\(\omega\)</span>的分量尽量稀疏，<span class="math inline">\(L_2\)</span>范数倾向于<span class="math inline">\(\omega\)</span>的分量尽量稠密。</p>
+<h2 id="支持向量回归">6.5 支持向量回归</h2>
+<p>考虑支持向量方法的回归问题，给定训练样本<span class="math inline">\(D = \{(x_1,y_1),(x_2,y_2),\dots,(x_m,y_m)\}\)</span>，<span class="math inline">\(y \in \mathbb{R}\)</span>，希望学得一个形如<span class="math inline">\(f(x) = \omega^Tx + b\)</span>的回归模型，使得<span class="math inline">\(f(x)\)</span>与<span class="math inline">\(y\)</span>尽可能地接近，<span class="math inline">\(\omega\)</span>和<span class="math inline">\(b\)</span>是待确定的参数。</p>
+<p>支持向量回归（Support Vector Regression，简称SVR）与传统回归方法的区别在于损失的计算方法不同，传统回归方法是计算每个样本的预测输出<span class="math inline">\(f(x)\)</span>与真实输出<span class="math inline">\(y\)</span>之间的差别作为损失，仅当<span class="math inline">\(f(x) = y\)</span>时损失才为零；而支持向量回归允许在一定范围<span class="math inline">\(\epsilon\)</span>内认为<span class="math inline">\(f(x)\)</span>与<span class="math inline">\(y\)</span>的值无差别，即仅当<span class="math inline">\(f(x)\)</span>与<span class="math inline">\(y\)</span>之间的差别绝对值大于<span class="math inline">\(\epsilon\)</span>时，才会计算损失。</p>
+<p>于是，SVR问题可形式化为</p>
+<p><span class="math display">\[\min_{\omega,b} \frac{1}{2} \left \| \omega \right \|^2 + C\sum^m_{i=1}\ell_{\epsilon}(f(x_i)-y_i)\]</span></p>
+<p>其中，<span class="math inline">\(C\)</span>为正则化常数，<span class="math inline">\(\ell_{\epsilon}\)</span>是<span class="math inline">\(\epsilon\)</span>-不敏感（<span class="math inline">\(\epsilon\)</span>-insensitive loss）函数</p>
+<p><span class="math display">\[\ell_{\epsilon} = \begin{cases} 0, &amp;\text{if } |z| \leqslant \epsilon, \\ |z|-\epsilon, &amp;\text{otherwise.} \end{cases}\]</span></p>
+<p>引入松弛变量<span class="math inline">\(\xi_i\)</span>和<span class="math inline">\(\hat\xi_i\)</span>将问题重写为</p>
+<p><span class="math display">\[\min_{\omega,b,\xi_i,\hat\xi_i}\frac{1}{2} \left \| \omega \right \|^2 + C \sum^m_{i=1}(\xi_i + \hat \xi_i)\]</span></p>
+<p><span class="math display">\[\text{s.t. } \ f(x_i) - y_i \leqslant \epsilon + \xi_i\]</span></p>
+<p><span class="math display">\[y_i - f(x_i) \leqslant \epsilon + \hat\xi_i\]</span></p>
+<p><span class="math display">\[\xi \geqslant 0, \ \hat\xi_i \geqslant 0, \ i=1,2,\dots,m.\]</span></p>
+<p>之后的求解及优化等计算与支持向量机一致，不再赘述。值得注意的是，在支持向量机中的方法，都可以应用到支持向量回归中，例如求解更鲁棒的<span class="math inline">\(b\)</span>值，使用特征空间映射选取核函数等。</p>
+<h2 id="核方法">6.6 核方法</h2>
+<p>回顾SVM和SVR模型，给定训练样本<span class="math inline">\(\{(x_1,y_1),(x_2,y_2),\dots,(x_m,y_m)\}\)</span>，发现二者均能表示成<span class="math inline">\(\kappa(x,x_i)\)</span>的线性组合，并且总结出如下结论：</p>
+<p><strong>核方法 定理2 表示定理</strong> 令<span class="math inline">\(\mathbb{H}\)</span>为核函数<span class="math inline">\(\kappa\)</span>对应的再生核希尔伯特空间，<span class="math inline">\(\left \| h \right \|_{\mathbb{H}}\)</span>表示<span class="math inline">\(\mathbb{H}\)</span>空间中关于<span class="math inline">\(h\)</span>的范数，对于任意单调递增函数<span class="math inline">\(\Omega:[0,\infin] \mapsto \mathbb{R}\)</span>和任意非负损失函数<span class="math inline">\(\ell:\mathbb{R}^m \mapsto [0,\infin]\)</span>，优化问题</p>
+<p><span class="math display">\[\min_{h \in \mathbb{H}} F(h) = \Omega(\left \| h \right \|_{\mathbb{H}} + \ell(h(x_1),h(x_2),\dots,h(x_m))\]</span></p>
+<p>的解总可写为</p>
+<p><span class="math display">\[h^*(x) = \sum^m_{i=1}\alpha_i\kappa(x,x_i)\]</span></p>
+<p>表示定理对损失函数没有限制，对正则化项<span class="math inline">\(\Omega\)</span>仅要求单调递增（不一定是凸函数），这显示出核函数的巨大威力。</p>
+<p>基于核函数的一系列学习方法，统称为“<em>核方法</em>”（kernel methods）。最常见的是，通过引入核函数将线性学习器拓展为非线性学习器，例如通过核化将线性判别分析（LDA）转化为“<em>核线性判别分析</em>”（Kernelized Linear Discriminant Analysis，简称KLDA）。<em>此处不再证明</em></p>
+<h2 id="附录">附录</h2>
+<h3 id="拉格朗日乘数法">[1] 拉格朗日乘数法</h3>
+<p><strong>拉格朗日乘数法</strong>（Lagrange multipliers）：一种寻找多元函数在一组约束条件下的极值的方法。通过引入拉格朗日乘数<span class="math inline">\(\lambda\)</span>，可将有<span class="math inline">\(d\)</span>个变量与<span class="math inline">\(k\)</span>个约束条件的最优化问题转化为具有<span class="math inline">\(d+k\)</span>个变量的无约束优化问题求解。</p>
+<p>对于一个等式约束的优化问题，假定<span class="math inline">\(x\)</span>是<span class="math inline">\(d\)</span>维向量，需寻找最优<span class="math inline">\(x^*\)</span>使目标函数<span class="math inline">\(f(x)\)</span>最小且满足<span class="math inline">\(g(x)=0\)</span>。从几何角度解释，我们需要在约束函数确定的<span class="math inline">\(d-1\)</span>维曲面上寻找使目标函数最小（大）化的点（该曲面称为约束曲面）。于是可以得到如下结论：</p>
+<ul>
+<li>对于约束曲面上的任意点<span class="math inline">\(x\)</span>，该点的梯度<span class="math inline">\(\triangledown g(x)\)</span>正交于约束曲面；</li>
+<li>在最优点<span class="math inline">\(x^*\)</span>，目标函数在该点的梯度<span class="math inline">\(\triangledown f(x^ *)\)</span>正交于约束曲面。</li>
+</ul>
+<p>由此可知，在最优点<span class="math inline">\(x_*\)</span>，梯度<span class="math inline">\(\triangledown g(x)\)</span>和<span class="math inline">\(\triangledown f(x)\)</span>的方向必相同或相反，即存在<span class="math inline">\(\lambda \neq 0\)</span>使得</p>
+<p><span class="math display">\[\triangledown f(x^ *) + \lambda \triangledown g(x^ *) = 0,\]</span></p>
+<p><span class="math inline">\(\lambda\)</span>称为拉格朗日乘数，定义拉格朗日函数</p>
+<p><span class="math display">\[L(x,\lambda) = f(x) + \lambda g(x)\]</span></p>
+<p>而对于不等式约束<span class="math inline">\(g(x) \leqslant 0\)</span>时，最优点<span class="math inline">\(x^*\)</span>在<span class="math inline">\(g(x) &lt; 0\)</span>的区域中或在边界<span class="math inline">\(g(x) = 0\)</span>上。当<span class="math inline">\(g(x) &lt; 0\)</span>时，约束<span class="math inline">\(g(x) \leqslant 0\)</span>不起作用，可以直接使<span class="math inline">\(\triangledown f(x) = 0\)</span>来获得最优点；<span class="math inline">\(g(x) = 0\)</span>时，即相当于等式情况，但需注意的是这时使<span class="math inline">\(\triangledown f(x^*) + \lambda \triangledown g(x^ *) = 0\)</span>成立的<span class="math inline">\(\lambda &gt; 0\)</span>。整合两种情况，发现必然存在<span class="math inline">\(\lambda g(x) = 0\)</span>。因此，在约束<span class="math inline">\(g(x) \leqslant 0\)</span>下最小化<span class="math inline">\(f(x)\)</span>，可转化为在如下约束下最小化目标函数的拉格朗日函数：</p>
+<p><span class="math display">\[
+\begin{cases}
+g(x) \leqslant 0; \\
+\lambda \geqslant 0; \\
+\lambda g(x) = 0.
+\end{cases}
+\]</span></p>
+<p>以上条件称为<strong>Karush-Kuhn-Tucker（简称KKT）条件</strong>。</p>
+<p>之后，可以将以上做法推广到多个约束，考虑具有<span class="math inline">\(m\)</span>个等式约束和<span class="math inline">\(n\)</span>个不等式约束且可行域<span class="math inline">\(\mathbb{D} \subset \mathbb{R}^d\)</span>非空的优化问题</p>
+<p><span class="math display">\[\min _x f(x)\]</span></p>
+<p><span class="math display">\[s.t. \ \ h_i(x) = 0 \ \ (i = 1,...,m),\]</span></p>
+<p><span class="math display">\[g_j(x) \leqslant 0 \ \ (j = 1,...,n).\]</span></p>
+<p>引入拉格朗日乘数<span class="math inline">\(\lambda = (\lambda_1, \lambda_2,\dots, \lambda_m)^T\)</span>和<span class="math inline">\(\mu = (\mu_1, \mu_2, \dots,\mu_n)^T\)</span>，相应的拉格朗日函数为</p>
+<p><span class="math display">\[L(x,\mathbf{\lambda},\mathbf{\mu}) = f(x) + \sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1} \mu_j g_j(x)\]</span></p>
+<p>同时，由不等式引入的KKT条件（<span class="math inline">\(j=1,2,\dots,n\)</span>）为</p>
+<p><span class="math display">\[\begin{cases} g_j(x) \leqslant 0; \\ \mu_j \geqslant 0; \\ \mu_j g_j(x) = 0. \end{cases}\]</span></p>
+<p>对于优化问题，可以从“<em>主问题</em>”（primal problem）和“<em>对偶问题</em>”（dual problem）两个方面考虑。对该优化问题而言，可基于以上拉格朗日函数，构造其拉格朗日“<em>对偶函数</em>”（dual function）<span class="math inline">\(\Gamma:\mathbb{R}^m \times \mathbb{R}^n \mapsto \mathbb{R}\)</span>定义为</p>
+<p><span class="math display">\[\begin{aligned}\Gamma(\lambda,\mu) &amp;= \inf_{x \in \mathbb{D}} L(x,\lambda,\mu) \\ &amp;=\inf_{x \in \mathbb{D}} (f(x) + \sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1}\mu_j g_j(x) \end{aligned}\]</span></p>
+<p>上式中<span class="math inline">\(\inf-\)</span>表示<em>下确界</em>（infimum）。</p>
+<p>若<span class="math inline">\(\tilde x \in \mathbb{D}\)</span>为主问题可行域中的点，则对任意<span class="math inline">\(\mu \succeq 0\)</span>和<span class="math inline">\(\lambda\)</span>都有</p>
+<p><span class="math display">\[\sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1}\mu_j g_j(x) \leqslant 0\]</span></p>
+<p>进而有</p>
+<p><span class="math display">\[\Gamma (\lambda,\mu) = \inf _{x \in \mathbb{D}} L(x,\lambda,\mu) \leqslant L(\tilde x,\lambda,\mu) \leqslant f(\tilde x).\]</span></p>
+<p>若主问题<span class="math inline">\(min_x f(x)\)</span>最优值为<span class="math inline">\(p^*\)</span>，则对任意<span class="math inline">\(\mu \succeq 0\)</span>和<span class="math inline">\(\lambda\)</span>都有</p>
+<p><span class="math display">\[\Gamma (\lambda,\mu) \leqslant p^*\]</span></p>
+<p>即对偶函数给初了主问题最优值的下界，且这个下界取决于<span class="math inline">\(\mu\)</span>和<span class="math inline">\(\lambda\)</span>的值。于是，很自然地想到对偶函数能获得的最好下界是什么？这就引出优化问题</p>
+<p><span class="math display">\[\max_{\lambda,\mu} \Gamma (\lambda,\mu) \ \ s.t. \mu \succeq 0.\]</span></p>
+<p>上式即为主问题的对偶问题，其中<span class="math inline">\(\lambda\)</span>和<span class="math inline">\(\mu\)</span>称为“<em>对偶变量</em>”（dual variable）。无论主问题的凸性如何，对偶问题始终是凸优化问题。</p>
+<p>考虑对偶问题</p>
+<p><span class="math display">\[\max_{\lambda,\mu} \Gamma(\lambda,\mu) = d^*\]</span></p>
+<p>显然有$d<sup>* p</sup>* <span class="math inline">\(，这被称为“*弱对偶性*”（weak duality）；若\)</span>d^* = p^* $成立，则称该问题具有“<em>强对偶性</em>”（strong duality），此时该对偶问题能获得主问题的最优下界。对一般问题而言，强对偶性通常不成立，但若满足Slater条件，则强对偶性必然成立，且此时有</p>
+<p><span class="math display">\[\sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1}\mu_j g_j(x) = 0\]</span></p>
+<p>之后，将拉格朗日函数分别对原变量和对偶变量求导，并令导数为0，即可解决。</p>
+<h3 id="二次规划">[2] 二次规划</h3>
+<p><strong>二次规划</strong>（Quadratic Programming）：目标函数是变量的二次函数，约束条件是变量的线性不等式的一类优化问题。</p>
+<p>假定变量个数为<span class="math inline">\(d\)</span>，约束条件为<span class="math inline">\(m\)</span>，则标准的二次规划问题形如：</p>
+<p><span class="math display">\[\min_x \frac{1}{2}x^TQx + c^Tx\]</span></p>
+<p><span class="math display">\[s.t. \ \ Ax \leqslant b\]</span></p>
+<p>其中，<span class="math inline">\(x\)</span>为<span class="math inline">\(d\)</span>维向量，<span class="math inline">\(Q \in R^{d \times d}\)</span>为实对称矩阵，<span class="math inline">\(A \in R^{m \times d}\)</span>为实矩阵，<span class="math inline">\(b \in R^m\)</span>和<span class="math inline">\(c \in R^d\)</span>为实向量，<span class="math inline">\(Ax \leqslant b\)</span>的每一行对应一个约束。</p>
+<ul>
+<li>Q—半正定矩阵时，目标函数为凸函数，若此时约束条件<span class="math inline">\(Ax \leqslant b\)</span>的可行域非空，且目标函数在此可行域内有下界，则该问题有全局最小值。</li>
+<li>Q—正定矩阵时，该问题有唯一最小值</li>
+<li>Q—非正定矩阵时，目标函数将有多个平稳点和局部最小值，此时是NP难问题。</li>
+</ul>
+<p>对二次规划问题的常用解法有：椭球法（ellipsoid method）、内点法（interior point）、增广拉格朗日法（augmented Lagrangian）、梯度投影法（gradient projection）等。若Q为正定矩阵，则相应的二次规划问题可由椭球法在多项式时间内求解。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/《机器学习》/" rel="tag"># 《机器学习》</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/20/Chapter7贝叶斯分类器/" rel="next" title="Chapter7 贝叶斯分类器">
+                <i class="fa fa-chevron-left"></i> Chapter7 贝叶斯分类器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/20/Chapter5神经网络/" rel="prev" title="Chapter5 神经网络">
+                Chapter5 神经网络 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Zero Zone</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#间隔与支持向量"><span class="nav-number">1.</span> <span class="nav-text">6.1 间隔与支持向量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对偶问题"><span class="nav-number">2.</span> <span class="nav-text">6.2 对偶问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#核函数"><span class="nav-number">3.</span> <span class="nav-text">6.3 核函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#软间隔与正则化"><span class="nav-number">4.</span> <span class="nav-text">6.4 软间隔与正则化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#支持向量回归"><span class="nav-number">5.</span> <span class="nav-text">6.5 支持向量回归</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#核方法"><span class="nav-number">6.</span> <span class="nav-text">6.6 核方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">7.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#拉格朗日乘数法"><span class="nav-number">7.1.</span> <span class="nav-text">[1] 拉格朗日乘数法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二次规划"><span class="nav-number">7.2.</span> <span class="nav-text">[2] 二次规划</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zero Zone</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("wK5oOR6TzGguECTJdAa7L4aR-gzGzoHsz", "s9qatI3Dt50rrnzgEq2ylhbi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>

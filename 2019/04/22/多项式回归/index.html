@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Java,《Java Data Analysis》,回归,矩阵求解," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文内容：  多项式回归问题  一次多项式回归 多次多项式回归  代码实现 求解矩阵（方程组）方法归纳  Cramer法则 高斯消去法 LU分解法">
+<meta name="keywords" content="Java,《Java Data Analysis》,回归,矩阵求解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多项式回归">
+<meta property="og:url" content="http://www.zzforgood.top/2019/04/22/多项式回归/index.html">
+<meta property="og:site_name" content="ZZ&#39;s blog">
+<meta property="og:description" content="本文内容：  多项式回归问题  一次多项式回归 多次多项式回归  代码实现 求解矩阵（方程组）方法归纳  Cramer法则 高斯消去法 LU分解法">
+<meta property="og:updated_time" content="2019-08-26T04:56:53.074Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="多项式回归">
+<meta name="twitter:description" content="本文内容：  多项式回归问题  一次多项式回归 多次多项式回归  代码实现 求解矩阵（方程组）方法归纳  Cramer法则 高斯消去法 LU分解法">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.zzforgood.top/2019/04/22/多项式回归/"/>
+
+
+
+
+
+  <title>多项式回归 | ZZ's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6b5e45c68a522dd41c8336cf7a956273";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZ's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.zzforgood.top/2019/04/22/多项式回归/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zero Zone">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZ's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">多项式回归</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-04-22T13:20:25+08:00">
+                2019-04-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/04/22/多项式回归/" class="leancloud_visitors" data-flag-title="多项式回归">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文内容：</p>
+<ul>
+<li>多项式回归问题
+<ul>
+<li><em>一次多项式回归</em></li>
+<li>多次多项式回归</li>
+</ul></li>
+<li>代码实现</li>
+<li><strong>求解矩阵（方程组）方法归纳</strong>
+<ul>
+<li>Cramer法则</li>
+<li>高斯消去法</li>
+<li>LU分解法</li>
+</ul></li>
+</ul>
+<a id="more"></a>
+<h2 id="多项式回归问题">多项式回归问题</h2>
+<p>问题描述：对大多数数据集的驱动关系来说，都是非线性的。对于这类问题，我们可以采用一些数学模型进行替代求解。</p>
+<h3 id="一次多项式回归"><strong>一次多项式回归</strong></h3>
+<p>一次多项式即为线性函数：<span class="math inline">\(y = b_{0} + b_{1}x\)</span>，对其回归求解可以使用==最小二乘法导出系数的公式==：</p>
+<p><span class="math display">\[b_{1}=\frac{n\sum x_{i}y_{i} - \sum x_{i}y_{i}}{n \sum x_{i}^2 -(\sum x_{i})^2}\]</span> <span class="math display">\[b_{0} = \bar{y} - b_{1}\bar{x}\]</span></p>
+<p>这些公式根据正规方程组可以推知：</p>
+<p><span class="math display">\[(\sum_{i=1}^{n}x_{i}^2)b_{1} + (\sum x_{i})b_{0} = \sum x_{i}y_{i}\]</span> <span class="math display">\[(\sum x_{i})b_{1} + nb_{0} = \sum y_{i}\]</span></p>
+<p>方程组通过平方和最小化得到：</p>
+<p><span class="math display">\[\sum_{n}^{i=1}(y_{i} - \tilde{y_{i}}) = \sum_{n}^{i=1}(y_{i} - b_{1}x_{i} - b_{0})^2\]</span></p>
+<h3 id="多次多项式回归">多次多项式回归</h3>
+<p>以最简单的非线性一元多项式 <span class="math inline">\(y = f(x) = b_{0} + b_{1}x + b_{2}x^2 + \cdot \cdot \cdot + b_{m}x^m\)</span> 为例，其中m为多项式的次数，<span class="math inline">\(b_{0},b_{1},b_{2},\cdot\cdot\cdot,b_{m}\)</span>为待定的系数。</p>
+<p>可以运用相同的最小二乘法方法，对给定的数据集找到任意次数为m的最佳拟合的多项式，假定小于数据集中独立数据点的个数。</p>
+<p>例：要找到拟合最佳的次数为 m=2 的多项式 <span class="math inline">\(f(x) = b_{0} + b_{1} + b_{2}x^2\)</span> （也叫作给定数据集的最小二乘抛物线），需要对求和式最小化。</p>
+<p><span class="math display">\[\sum_{n}^{i=1}(y_{i} - b_{2}x_{i}^2 - b_{1}x_{i} - b_{0})^2\]</span></p>
+<p>这个方程用来决定系数<span class="math inline">\(b_{0}、b_{1}和b_{2}\)</span>。从微积分角度来讲，这个表达式具有如下性质：</p>
+<p><span class="math display">\[z = \sum (A_{i} + B_{i}u + C_{i}v + D_{i}w)^2\]</span></p>
+<p>通过求它的偏导数为0，对<span class="math inline">\(z\)</span>最小化：</p>
+<p><span class="math display">\[\frac{\partial z}{\partial u} = \frac{\partial z}{\partial v} = \frac{\partial z}{\partial w}\]</span></p>
+<p>由此产生二次回归的正规方程：</p>
+<p><span class="math display">\[nb_{0} + (\sum x_{i})b_{1} + (\sum x_{i}^2)b_{2} = \sum y_{i}\]</span> <span class="math display">\[(\sum x_{i})b_{0} + (\sum x_{i}^2)b_{1} + (\sum x_{i}^3)b_{2} = \sum x_{i}y_{i}\]</span> <span class="math display">\[(\sum x_{i}^2)b_{0} + (\sum x_{i}^3)b_{1} + (\sum x_{i}^4)b_{2} = \sum x_{i}^2y_{i}\]</span></p>
+<p>即可将<span class="math inline">\(b_{0},b_{1},b_{2}\)</span>同时解出。</p>
+<h2 id="代码实现">代码实现</h2>
+<p>本例中使用了Apache Commons math类协助计算。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> org.apache.commons.math3.linear.*;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Example4</span> </span>&#123;</div><div class="line">    <span class="keyword">static</span> <span class="keyword">int</span> n = <span class="number">6</span>; <span class="comment">// 数据集点的个数</span></div><div class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[] x = &#123;<span class="number">20</span>,<span class="number">30</span>,<span class="number">40</span>,<span class="number">50</span>,<span class="number">60</span>,<span class="number">70</span>&#125;; <span class="comment">// 数据集 x</span></div><div class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[] y = &#123;<span class="number">52</span>,<span class="number">87</span>,<span class="number">136</span>,<span class="number">203</span>,<span class="number">290</span>,<span class="number">394</span>&#125;; <span class="comment">// 数据集 y</span></div><div class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[][] a; <span class="comment">// 构造3个正规方程的参数</span></div><div class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[] b; <span class="comment">// 解集</span></div><div class="line"></div><div class="line">    <span class="comment">// 正规方程 ab = w</span></div><div class="line">    <span class="comment">// 解为数组 b</span></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        <span class="keyword">double</span>[][] a = <span class="keyword">new</span> <span class="keyword">double</span>[<span class="number">3</span>][<span class="number">3</span>];</div><div class="line">        <span class="keyword">double</span>[] w = <span class="keyword">new</span> <span class="keyword">double</span>[<span class="number">3</span>];</div><div class="line">        deriveNormalEquations(a, w);</div><div class="line">        printNormalEquations(a, w);</div><div class="line">        solveNormalEquations(a, w);</div><div class="line">        printResults();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">    ** 构造正规方程</div><div class="line">    **     &#123;n           , sigma x   , sigma x^2&#125;</div><div class="line">    ** a = &#123;sigma x     , sigma x^2 , sigma x^3&#125;</div><div class="line">    **     &#123;sigma x^2   , sigma x^3 , sigma x^4&#125;</div><div class="line">    **</div><div class="line">    **     &#123;sigma y     &#125;</div><div class="line">    ** w = &#123;sigma xy    &#125;</div><div class="line">    **     &#123;sigma x^2y  &#125;</div><div class="line">    **/</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">deriveNormalEquations</span><span class="params">(<span class="keyword">double</span>[][] a, <span class="keyword">double</span>[] w)</span> </span>&#123;</div><div class="line">        <span class="keyword">int</span> n = y.length;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</div><div class="line">            <span class="keyword">double</span> xi = x[i];</div><div class="line">            <span class="keyword">double</span> yi = y[i];</div><div class="line">            a[<span class="number">0</span>][<span class="number">0</span>] = n;</div><div class="line">            a[<span class="number">0</span>][<span class="number">1</span>] = a[<span class="number">1</span>][<span class="number">0</span>] += xi;</div><div class="line">            a[<span class="number">0</span>][<span class="number">2</span>] = a[<span class="number">1</span>][<span class="number">1</span>] = a[<span class="number">2</span>][<span class="number">0</span>] += xi * xi;</div><div class="line">            a[<span class="number">1</span>][<span class="number">2</span>] = a[<span class="number">2</span>][<span class="number">1</span>] += xi * xi * xi;</div><div class="line">            a[<span class="number">2</span>][<span class="number">2</span>] = xi * xi * xi * xi;</div><div class="line">            w[<span class="number">0</span>] += yi;</div><div class="line">            w[<span class="number">1</span>] += xi * yi;</div><div class="line">            w[<span class="number">2</span>] += xi * xi * yi;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">    ** 打印正规方程</div><div class="line">    **/</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printNormalEquations</span><span class="params">(<span class="keyword">double</span>[][] a, <span class="keyword">double</span>[] w)</span> </span>&#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a.length; i++) &#123;</div><div class="line">            System.out.printf(<span class="string">"%8.0fb0 + %6.0b1 + %8.0fb2 = %7.0f%n"</span>, a[i][<span class="number">0</span>], a[i][<span class="number">1</span>], a[i][<span class="number">2</span>], w[i]);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">    ** 解正规方程</div><div class="line">    **/</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">solveNormalEquations</span><span class="params">(<span class="keyword">double</span>[][] a, <span class="keyword">double</span>[] ww)</span> </span>&#123;</div><div class="line">        RealMatrix m = <span class="keyword">new</span> Array2DRowRealMatrix(a, <span class="keyword">false</span>); <span class="comment">// 通过已有数组构造正规方程</span></div><div class="line">        LUDecomposition lud = <span class="keyword">new</span> LUDecomposition(m); <span class="comment">// 创建 LU分解 类</span></div><div class="line">        DecompositionSolver solver = lud.getSolver(); <span class="comment">// 获取解类</span></div><div class="line">        RealVector v = <span class="keyword">new</span> ArrayRealVector(ww, <span class="keyword">false</span>); <span class="comment">// 创建v向量</span></div><div class="line">        b =  solver.solve(v).toArray(); <span class="comment">// 获取解</span></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printResults</span><span class="params">()</span></span>&#123;</div><div class="line">        System.out.printf(<span class="string">"f(t) = %.2f + %.3ft + %.5ft^2%n"</span>, b[<span class="number">0</span>], b[<span class="number">1</span>], b[<span class="number">2</span>]);</div><div class="line">        System.out.printf(<span class="string">"f(55) = %.1f%n"</span>, f(<span class="number">55</span>,b));</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">    ** 构造 f(x) 方程</div><div class="line">    **/</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">f</span><span class="params">(<span class="keyword">double</span> t, <span class="keyword">double</span>[] b)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> b[<span class="number">0</span>] + b[<span class="number">1</span>] * t + b[<span class="number">2</span>] * t * t;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="求解矩阵方程组方法反思"><strong>求解矩阵（方程组）方法反思</strong></h2>
+<p>对矩阵方程求解一般有以下方法：</p>
+<ul>
+<li>Cramer法则</li>
+<li>高斯消去法</li>
+<li>LU分解法</li>
+</ul>
+<h3 id="cramer法则">Cramer法则</h3>
+<h4 id="概念">概念</h4>
+<h5 id="对n个n元线性方程组当其常数项b_1b_2cdotsb_n不全为0时线性方程组被称为非齐次方程组">对n个n元线性方程组，当其常数项<span class="math inline">\(b_{1},b_{2},\cdots,b_{n}\)</span>不全为0时，线性方程组被称为非齐次方程组</h5>
+<p><span class="math display">\[\left\{\begin{matrix}a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = b_{1}
+\\ a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = b_{2}
+\\ \cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdot
+\\a_{n1}x_{1} + a_{n2}x_{2} + \cdots + a_{nn}x_{n} = b_{n}
+\end{matrix}\right.\]</span></p>
+<p>令 <span class="math inline">\(A = [a_{ij}]_{n \times n}, X = (x_{1},x_{2},\cdots,x_{n})^T, \beta = (b_{1}, b_{2}, \cdots, b_{n})^T\)</span> ，其中<span class="math inline">\(A\)</span>为线性方程的系数矩阵，<span class="math inline">\(\beta\)</span>是由常数组成的列向量。线性方程组的矩阵形式为 <span class="math inline">\(AX=\beta\)</span>。</p>
+<h5 id="对n个n元线性方程组当其常数项b_1b_2cdotsb_n全为0时线性方程组被称为齐次方程组">对n个n元线性方程组，当其常数项<span class="math inline">\(b_{1},b_{2},\cdots,b_{n}\)</span>全为0时，线性方程组被称为齐次方程组</h5>
+<p><span class="math display">\[\left\{\begin{matrix}a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = 0
+\\ a_{11}x_{1} + a_{12}x_{2} + \cdot\cdot\cdot + a_{1n}x_{n} = 0
+\\ \cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdot
+\\a_{n1}x_{1} + a_{n2}x_{2} + \cdots + a_{nn}x_{n} = 0
+\end{matrix}\right.\]</span></p>
+<p>此时，线性方程组的矩阵形式为<span class="math inline">\(AX=O\)</span></p>
+<p>系数构成的行列式称为该方程组的系数行列式D，即</p>
+<p><span class="math display">\[D = \begin{vmatrix}
+a_{11} &amp; a_{12} &amp; \cdots &amp; a_{1n}\\
+a_{21} &amp; a_{22} &amp; \cdots &amp; a_{2n}\\
+\vdots &amp; \vdots &amp; \ddots  &amp; \vdots\\
+a_{n1} &amp; a_{n2} &amp; \cdots &amp; a_{nn}
+\end{vmatrix}\]</span></p>
+<h4 id="定理">定理</h4>
+<h5 id="解法1">解法1</h5>
+<p>对于系数矩阵<span class="math inline">\(A\)</span>可逆的线性方程组，即系数行列式<span class="math inline">\(D \neq 0\)</span>。有唯一解，解为</p>
+<p><span class="math display">\[X_{0} = A^{-1} \beta\]</span></p>
+<h5 id="解法2">解法2</h5>
+<p>对于系数矩阵<span class="math inline">\(A\)</span>可逆的线性方程组，即系数行列式<span class="math inline">\(D \neq 0\)</span>。有唯一解，解为</p>
+<p><span class="math display">\[X_{0} = \frac {D_{j}}{D} (j = 1,2,\cdots,n) \]</span></p>
+<p>其中<span class="math inline">\(D_{j}\)</span>是将D中第<span class="math inline">\(j\)</span>列对应元素换为常数项<span class="math inline">\(\beta\)</span>，而其他保持不变得到的行列式。</p>
+<h4 id="后记">后记</h4>
+<p>使用Cramer法则时，对于多于两个或三个方程的系统，会十分低效，其渐进的复杂度为<span class="math inline">\(O(n \times n!)\)</span>。因此，通常不考虑使用Cramer法则进行求解。</p>
+<h3 id="高斯消去法">高斯消去法</h3>
+<h4 id="原理">原理</h4>
+<h5 id="核心">核心</h5>
+<ol type="1">
+<li>两方程互换位置，解不变。</li>
+<li>一方程乘以非零常数k，解不变。</li>
+<li>一方程加上另一方程，解不变。</li>
+</ol>
+<h4 id="应用">应用</h4>
+<ol type="1">
+<li>对一线性方程组的矩阵形式<span class="math inline">\(AX = \beta\)</span>，可构造如下形式：</li>
+</ol>
+<p><span class="math display">\[\begin{Bmatrix}
+a_{11} &amp; a_{12} &amp; \cdots &amp; a_{1n} &amp; | &amp; b_{1}\\
+a_{21} &amp; a_{22} &amp; \cdots &amp; a_{2n} &amp; | &amp; b_{2}\\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; | &amp; \vdots\\
+a_{n1} &amp; a_{n2} &amp; \cdots &amp; a_{nn} &amp; | &amp; b_{n}
+\end{Bmatrix}\]</span></p>
+<ol start="2" type="1">
+<li>通过初等行变换（即根据核心原理），将左侧<span class="math inline">\(n \times n\)</span>矩阵化为单位矩阵<span class="math inline">\(I\)</span>，右侧即为所求解<span class="math inline">\(X_{0}\)</span>。</li>
+</ol>
+<p><span class="math display">\[\begin{Bmatrix}
+1 &amp; 0 &amp; \cdots &amp; 0 &amp; | &amp; x_{1}\\
+0 &amp; 1 &amp; \cdots &amp; 0 &amp; | &amp; x_{2}\\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots &amp; | &amp; \vdots\\
+0 &amp; 0 &amp; \cdots &amp; 1 &amp; | &amp; x_{n}
+\end{Bmatrix}\]</span></p>
+<h4 id="后记-1">后记</h4>
+<ol type="1">
+<li>高斯消元法的时间复杂度为<span class="math inline">\(O(n^3)\)</span>。</li>
+<li>高斯消去法可用于任何域。</li>
+<li>高斯消去法应用时对于普通矩阵来说是稳定的。</li>
+</ol>
+<h3 id="lu分解法">LU分解法</h3>
+<h4 id="定义">定义</h4>
+<p>LU分解是指，将一个 <span class="math inline">\(n \times n\)</span> 的方阵<span class="math inline">\(A\)</span>（所有顺序主子式不为0），转化为以下形式： <span class="math inline">\(A = LU\)</span>（所有顺序主子式为0时，矩阵不一定不可以进行LU分解） 其中，L、U分别为上三角矩阵和下三角矩阵。</p>
+<p><em>顺序主子式</em> 设<span class="math inline">\(A\)</span>为<span class="math inline">\(n \times n\)</span>的矩阵，子式</p>
+<p><span class="math display">\[D_{i} = \begin{vmatrix}
+a_{11} &amp; a_{12} &amp; \cdots &amp; a_{1i}\\
+a_{21} &amp; a_{22} &amp; \cdots &amp; a_{2i}\\
+\vdots &amp; \vdots &amp; \ddots  &amp; \vdots\\
+a_{i1} &amp; a_{i2} &amp; \cdots &amp; a_{ii}
+\end{vmatrix}
+(i = 1,2,\cdots,n)\]</span></p>
+<p>被称为<span class="math inline">\(A\)</span>的<span class="math inline">\(i\)</span>阶顺序主子式。</p>
+<h4 id="应用-1">应用</h4>
+<ol type="1">
+<li>将满足条件的<span class="math inline">\(A\)</span>分解为上三角矩阵<span class="math inline">\(L\)</span>和下三角矩阵<span class="math inline">\(U\)</span></li>
+</ol>
+<p><span class="math display">\[A = LDU\]</span></p>
+<p>其中<span class="math inline">\(D\)</span>为对角矩阵，或分解为</p>
+<p><span class="math display">\[A = PLUQ\]</span></p>
+<p>其中P为置换矩阵，Q为排列矩阵。</p>
+<ol start="2" type="1">
+<li>将原方程等价代换，求解。</li>
+</ol>
+<p><span class="math inline">\(AX = \beta\)</span> --&gt; <span class="math inline">\(LUX = \beta\)</span></p>
+<p><span class="math inline">\(\therefore Y = L^{-1}\beta\)</span> --&gt; <span class="math inline">\(X = U^{-1}Y\)</span></p>
+<h4 id="后记-2">后记</h4>
+<ol type="1">
+<li>LU分解法在==本质上是高斯消去法==的一种表达形式。</li>
+<li>LU分解法的==时间复杂度一般在<span class="math inline">\(O(\frac{2n^3}{3})\)</span>左右==。</li>
+<li>利用LU分解法求逆时，时间复杂度在<span class="math inline">\(O(n^2)\)</span>左右，较高斯消去法快。</li>
+</ol>
+<h2 id="总结">总结</h2>
+<ol type="1">
+<li>求解非线性多项式回归问题，思路与线性方程回归类似，将多次问题看作多元。</li>
+<li>利用Apache Commons math库中的RealMatrix、LUDecomposition、RealVector等类可对多项式回归问题快速求解。</li>
+<li>求解矩阵时在LU分解法适用的情况下，一般快于高斯消去法，但高斯消去法适用任何域。</li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java/" rel="tag"># Java</a>
+          
+            <a href="/tags/《Java-Data-Analysis》/" rel="tag"># 《Java Data Analysis》</a>
+          
+            <a href="/tags/回归/" rel="tag"># 回归</a>
+          
+            <a href="/tags/矩阵求解/" rel="tag"># 矩阵求解</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/03/04/二分查找/" rel="next" title="二分查找">
+                <i class="fa fa-chevron-left"></i> 二分查找
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/05/27/多项式回归/" rel="prev" title="">
+                 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Zero Zone</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#多项式回归问题"><span class="nav-number">1.</span> <span class="nav-text">多项式回归问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一次多项式回归"><span class="nav-number">1.1.</span> <span class="nav-text">一次多项式回归</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多次多项式回归"><span class="nav-number">1.2.</span> <span class="nav-text">多次多项式回归</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#代码实现"><span class="nav-number">2.</span> <span class="nav-text">代码实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#求解矩阵方程组方法反思"><span class="nav-number">3.</span> <span class="nav-text">求解矩阵（方程组）方法反思</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#cramer法则"><span class="nav-number">3.1.</span> <span class="nav-text">Cramer法则</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#概念"><span class="nav-number">3.1.1.</span> <span class="nav-text">概念</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#对n个n元线性方程组当其常数项b_1b_2cdotsb_n不全为0时线性方程组被称为非齐次方程组"><span class="nav-number">3.1.1.1.</span> <span class="nav-text">对n个n元线性方程组，当其常数项\(b_{1},b_{2},\cdots,b_{n}\)不全为0时，线性方程组被称为非齐次方程组</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#对n个n元线性方程组当其常数项b_1b_2cdotsb_n全为0时线性方程组被称为齐次方程组"><span class="nav-number">3.1.1.2.</span> <span class="nav-text">对n个n元线性方程组，当其常数项\(b_{1},b_{2},\cdots,b_{n}\)全为0时，线性方程组被称为齐次方程组</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#定理"><span class="nav-number">3.1.2.</span> <span class="nav-text">定理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解法1"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">解法1</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#解法2"><span class="nav-number">3.1.2.2.</span> <span class="nav-text">解法2</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#后记"><span class="nav-number">3.1.3.</span> <span class="nav-text">后记</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#高斯消去法"><span class="nav-number">3.2.</span> <span class="nav-text">高斯消去法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#原理"><span class="nav-number">3.2.1.</span> <span class="nav-text">原理</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#核心"><span class="nav-number">3.2.1.1.</span> <span class="nav-text">核心</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用"><span class="nav-number">3.2.2.</span> <span class="nav-text">应用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#后记-1"><span class="nav-number">3.2.3.</span> <span class="nav-text">后记</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lu分解法"><span class="nav-number">3.3.</span> <span class="nav-text">LU分解法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#定义"><span class="nav-number">3.3.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用-1"><span class="nav-number">3.3.2.</span> <span class="nav-text">应用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#后记-2"><span class="nav-number">3.3.3.</span> <span class="nav-text">后记</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zero Zone</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("wK5oOR6TzGguECTJdAa7L4aR-gzGzoHsz", "s9qatI3Dt50rrnzgEq2ylhbi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>

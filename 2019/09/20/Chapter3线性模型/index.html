@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="《机器学习》," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文内容：  基本形式 线性回归 对数几率回归  对数几率回归应用  线性判别分析 多分类学习 附录  范数 瑞利熵和广义瑞利熵 矩阵的迹">
+<meta name="keywords" content="《机器学习》">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chapter3 线性模型">
+<meta property="og:url" content="http://www.zzforgood.top/2019/09/20/Chapter3线性模型/index.html">
+<meta property="og:site_name" content="ZZ&#39;s blog">
+<meta property="og:description" content="本文内容：  基本形式 线性回归 对数几率回归  对数几率回归应用  线性判别分析 多分类学习 附录  范数 瑞利熵和广义瑞利熵 矩阵的迹">
+<meta property="og:updated_time" content="2019-09-20T04:50:44.553Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter3 线性模型">
+<meta name="twitter:description" content="本文内容：  基本形式 线性回归 对数几率回归  对数几率回归应用  线性判别分析 多分类学习 附录  范数 瑞利熵和广义瑞利熵 矩阵的迹">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.zzforgood.top/2019/09/20/Chapter3线性模型/"/>
+
+
+
+
+
+  <title>Chapter3 线性模型 | ZZ's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6b5e45c68a522dd41c8336cf7a956273";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZ's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.zzforgood.top/2019/09/20/Chapter3线性模型/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zero Zone">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZ's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Chapter3 线性模型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-20T12:39:16+08:00">
+                2019-09-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/09/20/Chapter3线性模型/" class="leancloud_visitors" data-flag-title="Chapter3 线性模型">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文内容：</p>
+<ul>
+<li>基本形式</li>
+<li>线性回归</li>
+<li>对数几率回归
+<ul>
+<li>对数几率回归应用</li>
+</ul></li>
+<li>线性判别分析</li>
+<li>多分类学习</li>
+<li>附录
+<ul>
+<li>范数</li>
+<li>瑞利熵和广义瑞利熵</li>
+<li>矩阵的迹</li>
+</ul></li>
+</ul>
+<a id="more"></a>
+<h2 id="基本形式">3.1 基本形式</h2>
+<p><em>线性模型</em>（linear model）学得一个通过属性的线性组合进行预测的函数，用向量形式写成</p>
+<p><span class="math display">\[f(x) = \omega ^T x + b\]</span></p>
+<p>即通过训练集，学得<span class="math inline">\(\omega\)</span>和<span class="math inline">\(b\)</span>即可得到此线性模型。</p>
+<p>由于<span class="math inline">\(\omega\)</span>直观体现了相应<span class="math inline">\(x\)</span>的权重，因此线性模型具有很好的<em>可解释性</em>（comprehensibility）或<em>可理解性</em>（understandability）。</p>
+<h2 id="线性回归">3.2 线性回归</h2>
+<ul>
+<li>针对于离散型属性的处理：
+<ul>
+<li>有序型，直接将离散值转化为连续值</li>
+<li>无序型，对应有k个离散值的属性，转化为k阶(0,1)向量</li>
+</ul></li>
+</ul>
+<p>在将离散型属性转化为连续型之后，一般使用最小二乘法对线性回归模型进行参数估计，即可得到所求线性回归模型。</p>
+<p>需要注意的是，在一些特殊情况下，建立的线性回归模型中变量数可能会超过样例数，此时会解出多个<span class="math inline">\(\omega\)</span>值，此时将由学习算法的归纳偏好决定，比较常见的做法是引入<em>正则化</em>（regularization）项。</p>
+<p>此外，还可以用线性函数对非线性函数映射。一般地，对单调可微函数<span class="math inline">\(g(\cdot)\)</span>（连续且充分光滑），令</p>
+<p><span class="math display">\[y = g^{-1}(\omega^Tx+b)\]</span></p>
+<p>得到的模型称为“<em>广义线性模型</em>”（generalized linear model），其中函数<span class="math inline">\(g(\cdot)\)</span>称为“<em>联系函数</em>”（link function）。</p>
+<h2 id="对数几率回归">3.3 对数几率回归</h2>
+<p>在回归学习的情况下做分类任务时，需要构造单调可微函数，将产生的预测值转换为真实标记。对于二分类问题，即将<span class="math inline">\(z=\omega^Tx+b\)</span>的实值<span class="math inline">\(z\)</span>转化为0/1值问题，最理想的是“<em>单位越阶函数</em>”（unit-step function）</p>
+<p><span class="math display">\[y = \begin{cases}
+0, &amp; \text{ if } z&lt;0; \\
+0.5, &amp; \text{ if } z=0; \\
+1, &amp; \text{ if } z&gt;0.
+\end{cases}\]</span></p>
+<p>但由于上式函数不连续，因此需要一个近似它的单调可微的替代函数（surrogate function）。常用的替代函数是对数几率函数（logistic function）：</p>
+<p><span class="math display">\[y = \frac{1}{1+e^{-z}}\]</span></p>
+<p>在应用该模型时，可以得到x，y之间关系为</p>
+<p><span class="math display">\[y=\frac{1}{1+e^{-(\omega^Tx+b)}}\]</span></p>
+<p>则有</p>
+<p><span class="math display">\[\ln \frac{y}{1-y} = \omega ^Tx+b\]</span></p>
+<p>若视y为样本x为正例的可能性，则<span class="math inline">\(\ln \frac{y}{1-y}\)</span>，反应的即为x的“<em>对数几率</em>”（log odds，亦称logit）。</p>
+<p>所以该模型的本质是，用线性回归模型去逼近真实值的对数几率。因此，该模型称为“<em>对数几率回归</em>”（logistic regression，亦称logit regression）。回归指的仅是其内层算法逻辑，并非模型的目标，所以该模型是一种分类学习方法而非回归方法。其优点在于，对数据的分布不作要求；并且，其预测结果是对于类别的偏向概率；此外，该函数模型是在任意阶上可导的凸函数，可以使用数值优化算法求得最优解。</p>
+<h3 id="对数几率回归模型应用">对数几率回归模型应用</h3>
+<p>在实际应用中，计算其参数需要使用<em>极大似然法</em>（maximum likelihood method）和<em>凸优化理论</em>实现，具体此处略过不表。</p>
+<h2 id="线性判别分析">3.4 线性判别分析</h2>
+<p><strong>线性判别分析</strong>（Linear Discriminant Analysis，简称LDA）：一种经典的线性学习方法，亦称“Fisher判别分析”（严格来说，LDA比Fisher判别分析多了各类样本协方差矩阵相同且满秩的假设）。主要思想为，利用投影将训练集样例降维处理，同时根据类别的异同改变其相对距离，最后通过投影的位置对类别进行划分。</p>
+<p>对给定数据集<span class="math inline">\(D={(x_i,y_i)}^m_i=1\)</span>，<span class="math inline">\(y_i \in \{0.1\}\)</span>，令<span class="math inline">\(X_i\)</span>、<span class="math inline">\(\mu _i\)</span>、<span class="math inline">\(\Sigma_i\)</span>分别表示第i类示例的集合、均值向量、协方差矩阵。若将数据投影到直线<span class="math inline">\(\omega\)</span>上，两类样本的中心在直线上的投影分别为<span class="math inline">\(\omega^T\mu _0\)</span>和<span class="math inline">\(\omega^T \mu _1\)</span>；若将样本全部投射到直线上，则两类样本的协方差分别为<span class="math inline">\(\omega^T \Sigma _0\omega\)</span>和<span class="math inline">\(\omega^T \Sigma _1\omega\)</span>，由于直线是一维空间，因此<span class="math inline">\(\omega^T\mu _0\)</span>和<span class="math inline">\(\omega^T \mu _1\)</span>、<span class="math inline">\(\omega^T \Sigma _0\omega\)</span>和<span class="math inline">\(\omega^T \Sigma _1\omega\)</span>均为实数。</p>
+<p><strong>LDA的主要原理</strong>：为了使同类样例的投影点尽可能靠近，有以下方法：</p>
+<ol type="1">
+<li>使同类样例投影点的协方差<span class="math inline">\(\omega^T \Sigma _0\omega + \omega^T \Sigma _1\omega\)</span>尽可能小</li>
+<li>使异类样例投影点尽可能远离，即使异类样例投影点中心之间的距离<span class="math inline">\(\left \| \omega^T\mu_0 - \omega^T\mu_1 \right \|^2_2\)</span>尽可能大<span class="math inline">\(^{[1]}\)</span></li>
+</ol>
+<p>同时考虑以上条件，即可得到欲最大化目标</p>
+<p><span class="math display">\[\begin{aligned} J &amp;= \frac{\left \| \omega^T\mu_0 - \omega^T\mu_1 \right \|^2_2}{\omega^T \Sigma _0\omega + \omega^T \Sigma _1\omega} \\ &amp;=\frac{\omega^T(\mu_0-\mu_1)(\mu_0-\mu_1)^T\omega}{\omega^T(\Sigma_0+\Sigma_1)\omega} \end{aligned}\]</span></p>
+<p>定义“<em>类内散度矩阵</em>”（within-class scatter matrix）</p>
+<p><span class="math display">\[S_\omega=\Sigma_0 + \Sigma_1\]</span></p>
+<p>以及“<em>类间散度矩阵</em>”（between-class scatter matrix）</p>
+<p><span class="math display">\[S_b = (\mu_0 - \mu_1)(\mu_0 - \mu_1)^T\]</span></p>
+<p>所以，前式可以化简为</p>
+<p><span class="math display">\[J = \frac{\omega^T S_{b}\omega}{\omega^T S_{\omega}\omega}\]</span></p>
+<p>得到LDA的优化目标，同时也是<span class="math inline">\(S_b\)</span>与<span class="math inline">\(S_\omega\)</span>的“<em>广义瑞利熵</em>”（generalized Rayleigh quotient）<span class="math inline">\(^{[2]}\)</span>。</p>
+<p>值得一提的是，LDA存在贝叶斯决策理论的解释，当两类样例集同先验、满足高斯分布且协方差相等时，达到最优分类。</p>
+<p><strong>LDA的多分类推广</strong> LDA可以推广到多分类问题中，假设存在N个类，第i类中样例数为<span class="math inline">\(m_i\)</span>，样例总数为<span class="math inline">\(m\)</span>，由此定义以下概念</p>
+<p>全局散度矩阵<span class="math inline">\(S_t\)</span>：</p>
+<p><span class="math display">\[S_t = S_b +S_\omega = \sum ^m_{i=1} (x_i-\mu)(x_i-\mu)^T\]</span></p>
+<p>（其中<span class="math inline">\(\mu\)</span>为所有样例的均值向量，即<span class="math inline">\(\mu = \frac{1}{m}\sum ^m_{i=1}x_i\)</span>）</p>
+<p>类内散度矩阵<span class="math inline">\(S_\omega\)</span>：</p>
+<p><span class="math display">\[S_\omega = \sum^N_{i=1}S_{\omega_i},\]</span></p>
+<p><span class="math display">\[S_{\omega_i} = \sum^{m_i}_{k=1}(x_k-\mu)(x_k-\mu)^T\]</span></p>
+<p>类间散度矩阵<span class="math inline">\(S_b\)</span>：</p>
+<p><span class="math display">\[S_b = S_t-S_\omega = \sum^N_{i=1} m_i(\mu_i-\mu)(\mu_i-\mu)^T\]</span></p>
+<p>显然，利用<span class="math inline">\(S_t\)</span>、<span class="math inline">\(S_\omega\)</span>、<span class="math inline">\(S_b\)</span>中的任意两者，即可构造用于多分类任务的LDA模型。常见的一种是采用优化目标</p>
+<p><span class="math display">\[\max_W = \frac{tr(W^TS_bW)}{tr(W^TS_\omega W)}\]</span></p>
+<p>（其中<span class="math inline">\(W \in \mathbb{R}^{d \times (N-1)}\)</span>）</p>
+<p>上式可通过引入广义特征值问题求解</p>
+<p><span class="math display">\[S_b W = \lambda S_\omega W\]</span></p>
+<p><span class="math inline">\(W\)</span>的闭式解是<span class="math inline">\(S^{-1}_\omega S_b\)</span>的<span class="math inline">\(d&#39;\)</span>个最大非零广义特征值所对应的向量组成的矩阵（<span class="math inline">\(d&#39; \leqslant N-1\)</span>）</p>
+<p>可将<span class="math inline">\(W\)</span>看作一个投影矩阵，即多分类LDA将样本投影到<span class="math inline">\(d&#39;\)</span>维空间，一般情况下，<span class="math inline">\(d&#39;\)</span>远小于原有的属性数<span class="math inline">\(d\)</span>。因此，LDA可以作为降维算法使用。</p>
+<h2 id="多分类学习">3.5 多分类学习</h2>
+<p>对于多分类学习，部分情况下可以直接将二分类算法直接推广到多分类，但在大多数情况下，都是利用二分类学习器来解决多分类问题。</p>
+<p>·<em>理解不足，内容且略</em></p>
+<h2 id="附录">附录</h2>
+<h3 id="范数">[1] 范数</h3>
+<p>文中<span class="math inline">\(\left \| \cdot \right \|\)</span>为范数，具有长度概念的函数，常用的有</p>
+<p>1-范数： <span class="math display">\[\left \| x \right \|_1 = \sum^{n}_{i=1} \left | x_i \right |\]</span> 2-范数： <span class="math display">\[\left \| x \right \|_2 = (\sum^{n}_{i=1} x_i^2 )^{\frac{1}{2}}\]</span> <span class="math inline">\(\infin\)</span>-范数： <span class="math display">\[\left \| x \right \|_\infin = \max_i \left | x_i \right |\]</span> <span class="math inline">\(p\)</span>-范数： <span class="math display">\[\left \| x \right \|_p = (\sum^{n}_{i=1} \left | x_i \right |^p )^{\frac{1}{p}}\]</span></p>
+<h3 id="瑞利熵和广义瑞利熵">[2] 瑞利熵和广义瑞利熵</h3>
+<p><strong>厄米特矩阵</strong>（Hermitian Matrix）：指共轭矩阵。</p>
+<p><strong>瑞利熵</strong>（Raylei quotient）： <span class="math display">\[R(A,x) = \frac{x^HAx}{x^Hx}\]</span> <span class="math inline">\(x\)</span>为非零向量，A为<span class="math inline">\(n\times n的Hermitian矩阵\)</span>。 需要注意的是，瑞利熵<span class="math inline">\(R(A,x)\)</span>有一个重要性质，即它的最大值等于矩阵A的最大特征值，最小值等于矩阵A的最小特征值，即 <span class="math display">\[\lambda_{\min} \leqslant \frac{x^HAx}{x^Hx} \leqslant \lambda _{\max}\]</span></p>
+<p><strong>广义瑞利熵</strong>（generalized Rayleigh quotient）： <span class="math display">\[R(A,B,x) = \frac{x^HAx}{x^HBx}\]</span> B为正定矩阵，其余参数同瑞利熵。 令<span class="math inline">\(x=B^{-\frac{1}{2}}x&#39;\)</span>，则可将分母转化为 <span class="math display">\[x^HBx = x&#39;^Hx\]</span> 分子则转化为 <span class="math display">\[x^HAx = x&#39;^HB^{-\frac{1}{2}}AB^{-\frac{1}{2}}x&#39;\]</span> 此时<span class="math inline">\(R(A,B,x)\)</span>转化为 <span class="math display">\[R(A,B,x&#39;) = \frac{x&#39;^HB^{-\frac{1}{2}}AB^{-\frac{1}{2}}x&#39;}{x&#39;^Hx&#39;}\]</span> 由瑞利熵性质知，广义瑞利熵的最大值即为<span class="math inline">\(B^{-\frac{1}{2}}AB^{-\frac{1}{2}}\)</span>的最大特征值。</p>
+<h3 id="矩阵的迹">[3] 矩阵的迹</h3>
+<p>指矩阵主对角线上的元素之和，也是所有特征值之和，使用tr(·)表示。</p>
+<p><span class="math display">\[tr(A) = \sum^n_{i=1} a_{ii}\]</span></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/《机器学习》/" rel="tag"># 《机器学习》</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/08/26/Chapter-2-模型评估与选择/" rel="next" title="Chapter2 模型评估与选择">
+                <i class="fa fa-chevron-left"></i> Chapter2 模型评估与选择
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/20/Chapter7贝叶斯分类器/" rel="prev" title="Chapter7 贝叶斯分类器">
+                Chapter7 贝叶斯分类器 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Zero Zone</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本形式"><span class="nav-number">1.</span> <span class="nav-text">3.1 基本形式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线性回归"><span class="nav-number">2.</span> <span class="nav-text">3.2 线性回归</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#对数几率回归"><span class="nav-number">3.</span> <span class="nav-text">3.3 对数几率回归</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对数几率回归模型应用"><span class="nav-number">3.1.</span> <span class="nav-text">对数几率回归模型应用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线性判别分析"><span class="nav-number">4.</span> <span class="nav-text">3.4 线性判别分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多分类学习"><span class="nav-number">5.</span> <span class="nav-text">3.5 多分类学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">6.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#范数"><span class="nav-number">6.1.</span> <span class="nav-text">[1] 范数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#瑞利熵和广义瑞利熵"><span class="nav-number">6.2.</span> <span class="nav-text">[2] 瑞利熵和广义瑞利熵</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#矩阵的迹"><span class="nav-number">6.3.</span> <span class="nav-text">[3] 矩阵的迹</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zero Zone</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("wK5oOR6TzGguECTJdAa7L4aR-gzGzoHsz", "s9qatI3Dt50rrnzgEq2ylhbi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
