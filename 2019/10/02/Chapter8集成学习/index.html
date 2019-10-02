@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="《机器学习》," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文内容：  个体与集成 Boosting  权重更新公式 样本分布更新公式  Bagging与随机森林  Bagging 随机森林  结合策略  平均法 投票法 学习法  多样性  误差-分歧分解 多样性度量 多样性增强">
+<meta name="keywords" content="《机器学习》">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chapter8 集成学习">
+<meta property="og:url" content="http://www.zzforgood.top/2019/10/02/Chapter8集成学习/index.html">
+<meta property="og:site_name" content="ZZ&#39;s blog">
+<meta property="og:description" content="本文内容：  个体与集成 Boosting  权重更新公式 样本分布更新公式  Bagging与随机森林  Bagging 随机森林  结合策略  平均法 投票法 学习法  多样性  误差-分歧分解 多样性度量 多样性增强">
+<meta property="og:updated_time" content="2019-10-02T07:32:59.485Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter8 集成学习">
+<meta name="twitter:description" content="本文内容：  个体与集成 Boosting  权重更新公式 样本分布更新公式  Bagging与随机森林  Bagging 随机森林  结合策略  平均法 投票法 学习法  多样性  误差-分歧分解 多样性度量 多样性增强">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.zzforgood.top/2019/10/02/Chapter8集成学习/"/>
+
+
+
+
+
+  <title>Chapter8 集成学习 | ZZ's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6b5e45c68a522dd41c8336cf7a956273";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZ's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.zzforgood.top/2019/10/02/Chapter8集成学习/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zero Zone">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZ's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Chapter8 集成学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-02T15:29:11+08:00">
+                2019-10-02
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/10/02/Chapter8集成学习/" class="leancloud_visitors" data-flag-title="Chapter8 集成学习">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文内容：</p>
+<ul>
+<li>个体与集成</li>
+<li>Boosting
+<ul>
+<li>权重更新公式</li>
+<li>样本分布更新公式</li>
+</ul></li>
+<li>Bagging与随机森林
+<ul>
+<li>Bagging</li>
+<li>随机森林</li>
+</ul></li>
+<li>结合策略
+<ul>
+<li>平均法</li>
+<li>投票法</li>
+<li>学习法</li>
+</ul></li>
+<li>多样性
+<ul>
+<li>误差-分歧分解</li>
+<li>多样性度量</li>
+<li>多样性增强</li>
+</ul></li>
+</ul>
+<a id="more"></a>
+<h2 id="个体与集成">8.1 个体与集成</h2>
+<p><strong>集成学习</strong>（ensemble learning）：通过构建并结合多个学习器来完成学习任务的方法。又称多分类器系统（multi-classifier system）、基于委员会的学习（conmmittee-based learning）等。</p>
+<p>集成学习以不同的<em>个体学习器</em>（individual learner）可分为两类：</p>
+<ul>
+<li>同质（homogeneous）集成：仅包含同种类型的学习器。其中，个体学习器称为“<em>基学习器</em>”（base learner），构成的算法称“<em>基学习算法</em>”（base learning algorithm）。</li>
+<li>异质（heterogenous）集成：包含不同类型的学习器。其中，个体学习器称为“<em>组件学习器</em>”（component learner）。</li>
+</ul>
+<p>集成学习的强大在于结合多个学习器，常可获得比单一学习器显著优越的泛化性能。对“<em>弱学习器</em>”（weak learner）尤为明显（弱学习器是指泛化性能不佳，预测准确度仅略高于50%的学习器）。但需要注意的是，为能够获得更好的泛化性能，通常还是选择使用泛化性能较好的学习器。其次，显而易见的，对用于集成学习的学习器，要获得好的集成效果，个体学习器应“好而不同”，也即不仅需要准确性，更要具有一定的多样性（diversity）。</p>
+<p>对简单的集成模型，常用投票法（voting）对个体学习器进行集成。对一个简单的二分类问题进行分析：<span class="math inline">\(y \in \{-1,+1\}\)</span>和真实函数<span class="math inline">\(f\)</span>，并假定基分类错误率为<span class="math inline">\(\epsilon\)</span>，则对每个分类器有</p>
+<p><span class="math display">\[P(h_i(x) \neq f(x)) = \epsilon\]</span></p>
+<p>通过简单投票法集成<span class="math inline">\(T(odd)\)</span>个基分类器，有超过一半的分类基分类器正确，则集成分类就正确。</p>
+<p><span class="math display">\[H(x) = \text{sign}(\sum^T_{i=1}h_i(x))\]</span></p>
+<p>假设基分类器的错误率相互独立，则由Hoeffding不等式可知，集成的错误率为</p>
+<p><span class="math display">\[\begin{aligned} P(H(x) \neq f(x)) &amp;= \sum^{[T/2]}_{k=0} \binom{T}{k}(1-\epsilon)^k\epsilon^{T-k} \\ &amp;\leqslant exp\left (-\frac{1}{2}T(1-2\epsilon)^2 \right ) \end{aligned} \]</span></p>
+<p>从上式可以看出，在<span class="math inline">\(T\)</span>增大时错误率呈指数级下降，最终趋向于零。但需要注意的是，此过程中存在一个关键假设，即各基学习器的错误率相互独立，在现实任务中显然难以成立。</p>
+<p>根据个体的生成方式，可以分为两大类：</p>
+<ul>
+<li>个体学习器间存在强依赖关系，必须串行生成的序列化方法，例：Boosting；</li>
+<li>个体学习器间不存在强依赖关系，可同时生成的并行化方法，例：Bagging和<em>随机森林</em>（Random Forest）。</li>
+</ul>
+<h2 id="boosting">8.2 Boosting</h2>
+<p><strong>Boosting</strong>：一族将弱学习器提升为强学习器的算法。</p>
+<p>Boosting的工作机制如下：</p>
+<ol type="1">
+<li>从出事训练集中训练出一个基学习器；</li>
+<li>根据基学习器的表现，调整训练样本集，使做错的训练样本得到更多的关注；</li>
+<li>基于调整后的样本训练下一个基学习器；</li>
+<li>重复2、3直至学习器数目达到目标<span class="math inline">\(T\)</span>值。最后将这<span class="math inline">\(T\)</span>个学习器加权结合。</li>
+</ol>
+<p>本节中介绍Boosting族中最著名的AdaBoost算法，并以最简单的基于“加性模型”（additive model），即基学习器的线性组合进行推导</p>
+<p><span class="math inline">\(f\)</span>为真实函数，<span class="math inline">\(y_i \in \{-1,+1\}\)</span>，<span class="math inline">\(H(x)\)</span>是集成函数，有</p>
+<p><span class="math display">\[H(x) = \sum^{T}_{t=1}\alpha_t h_t(x)\]</span></p>
+<p>其损失函数为<em>指数损失函数</em>（exponential loss function）</p>
+<p><span class="math display">\[\ell _{\exp}(H|D) = \mathbb{E} _{x \sim D} [e^{-f(x)H(x)}] \]</span></p>
+<p>对<span class="math inline">\(H(x)\)</span>求偏导，得</p>
+<p><span class="math display">\[\frac{\partial \ell_{\exp}(H|D)}{\partial H(x)} = -e^{-H(x)}P(f(x) = 1|x) + e^{H(x)}P(f(x)=-1|x)\]</span></p>
+<p>令导数为零，解得</p>
+<p><span class="math display">\[H(x) = \frac{1}{2}\ln \frac{P(f(x) = 1|x)}{P(f(x)=-1|x)}\]</span></p>
+<p>则有</p>
+<p><span class="math display">\[\text{sign}(H(x)) = \argmax_{y \in \{-1,+1\}} P(f(x)=y|x)\]</span></p>
+<p>即有<span class="math inline">\(H(x) \rightarrow H&#39;(x) = 0 \rightarrow \argmax_y P(f(x)=y|x)\)</span>。因此，对应<span class="math inline">\(H&#39;(x)=0\)</span>即指数损失函数最小时，有分类错误率最小，此时称指数损失函数是原本<span class="math inline">\(0/1\)</span>损失函数的一致的替代损失函数。</p>
+<p>之后，需要找出迭代的优化方法，即权重更新公式和样本分布更新公式。</p>
+<h3 id="权重更新公式">权重更新公式</h3>
+<p>在生成第一个基分类器之后，需要迭代地生成<span class="math inline">\(\alpha_t\)</span>和<span class="math inline">\(h_t(x)\)</span>。<span class="math inline">\(\alpha_t\)</span>应使得<span class="math inline">\(\alpha_t h_t(x)\)</span>最小化指数损失函数，即</p>
+<p><span class="math display">\[\begin{aligned} \ell_{\exp}(\alpha_th_t|D_t) &amp;= E_{x \sim D_t}[e^{-f(x) \alpha_t h_t(x)}] \\ &amp;= E_{x \sim D_t}[e^{-\alpha_t}\mathbb{I}(f(x)=h_t(x)) + e^{\alpha_t}\mathbb{I}(f(x) \neq h_t(x))] \\ &amp;= e^{-\alpha_t}P_{x \sim D_t}(h_t(x) = f(x)) + e^{\alpha}P_{x \sim D_t}(h_t(x) \neq f(x)) \\ &amp;= e^{-\alpha_t}(1-\epsilon_t) + e^{\alpha_t}\epsilon_t \end {aligned}\]</span></p>
+<p>其中，<span class="math inline">\(\epsilon_t=P_{x \sim D_t}(h_t(x) \neq f(x))\)</span>，即错误率。对上式求导可得</p>
+<p><span class="math display">\[\frac{\partial \ell_{\exp}(\alpha_th_t(x)|D_t)}{\partial \alpha_t} = -e^{-\alpha_t}(1-\epsilon_t) + e^{\alpha}\epsilon_t\]</span></p>
+<p>令其导数为零，可解得</p>
+<p><span class="math display">\[\alpha_t = \frac{1}{2}\ln\left ( \frac{1-\epsilon_t}{\epsilon_t} \right )\]</span></p>
+<p>即得到分类器权重的更新公式。</p>
+<h3 id="样本分布更新公式">样本分布更新公式</h3>
+<p>在获得<span class="math inline">\(H_{t-1}(x)\)</span>之后，对样本分布进行调整。目的在于使下一轮学习器<span class="math inline">\(h_t\)</span>尽可能地纠正<span class="math inline">\(H_{t-1}(x)\)</span>的错误，即最小化<span class="math inline">\(H_{t-1}+h_t\)</span>的损失</p>
+<p><span class="math display">\[\begin{aligned} \ell_{\exp} (H_{t-1}+h_t|D) &amp;= E_{x \sim D} [ e^{-f(x)(H_{t-1}(x) + h_t(x))} ] \\ &amp; = E_{x \sim D} [ e^{-f(x)H_{t-1}(x)} \cdot e^{-f(x)h_t(x))} ] \end{aligned}\]</span></p>
+<p>由于<span class="math inline">\(f^2(x) = h_t^2(x) = 1\)</span>，因此利用<span class="math inline">\(e^x\)</span>的二阶泰勒展开式，有</p>
+<p><span class="math display">\[\begin{aligned} \ell_{\exp} (H_{t-1}+h_t|D) &amp;\simeq E_{x \sim D} \left [e^{-f(x)H_{t-1}(x)} \left (1-f(x)h_t(x)+\frac{1}{2}f^2(x)h_t^2(x) \right ) \right ] \\ &amp;= E_{x \sim D} \left [e^{-f(x)H_{t-1}(x)} \left (1-f(x)h_t(x)+\frac{1}{2} \right ) \right ] \end{aligned}\]</span></p>
+<p>所以理想的学习器<span class="math inline">\(h_t\)</span>应满足</p>
+<p><span class="math display">\[\begin{aligned} h_t(x) &amp;= \argmin_h \ell_{\exp}(H_{t-1} + h_t|D) \\ &amp;= \argmin_h E_{x \sim D} \left [e^{-f(x)H_{t-1}(x)} \left (1-f(x)h_t(x)+\frac{1}{2} \right ) \right ] \\ &amp;= \argmax_h E_{x \sim D}\left [ e^{-f(x)H_{t-1}(x)} f(x)h_t(x)\right ] \\ &amp;= \argmax_h E_{x \sim D}\left [ \frac{e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]} f(x)h_t(x)\right ] \end{aligned}\]</span></p>
+<p>其中<span class="math inline">\(E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]\)</span>为常数，设分布</p>
+<p><span class="math display">\[D_t(x) = \frac{D(x)e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]}\]</span></p>
+<p>代入学习器<span class="math inline">\(h_t\)</span>式中，可得</p>
+<p><span class="math display">\[h_t(x) = \argmax_h E_{x \sim D_t}[f(x)h(x)]\]</span></p>
+<p>由<span class="math inline">\(f(x) \cdot h_t(x) \in \{-1,+1\}\)</span>，有</p>
+<p><span class="math display">\[f(x)h(x) = 1-2 \mathbb{I}(f(x) \neq h(x))\]</span></p>
+<p>则理想的学习器为</p>
+<p><span class="math display">\[h_t(x) = \argmax_h E_{x \sim D_t}[1-2 \mathbb{I}(f(x) \neq h(x))]\]</span></p>
+<p>所以可得<span class="math inline">\(D_t\)</span>与<span class="math inline">\(D_{t+1}\)</span>的关系为</p>
+<p><span class="math display">\[\begin{aligned} D_{t+1}(x) &amp;= \frac{D(x)e^{-f(x)H_{t}(x)}}{E_{x \sim D}[e^{-f(x)H_{t}(x)}]} \\ &amp;= \frac{D(x)e^{-f(x)H_{t-1}(x)} e^{-f(x)\alpha_t h_t(x)}}{E_{x \sim D}[e^{-f(x)H_{t}(x)}]} \\ &amp;= D_t(x)e^{-f(x)\alpha_t h_t(x)} \frac{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]}{E_{x \sim D}[e^{-f(x)H_{t}(x)}]} \end{aligned}\]</span></p>
+<p>即得到样本分布的更新公式。</p>
+<p>在需要基学习器能对特定的数据分布进行学习时，对于可处理带权样本和不能的情况分别处理：</p>
+<ul>
+<li>可处理带权样本，“<em>重赋权法</em>”（re-weighting）：在训练过程的每一轮中，根据样本分布为每个训练样本重新赋予权重。</li>
+<li>不可赋权重型，“<em>重采样法</em>”（re-sampling）：在每一轮学习中，根据样本分布对训练集重新进行采样，再用重采样而得的样本集对基学习器进行训练。</li>
+</ul>
+<p>从偏差-方差的角度来看，Boosting主要关注于降低偏差。</p>
+<h2 id="bagging与随机森林">8.3 Bagging与随机森林</h2>
+<p>前文提到，集成学习的原则是好而不同，因此，应使不同的个体学习器之间的差异尽量地大，使用采样的方法选择不同的样本对学习器进行训练；同时，不应因为仅使用部分样本对学习器进行训练而出现欠拟合，所以应使用互有交叠的样本。</p>
+<h3 id="bagging">8.3.1 Bagging</h3>
+<p>Bagging是并行式集成学习方法中最著名的代表，其直接基于自助采样法（有放回的多次随机抽样）。</p>
+<p>Bagging通常使用自助采样法在<span class="math inline">\(m\)</span>个样本中抽取<span class="math inline">\(T\)</span>个含<span class="math inline">\(m\)</span>个样本的训练集，然后基于每个采样集训练出一个基学习器，再将它们结合。对预测输出进行结合时，Bagging通常对分类任务使用简单投票法，对回归任务使用简单平均法。</p>
+<p>基学习器的性能假定为<span class="math inline">\(O(m)\)</span>，则Bagging的复杂度大致为<span class="math inline">\(T(O(m) + O(s))\)</span>，<span class="math inline">\(O(s)\)</span>通常很小，<span class="math inline">\(T\)</span>是不太大的常数。因此Bagging是一个很高效的集成学习算法，且可以直接应用于多分类、回归等任务。</p>
+<p>此外，通过自助采样法得到与原样本集大小相同的训练集，其中仅包含原样本集中<span class="math inline">\(63.2\%\)</span>的样本数量。于是，可以使用剩余的<span class="math inline">\(36.8\%\)</span>的样本用作验证集对泛化性能进行“<em>包外估计</em>”（out-of-bag estimate）。令<span class="math inline">\(H^{oob}(x)\)</span>表示对样本<span class="math inline">\(x\)</span>的包外预测，有</p>
+<p><span class="math display">\[H^{oob}(x) = \argmax_{y \in \gamma} \sum^T_{t=1}\mathbb{I}(h_t(x) = y) \cdot \mathbb{I}(x \notin D_t)\]</span></p>
+<p>则Bagging泛化误差的包外估计为</p>
+<p><span class="math display">\[\epsilon^{obb} = \frac{1}{|D|} \sum_{(x,y) \in D}\mathbb{I}(H^{obb} \neq y)\]</span></p>
+<p>并且，如果基学习器是决策树，包外估计可以用于辅助剪枝；或用于估计决策树中各结点的后验概率以辅助对零训练样本结点的处理；还可帮助神经网络减小过拟合风险。</p>
+<p>从偏差-方差的角度看，Bagging主要关注于降低方差。</p>
+<h3 id="随机森林">8.3.2 随机森林</h3>
+<p><strong>随机森林</strong>（Random Forest，简称RF）：是基于决策树算法作为基学习器的一种Bagging变种，在决策树的训练过程中引入了随机属性选择。其引入随机的步骤如下：</p>
+<ol type="1">
+<li>在含有<span class="math inline">\(d\)</span>个属性的样本集中，随机选取一个有<span class="math inline">\(k\)</span>种属性的样本子集；</li>
+<li>从这个样本集中选取最优划分变量对子集进行划分。</li>
+</ol>
+<p>显然，其使用<span class="math inline">\(k\)</span>控制引入随机性的程度，如：<span class="math inline">\(k=1\)</span>时，即为随机选取一个样本进行划分；<span class="math inline">\(k=d\)</span>时，即为一般的决策树算法；通常推荐使用<span class="math inline">\(k=\log_2d\)</span>。</p>
+<p>随机森林相对于Bagging而言，其不仅有来自样本的扰动，更存在来自属性的扰动，所以其“多样性”更好，泛化性能更强。并且，随机森林有更高的运行效率，因为其每次训练仅需考虑一个<span class="math inline">\(k\)</span>属性子集，而Bagging需要考虑全部子集。</p>
+<h2 id="结合策略">8.4 结合策略</h2>
+<p>学习器结合的优点：</p>
+<ol type="1">
+<li>统计方面：分别使用多种假设空间，避免因误选导致泛化性能减弱；</li>
+<li>计算方面：多次计算避免单次陷入局部最小；</li>
+<li>表示方面：结合多个学习器的假设空间，扩大假设空间，避免真实假设不在假设空间的情况。</li>
+</ol>
+<p>假定包含<span class="math inline">\(T\)</span>个基学习器<span class="math inline">\(\{h_1,h_2,\dots,h_T\}\)</span>的集成，其中<span class="math inline">\(h_i\)</span>在示例<span class="math inline">\(x\)</span>上的输出为<span class="math inline">\(h_i(x)\)</span>，以此为例介绍几种常见结合策略。</p>
+<h3 id="平均法">8.4.1 平均法</h3>
+<p>对数值型输出<span class="math inline">\(h_i(x) \in \mathbb{R}\)</span>，最常见的结合策略是使用平均法（average）。</p>
+<ul>
+<li>简单平均法（simple average）：<span class="math display">\[H(x) = \frac{1}{T}\sum^T_{i=1}h_i(x)\]</span></li>
+<li>加权平均法（weighted avergae）：<span class="math display">\[H(x) = \sum^T_{i=1} w_ih_i(x)\]</span>其中，<span class="math inline">\(w_i\)</span>是个体学习器的权重，通常要求<span class="math inline">\(w_i \geqslant 0\)</span>，<span class="math inline">\(\sum^T_{i=1} w_i = 1\)</span>。</li>
+</ul>
+<p>集成学习中各种结合方法都可看作是加权平均法的特例或变体，其在集成学习中具有特别的意义。事实上，对给定的基学习器，不同的集成学习方法可以视为通过不同的方式来确定加权平均法中的权重。</p>
+<p>需要注意的是，加权平均法中的权重一般是通过对训练数据的学习而得，但在实际应用中，训练样本中通常不充分或存在噪声，这就导致学习到的权重并不可靠，特别是在规模较大的集成来说，要学习的权重较多，容易导致过拟合。因此，在现实任务中，加权平均法的性能未必优于简单平均法。一般地，我们在个体学习器性能差距不大的情况下使用简单平均法，在差距较大的时候使用加权平均法。</p>
+<h3 id="投票法">8.4.2 投票法</h3>
+<p>对分类任务来说，学习器<span class="math inline">\(h_i\)</span>从类别标记集合<span class="math inline">\(\{c_1,c_2,\dots,c_N\}\)</span>中预测出一个标记，最常见的结合策略是<em>投票法</em>（voting）。假定<span class="math inline">\(h^j_i(x)\)</span>是<span class="math inline">\(h_i\)</span>在类别标记<span class="math inline">\(c_j\)</span>上的输出，由此<span class="math inline">\(h_i\)</span>在样本<span class="math inline">\(x\)</span>上的预测输出即为一个<span class="math inline">\(N\)</span>维向量<span class="math inline">\((h^1_i(x);h^2_i(x);...;h^N_i(x))\)</span>。</p>
+<ul>
+<li>绝对多数投票法（majority voting）：<span class="math display">\[H(x)=\begin{cases} c_j, &amp;\text{  if } \sum^T_{i=1} h^j_i(x) &gt; 0.5\sum^N_{k=1}\sum^T_{i=1}h^k_i(x), \\ reject, &amp; \text{otherwise.} \end{cases}\]</span>即若所得票数超过半数，则为预测该标记，否则拒绝预测。绝对多数投票法的拒绝预测机制，为可靠性要求较高的学习任务提供了一个很好的机制；</li>
+<li>相对多数投票法（plurality voting）：<span class="math display">\[H(x) = c_{\argmax_j \sum^T_{i=1} h^j_i(x)}\]</span>即将所得票数最多的标记作为预测，如果是多个相等，就从中随机选择一个；</li>
+<li>加权投票法（weighted voting）：<span class="math display">\[H(x) = c_{\argmax_j \sum^T_{i=1} h^j_i(x)}\]</span><span class="math inline">\(w_i\)</span>是<span class="math inline">\(h_i\)</span>的权重，通常<span class="math inline">\(w_i \geqslant 0\)</span>，<span class="math inline">\(\sum^T_{i=1} w_i = 1\)</span>。</li>
+</ul>
+<p>上述的方法中，个体学习器的输出类型不受限制，以此可以产生不同的类别，常见的有：</p>
+<ul>
+<li>类标记：<span class="math inline">\(h^j_i \in \{0,1\}\)</span>，使用类标记的投票称“硬投票”；</li>
+<li>类概率：<span class="math inline">\(h^j_i \in [0,1]\)</span>，使用类概率的投票称为“软投票”。</li>
+</ul>
+<p>对于在确认类标记的同时给出置信度的学习器，可以使用规范化后的置信度作为类概率进行集成。一般而言，使用类概率的结合性能比类标记更好。但需要注意的是，如果基学习器的类型不同，其类概率不能直接进行比较，此时可以转化为标记输出，使用类标记进行结合。</p>
+<h3 id="学习法">8.4.3 学习法</h3>
+<p>在训练数据很多的情况下，可以使用更为强大的结合策略——“学习法”，即通过另一个学习器进行结合。Stacking是学习法的典型代表，我们称基学习器为初级学习器，结合学习器为次级学习器或元学习器（meta-learner）。</p>
+<p>Stacking在训练完初级学习器后，将初级学习器的输出值作为次级学习器的输入特征，初始样本的标记仍作为输入标记，训练次级学习器。在训练中为减小过拟合风险，一般对训练样本集使用<span class="math inline">\(k\)</span>折交叉验证或留一法，用训练样本集的初级学习器未使用的样本来产生次级学习器的训练样本。主要流程如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">输入：训练集D=&#123;(x1,y1),(x2,y2),...,(xm,ym)&#125;</div><div class="line">      初级学习算法£1,£2,...,£T</div><div class="line">      次级学习算法£</div><div class="line">过程：</div><div class="line">for t = 1,2,...,T do</div><div class="line">    ht = £t(D);</div><div class="line">end for</div><div class="line">D` = ∅;</div><div class="line">for i = 1,2,...,m do</div><div class="line">    for t = 1,2,...,T do</div><div class="line">        zit = ht(xi);</div><div class="line">    end for</div><div class="line">    D` = D` ∪ ((zi1,zi2,...,ziT),yi);</div><div class="line">end for</div><div class="line">h` = £(D`);</div><div class="line">输出：H(x) = h`(h1(x),h2(x),...,ht(x))</div></pre></td></tr></table></figure>
+<p>Stacking的泛化性能与次级学习器的输入属性表示和次级学习器算法有很大关系。在使用初级学习器的输出类概率为输入属性，用多相应线性回归（Multi-response Linear Regression，简称MLR）作为次级学习器算法时效果教好。MLR是基于线性回归的分类器，对每个类分别进行线性回归，属于该类的训练样例标志将置为1，不属于将置为0，测试样例将被划分为概率最大的类。</p>
+<p>贝叶斯模型平均（Bayes Model Averaging，简称BMA）基于后验概率给不同模型赋予权重，可以视之为加权平均法的变种。</p>
+<p>从理论上来说，数据生成模型如果在当前考虑的模型中，且数据噪声较小，则BMA性能至少不弱于Stacking。但在现实中，难以满足前者的条件。因此，Stacking通常优于BMA，因为其鲁棒性比BMA好，且BMA对模型近似误差非常敏感。</p>
+<h2 id="多样性">8.5 多样性</h2>
+<h3 id="误差-分歧分解">8.5.1 误差-分歧分解</h3>
+<p>为得到具有更强泛化性能的学习器，需要对个体学习器的“好而不同”性质进行理论分析。</p>
+<p>假定有回归学习任务<span class="math inline">\(f: \mathbb{R^d} \rightarrow \mathbb{R}\)</span>，通过使用对个体学习器<span class="math inline">\(h_1,h_2,\dots,h_T\)</span>加权平均的集成来完成。于是，有示例<span class="math inline">\(x\)</span>，在学习器<span class="math inline">\(h_1\)</span>上的“<em>分歧</em>”（ambiguity）</p>
+<p><span class="math display">\[A(h_i|x) = (h_i(x) - H(x))^2\]</span></p>
+<p>则集成上的分歧（组内误差）为</p>
+<p><span class="math display">\[\bar A(h_i|x) = \sum^T_{i=1} w_i(h_i(x) - H(x))^2\]</span></p>
+<p>显然，此“分歧”式体现出了<span class="math inline">\(x\)</span>的多样性。此外，存在</p>
+<p>个体学习器<span class="math inline">\(h_i\)</span>的平方误差（组间误差）<span class="math display">\[E(h_i|x) = (f(x)-h_i(x))^2\]</span></p>
+<p>集成<span class="math inline">\(H\)</span>的平方误差<span class="math display">\[E(H|x) = (f(x)-H(x))^2\]</span></p>
+<p>令<span class="math inline">\(\bar E(h|x) = \sum^T_{i=1} w_i \cdot E(h_i|x)\)</span>表示个体学习器的加权均值，则有</p>
+<p><span class="math display">\[\begin{aligned} \overline A(h|x) &amp;= \sum^T_{i=1} w_iE(h_i|x)-E(H|x) \\ &amp;= \overline E(h|x) - E(H|x). \end{aligned}\]</span></p>
+<p>令<span class="math inline">\(p(x)\)</span>为样本的概率密度，将上式推广至全样本，可得</p>
+<p><span class="math display">\[\sum^T_{i=1} w_i \int A(h_i|x)p(x)dx = \sum^T_{i=1}w_i \int E(h_i|x)p(x)dx - \int E(H|x)p(x)dx\]</span></p>
+<p>类似的，将<span class="math inline">\(h_i\)</span>的泛化误差和分歧项分别推广到全样本体现为</p>
+<p><span class="math display">\[E_i = \int E(h_i|x)p(x)dx\]</span></p>
+<p><span class="math display">\[A_i = \int A(h_i|x)p(x)dx\]</span></p>
+<p>集成的泛化误差为</p>
+<p><span class="math display">\[E = \int E(H|x)p(x)dx\]</span></p>
+<p>令<span class="math inline">\(\overline E = w_iE_i\)</span>表示个体学习器泛化误差的加权均值，<span class="math inline">\(\overline A = w_i A_i\)</span>表示个体学习确定加权分歧值，并对应于未推广的前式，则有</p>
+<p><span class="math display">\[E = \overline E - \overline A\]</span></p>
+<p>显然，可以看出个体学习器的准确度越高，多样性越大，则集成效果越好。这一过程被称为“<em>误差-分歧分解</em>”（error-ambiguity decomposition）。</p>
+<p>但需要注意的是，这个结论无法作为学习器的优化目标进行求解，并且上述推导过程仅适用于回归学习（源于集合方差的分解），难以直接推广到分类学习中。</p>
+<h3 id="多样性度量">8.5.2 多样性度量</h3>
+<p><strong>多样性度量</strong>（diversity measure）：用于度量集成中个体分类器的多样性，即估算个体学习器的多样化程度。典型的做法是考虑个体学习器的两两相似。</p>
+<p>对给定的数据集<span class="math inline">\(D = \{(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m)\}\)</span>，有二分类任务<span class="math inline">\(y_i \in \{-1, +1\}\)</span>，分类器<span class="math inline">\(h_i\)</span>与<span class="math inline">\(h_j\)</span>的预测结果列联表（contingency table）为</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;"><span class="math inline">\(~\)</span></th>
+<th style="text-align: center;"><span class="math inline">\(h_i = +1 \ \ \ \  h_i = -1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;"><span class="math inline">\(h_j = +1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(a \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;"><span class="math inline">\(h_j = -1\)</span></td>
+<td style="text-align: center;"><span class="math inline">\(b \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ d\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>其中，<span class="math inline">\(a+b+c+d = m\)</span>，基于这个列联表，下面给出一些常用的多样性度量</p>
+<ul>
+<li>不合度量（disagreement measure）<span class="math display">\[d_is_{ij} = \frac{b+c}{m}\]</span><span class="math inline">\(d_is_{ij}\)</span>的值域为<span class="math inline">\([0,1]\)</span>，值越大则多样性越大； <span class="math inline">\(~\)</span></li>
+<li>相关系数（correlation coefficient）<span class="math display">\[\rho_{ij} = \frac{ad-bc}{\sqrt{(a+b)(a+c)(c+d)(b+d)}}\]</span><span class="math inline">\(\rho_{ij}\)</span>的值域为<span class="math inline">\([-1,1]\)</span>。若<span class="math inline">\(h_i\)</span>与<span class="math inline">\(h_j\)</span>正相关则值为正，否则为负； <span class="math inline">\(~\)</span></li>
+<li>Q-统计量（Q-statistic）<span class="math display">\[Q_{ij} = \frac{ad-bc}{ad+bc}\]</span><span class="math inline">\(Q_{ij}\)</span>与相关系数<span class="math inline">\(\rho_{ij}\)</span>的符号相同，且<span class="math inline">\(|Q_{ij}| \geqslant |\rho_{ij}|\)</span>； <span class="math inline">\(~\)</span></li>
+<li><span class="math inline">\(\kappa\)</span>-统计量（<span class="math inline">\(\kappa\)</span>-statistic）<span class="math display">\[\kappa = \frac{p_1-p_2}{1-p_2}\]</span>其中，<span class="math inline">\(p_1\)</span>是两个分类器取得一致的概率；<span class="math inline">\(p_2\)</span>是两个分类器偶然达成一致的概率，由数据集<span class="math inline">\(D\)</span>估算的计算方法为：<span class="math display">\[\begin{aligned} p_1 &amp;= \frac{a+d}{m}, \\ p_2 &amp;= \frac{(a+b)(a+c)+(c+d)(b+d)}{m^2}. \end{aligned}\]</span>若分类器<span class="math inline">\(h_i\)</span>与<span class="math inline">\(h_j\)</span>在<span class="math inline">\(D\)</span>上完全一致，则<span class="math inline">\(\kappa = 1\)</span>；若它们只是偶然达成一致，则<span class="math inline">\(\kappa = 0\)</span>，在<span class="math inline">\(h_i\)</span>与<span class="math inline">\(h_j\)</span>达成一致的概率低于偶然性的情况下有<span class="math inline">\(\kappa &lt; 0\)</span>。</li>
+</ul>
+<p>此外，上述的度量均为“成对型”（pairwise）多样性度量，可以通过2维图绘制出来，方便分析。</p>
+<h3 id="多样性增强">8.5.3 多样性增强</h3>
+<p>为增强多样性一般思路是在学习过程中引入随机性，常见的做法主要是对数据样本、输入属性、输入表示、算法参数进行扰动。以下介绍增强多样性的方法。</p>
+<ul>
+<li>数据样本扰动 数据样本的扰动通常基于采样法，例如：Bagging使用自助采样，AdaBoost使用序列采样。这种方法简单高效、使用最广，尤其是在决策树、神经网络等，对训练样本变化比较敏感的“不稳定基学习器”中效果拔群；相对地，在那些对训练样本变化不敏感的学习器，如线性学习器、支持向量机、朴素贝叶斯、<span class="math inline">\(k\)</span>临近学习器等，这种方法的效果有限，需要使用其他方法进行扰动； <span class="math inline">\(~\)</span></li>
+<li>输入属性扰动 训练样本通常由一组属性描述，不同的“<em>子空间</em>”（subspace，即属性子集）提供观察数据的不同视角。著名算法<em>随机子空间</em>（random subspace）算法即是依赖于属性扰动，该算法从原始数据空间中提取若干个属性子集，再基于每个属性子集训练一个基学习器。对包含大量冗余属性的数据，一方面增加基学习器的多样性，另一方面减少属性使时间开销大幅节约。但如果数据仅包含少量属性，或冗余属性很少，就不宜使用输入属性扰动；</li>
+</ul>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">随机子空间算法</div><div class="line"></div><div class="line">输入：训练集D=&#123;(x1,y1),(x2,y2),...,(xm,ym)&#125;</div><div class="line">      基学习算法£</div><div class="line">      基学习器数T</div><div class="line">      子空间属性数d`</div><div class="line">过程：</div><div class="line">for t = 1,2,...,T do</div><div class="line">    Ft = RS(D,d`)</div><div class="line">    Dt = MapFt(D)</div><div class="line">    ht = £(Dt)</div><div class="line">end for</div><div class="line">输出：$H(x) = \argmax_&#123;y \in \gamma&#125; \sum^T_&#123;t=1&#125; \mathbb&#123;I&#125;(h_t(Map_&#123;F_t&#125;)(x) = y)$</div></pre></td></tr></table></figure>
+<p><span class="math inline">\(~\)</span></p>
+<ul>
+<li>输出表示扰动 此类做法的基本思路是对输出表示进行操纵以增强多样性，可对训练样本的类标记稍作变动，如“<em>翻转法</em>”（Flipping Output）随机改变一些训练样本的标记；也可对输出表示进行转化，如“<em>输出调制法</em>”（Output Smearing）将分类输出转化为回归输出后构建个体学习器；还可将原任务拆解为多个可同时求解的子任务，如ECOC法利用纠错输出码将多分类任务拆解为一系列二分类任务来训练基学习器。 <span class="math inline">\(~\)</span></li>
+<li>算法参数扰动 基学习算法一般都有参数需进行设置，例如神经网络的隐层神经元数、初始连接权重等，通过随机设置不同的参数，往往可产生差别较大的个体学习器。例如“<em>负相关法</em>”（Negative Correlation）显式地通过正则化项来强制个体神经网络使用不同的参数。对参数较少的算法，可同故宫将其学习过程中某些环节用其他类似方式代替，从而达到扰动的目的，例如可将决策树使用的属性选择机制替换成其他的属性选择机制。值得指出的是，使用单一学习器时通常需使用交叉验证等方法来确定参数值，这事实上已使用了不同参数训练出多个学习器，只不过最终仅选择一个学习器进行使用，而集成学习则相当于把这些学习都利用起来；由此可以看出，集成学习技术的实际计算开销并不一定比使用单一学习器大很多。</li>
+</ul>
+<p>不同的多样性增强机制可同时使用，例如<strong>8.3.2</strong>节中介绍的随机森林中同时使用了数据样本扰动和输入属性扰动，有些方法甚至同时使用了更多机制。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/《机器学习》/" rel="tag"># 《机器学习》</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/09/20/Chapter7贝叶斯分类器/" rel="next" title="Chapter7 贝叶斯分类器">
+                <i class="fa fa-chevron-left"></i> Chapter7 贝叶斯分类器
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/10/02/Chapter9聚类/" rel="prev" title="Chapter9 聚类">
+                Chapter9 聚类 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Zero Zone</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">25</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#个体与集成"><span class="nav-text">8.1 个体与集成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#boosting"><span class="nav-text">8.2 Boosting</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#权重更新公式"><span class="nav-text">权重更新公式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#样本分布更新公式"><span class="nav-text">样本分布更新公式</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#bagging与随机森林"><span class="nav-text">8.3 Bagging与随机森林</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bagging"><span class="nav-text">8.3.1 Bagging</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#随机森林"><span class="nav-text">8.3.2 随机森林</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结合策略"><span class="nav-text">8.4 结合策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#平均法"><span class="nav-text">8.4.1 平均法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#投票法"><span class="nav-text">8.4.2 投票法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#学习法"><span class="nav-text">8.4.3 学习法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#多样性"><span class="nav-text">8.5 多样性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#误差-分歧分解"><span class="nav-text">8.5.1 误差-分歧分解</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多样性度量"><span class="nav-text">8.5.2 多样性度量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多样性增强"><span class="nav-text">8.5.3 多样性增强</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zero Zone</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a></div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("wK5oOR6TzGguECTJdAa7L4aR-gzGzoHsz", "s9qatI3Dt50rrnzgEq2ylhbi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
