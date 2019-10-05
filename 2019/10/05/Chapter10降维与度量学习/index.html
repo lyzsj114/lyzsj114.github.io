@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="《机器学习》," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习  10.1 \(k\)近邻学习 \(k\)近邻（\(k\)-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的\(k\)个“近邻”的">
+<meta name="keywords" content="《机器学习》">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Chapter10 降维与度量学习">
+<meta property="og:url" content="http://www.zzforgood.top/2019/10/05/Chapter10降维与度量学习/index.html">
+<meta property="og:site_name" content="ZZ&#39;s blog">
+<meta property="og:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习  10.1 \(k\)近邻学习 \(k\)近邻（\(k\)-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的\(k\)个“近邻”的">
+<meta property="og:image" content="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png">
+<meta property="og:updated_time" content="2019-10-05T01:29:13.548Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Chapter10 降维与度量学习">
+<meta name="twitter:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习  10.1 \(k\)近邻学习 \(k\)近邻（\(k\)-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的\(k\)个“近邻”的">
+<meta name="twitter:image" content="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://www.zzforgood.top/2019/10/05/Chapter10降维与度量学习/"/>
+
+
+
+
+
+  <title>Chapter10 降维与度量学习 | ZZ's blog</title>
+  
+
+
+
+
+
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?6b5e45c68a522dd41c8336cf7a956273";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZ's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://www.zzforgood.top/2019/10/05/Chapter10降维与度量学习/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Zero Zone">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZ's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Chapter10 降维与度量学习</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-05T09:27:16+08:00">
+                2019-10-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/10/05/Chapter10降维与度量学习/" class="leancloud_visitors" data-flag-title="Chapter10 降维与度量学习">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本文内容：</p>
+<ul>
+<li>kk近邻学习</li>
+<li>低维嵌入</li>
+<li>主成分分析
+<ul>
+<li>最近重构性</li>
+<li>最大可分性</li>
+</ul></li>
+<li>核化线性降维</li>
+<li>流形学习
+<ul>
+<li>等度量映射</li>
+<li>局部线性嵌入</li>
+</ul></li>
+<li>度量学习</li>
+</ul>
+<h2 id="k近邻学习">10.1 <span class="math inline">\(k\)</span>近邻学习</h2>
+<p><strong><span class="math inline">\(k\)</span>近邻</strong>（<span class="math inline">\(k\)</span>-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的<span class="math inline">\(k\)</span>个“近邻”的样本点信息进行预测。通常，对分类任务采用“投票法”；在回归任务中使用“平均法”；还可基于距离进行加权，应用于投票或回归。</p>
+<p><strong>懒惰学习</strong>（lazy learning）：在训练阶段仅仅是把样本保存起来，训练时间开销为零，在收到测试样本后再进行处理。</p>
+<p><strong>急切学习</strong>（eager learning）：在训练阶段就对样本进行学习处理的方法。</p>
+<p><span class="math inline">\(k\)</span>近邻学习是“<em>懒惰学习</em>”（lazy learning）的著名代表。因为它与其他学习方法相比有一个明显的不同之处：它没有显式的训练过程。</p>
+<figure>
+<img src="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png" alt="k近邻分类器示意图"><figcaption><span class="math inline">\(k\)</span>近邻分类器示意图</figcaption>
+</figure>
+<p>显然，<span class="math inline">\(k\)</span>是一个重要参数，显著决定分类结果。同时，采用不同的距离计算方法，“近邻”可能会有显著差别，从而会导致分类结果显著不同。</p>
+<p>假定距离计算是恰当的情况下，讨论最邻近分类器（1NN，即<span class="math inline">\(k=1\)</span>）在二分类任务上的性能。</p>
+<p>对给定测试样本<span class="math inline">\(x\)</span>，有最近邻样本<span class="math inline">\(z\)</span>，则最近邻分类器出错的概率即<span class="math inline">\(x\)</span>的标记与<span class="math inline">\(z\)</span>不同的概率</p>
+<p><span class="math display">\[P(err) = 1 - \sum_{c \in \gamma}P(c|x)P(c|z)\]</span></p>
+<p>假设样本独立同分布，且对任意<span class="math inline">\(x\)</span>和任意正小数<span class="math inline">\(\delta\)</span>，在<span class="math inline">\(x\)</span>附近<span class="math inline">\(\delta\)</span>距离范围内总能找到一个训练样本<span class="math inline">\(z\)</span>。令<span class="math inline">\(c^*=\argmax_{c \in \gamma}P(c|x)\)</span>表示贝叶斯最优分类的结果，则</p>
+<p><span class="math display">\[\begin{aligned} P(err) &amp;= 1 - \sum_{c \in \gamma}P(c|x)P(c|z) \\ &amp;\simeq 1 - \sum_{c \in \gamma}P^2(c|x) \\ &amp;\leqslant 1 - P^2(c^* |x)\\ &amp;= \left ( 1 + P(c^* |x) \right ) \left ( 1 - P(c^* |x) \right ) \\ &amp;\leqslant 2\times \left ( 1 - P(c^*|x) \right ) \end{aligned}\]</span></p>
+<p>于是，可以得出结论：虽然<span class="math inline">\(k\)</span>近邻分类器简单，但其错误率不会超过最优贝叶斯分类器错误率的2倍。</p>
+<h2 id="低维嵌入">10.2 低维嵌入</h2>
+<p>在上节对<span class="math inline">\(k\)</span>近邻分类器性能的分析中，对样本作出假设：对任意<span class="math inline">\(x\)</span>和任意正小数<span class="math inline">\(\delta\)</span>，在<span class="math inline">\(x\)</span>附近<span class="math inline">\(\delta\)</span>范围内总能找到一个训练样本<span class="math inline">\(z\)</span>，即样本密度足够大，这被称为<em>密采样</em>（density sample）。在现实中，对均匀分布的样本点归一化后，若假定<span class="math inline">\(\delta = 0.001\)</span>，即需要1000个样本点，但这仅仅是对于单属性条件而言，若在20个属性的条件下，则需要样本点的个数即为<span class="math inline">\((10^3)^{20} = 10^{60}\)</span>，显然，这是无法接受的。</p>
+<p>所以，发生这种在高维情形下出现的数据样本稀疏、距离计算困难的等问题时，需要辅以方法缓解“<em>维数灾难</em>”（curse of dimensionality）。其中，一个重要的途径是<em>降维</em>（dimension reduction），亦称“维数约简”。</p>
+<p>降维将通过某些数学变换将原始高维属性空间转变为一个低维“<em>子空间</em>”（subspace），从而使子空间中样本密度大幅提高，同时简化了距离计算。这针对于需要面对高维的数据样本，却仅有低维分布与其学习任务密切相关的情况，此时被称为高维空间中的一个低维“<em>嵌入</em>”（embedding）。</p>
+<p><strong>多维缩放</strong>（Multiple Dimension Scaling，简称MDS）：一种经典的降维方法，可以在低维空间中保持原始空间中样本之间的距离。以下作简单介绍：</p>
+<p>假定<span class="math inline">\(m\)</span>个样本在原始空间中的距离矩阵维<span class="math inline">\(D \in R^{m\times m}\)</span>，其第<span class="math inline">\(i\)</span>行第<span class="math inline">\(j\)</span>个元素<span class="math inline">\(\text{dist}_{ij}\)</span>为样本<span class="math inline">\(x_i\)</span>到<span class="math inline">\(x_j\)</span>的距离。目标是获得样本在<span class="math inline">\(d&#39;\)</span>维空间中的表示<span class="math inline">\(Z \in R^{d&#39; \times m}\)</span>，<span class="math inline">\(d&#39; \leqslant d\)</span>，且任意两样本在<span class="math inline">\(d&#39;\)</span>维空间中的欧氏距离等于原始空间中的距离，即<span class="math inline">\(\left \| z_i - z_j \right \| =\text{dist}_{ij}\)</span>。</p>
+<p>令<span class="math inline">\(B=Z^TZ \in R^{m\times m}\)</span>，<span class="math inline">\(B\)</span>是样本降维后对应的内积矩阵，<span class="math inline">\(b_{ij} = z_i^Tz_j\)</span>，从而有</p>
+<p><span class="math display">\[\begin{aligned} \text{dist}_{ij}^2 &amp;= \left \| z_i \right \|^2 + \left \| z_j \right \|^2 - 2 z_i^T z_j \\ &amp;= b_{ii} + b_{jj} - 2b_{ij} \end{aligned}\]</span></p>
+<p>为便于后续讨论，中心化降维后的样本<span class="math inline">\(Z\)</span>，即有<span class="math inline">\(\sum^m_{i=1}z_i=0\)</span>。显然，此时矩阵<span class="math inline">\(B\)</span>的行和列之后均为零，<span class="math inline">\(\sum^m_{j=1} b_{ij} = \sum^m_{i=1} b_{ij} = 0\)</span>，则可知</p>
+<p><span class="math display">\[\begin{aligned} \sum^m_{i=1} \text{dist}_ {ij}^2 = \sum^m_{i=1}(b_{ii} + b_{jj} - 2b_{ij}) = \text{tr}(B) + mb_{jj} \\ \sum^m_{j=1} \text{dist}_ {ij}^2 = \sum^m_{j=1}(b_{ii} + b_{jj} - 2b_{ij}) = \text{tr}(B) + mb_{ii} \\ \sum^m_{i=1}\sum^m_{j=1} \text{dist}_ {ij}^2 = \sum^m_{i=1}\sum^m_{j=1}(b_{ii} + b_{jj} - 2b_{ij}) = 2m\text{tr}(B) \end{aligned}\]</span></p>
+<p>进一步可知</p>
+<p><span class="math display">\[\begin{aligned} \text{dist}_ {i\cdot}^2 = \frac{1}{m} \sum^m_{j=1}\text{dist}_ {ij}^2 = \frac{\text{tr}(B)}{m} + b_{jj} \\ \text{dist}_ {\cdot j}^2 = \frac{1}{m}\sum^m_{i=1}\text{dist}_ {ij}^2 = \frac{\text{tr}(B)}{m} + b_{ii} \\ \text{dist}_ {\cdot \cdot}^2 = \frac{1}{m^2}\sum^m_{i=1}\sum^m_{j=1}\text{dist}_ {ij}^2 = 2\frac{\text{tr}(B)}{m} \end{aligned}\]</span></p>
+<p>所以有</p>
+<p><span class="math display">\[b_{ij} = \frac{1}{2} (\text{dist}_ {i\cdot}^2+\text{dist}_ {\cdot j}^2) - \text{dist}_ {\cdot \cdot}^2 - \text{dist}_ {ij}^2\]</span></p>
+<p>由上式即可通过距离矩阵<span class="math inline">\(D\)</span>求得内积矩阵<span class="math inline">\(B\)</span>。</p>
+<p>对矩阵<span class="math inline">\(B\)</span>进行<em>特征值分解</em>（eigenvalue decomposition），<span class="math inline">\(B=V\Lambda V^T\)</span>，其中<span class="math inline">\(\Lambda=\text{diag}(\lambda_1,\lambda_2,\dots,\lambda_d)\)</span>为特征值构成的对角矩阵，$ _1 _2 _d <span class="math inline">\(，\)</span>V<span class="math inline">\(为特征向量矩阵。假定其中有\)</span>d^<em><span class="math inline">\(个非零特征值，构成对角矩阵\)</span>_ </em>=(_1,<em>2, ,</em>{d^ <em>})<span class="math inline">\(，\)</span>V_ </em><span class="math inline">\(表示相应的特征向量矩阵，则\)</span>Z$为</p>
+<p><span class="math display">\[Z = \Lambda_*^{\frac{1}{2}}V_*^T \in R^{d^* \times m}\]</span></p>
+<p>在现实应用中为了有效降维，通常不会要求距离的严格相等，因此，可取<span class="math inline">\(d&#39; \ll d\)</span>个最大特征值构成对角矩阵<span class="math inline">\(\tilde{\Lambda} = \text{diag}(\lambda_1,\lambda_2,\dots,\lambda_{d&#39;})\)</span>，<span class="math inline">\(\tilde{V}\)</span>是相应的特征向量矩阵，则<span class="math inline">\(Z\)</span>为</p>
+<p><span class="math display">\[Z = \tilde{\Lambda}^{\frac{1}{2}}\tilde{V}^T \in R^{d&#39;\times m}\]</span></p>
+<p>一般而言，为得到原始子空间，最简单的方法是对原始高维空间进行线性变换，对给定<span class="math inline">\(d\)</span>维空间中的样本<span class="math inline">\(x = (x_1,x_2,\dots,x_m) \in R^{d \times m}\)</span>，变换后得到<span class="math inline">\(d&#39; \leqslant d\)</span>维空间中的样本</p>
+<p><span class="math display">\[Z = W^T X\]</span></p>
+<p>其中，<span class="math inline">\(W\in R^{d\times d&#39;}\)</span>是变换矩阵，<span class="math inline">\(Z \in R^{d&#39; \times m}\)</span>是降维后的矩阵。变化矩阵可以看作<span class="math inline">\(d&#39;\)</span>个<span class="math inline">\(d\)</span>维基向量，<span class="math inline">\(z_i=W^Tx_i\)</span>是第<span class="math inline">\(i\)</span>个样本与这<span class="math inline">\(d&#39;\)</span>个基向量分别作内积而得到的<span class="math inline">\(d&#39;\)</span>维属性基向量，即<span class="math inline">\(z_i\)</span>是原属性<span class="math inline">\(x_i\)</span>在新坐标系<span class="math inline">\(\{w_1,w_2,\dots,w_{d&#39;}\}\)</span>中的坐标向量，若<span class="math inline">\(w_i\)</span>和<span class="math inline">\(w_j\)</span>（<span class="math inline">\(i \neq j\)</span>）正交，则新坐标系是一个正交坐标系，<span class="math inline">\(W\)</span>为正交变换。这种基于线性变换的降维方法称为线性降维方法。</p>
+<h2 id="主成分分析">10.3 主成分分析</h2>
+<p><strong>主成分分析</strong>（Principal Component Analysis，简称PCA）：是最常用的一种降维方法。使用一个超平面对正交属性空间内的所有样本点进行恰当的表达，即将所有样本点投影到一个超平面上，这个超平面大概需要如下性质：</p>
+<ul>
+<li>最近重构性：样本点到这个超平面的距离足够近；</li>
+<li>最大可分性：样本点在这个超平面上的投影尽可能分开；</li>
+</ul>
+<p>基于以上两个性质，可分别得到主成分分析的两种等价推导。</p>
+<h3 id="最近重构性">最近重构性</h3>
+<p>假定数据已中心化，则有<span class="math inline">\(\sum^m_{i=1}x_i=0\)</span>，假定变换后的新坐标系为<span class="math inline">\(\{w_1,w_2,\dots,w_d\}\)</span>，其中<span class="math inline">\(w_i\)</span>是标准正交基向量，<span class="math inline">\(\left \| w_i \right \|_2 = 1\)</span>，<span class="math inline">\(w_i^Tw_j=0\)</span>（<span class="math inline">\(i\neq j\)</span>）。丢弃新坐标系中的部分坐标，使维度降到<span class="math inline">\(d&#39; &lt; d\)</span>，则样本点<span class="math inline">\(x_i\)</span>在<span class="math inline">\(d&#39;\)</span>维上的投影为<span class="math inline">\(z=(z_{i1},z_{i2},\dots,z_{id&#39;})\)</span>，其中<span class="math inline">\(z_{ij}=w_j^Tx_i\)</span>是<span class="math inline">\(x_i\)</span>在低维<span class="math inline">\(j\)</span>下的投影，基于<span class="math inline">\(z_i\)</span>重构<span class="math inline">\(x_i\)</span>可得到<span class="math inline">\(\hat x_i = \sum^{d&#39;}_{j=1}z _{ij}w_j\)</span>。</p>
+<p>考虑整个样本集，原样本点与其基于投影重构的样本点<span class="math inline">\(\hat x_i\)</span>之间的距离为</p>
+<p><span class="math display">\[\begin{aligned} \sum^m_{i=1} \left \| \sum^{d&#39;}_{j=1}z _{ij}w_j-x_i \right \|^2_2 &amp;= \sum^m_{i=1} \left \| Wz_i - x_i \right \|_2^2 \\ &amp;= \sum^m _{i=1}(Wz_i)^TWz_i - 2\sum^m_{i=1}z_i^TW^Tx_i + \sum^m _{i=1}x_i^Tx_i \\ &amp;= \sum^m _{i=1}z_i^TW^TWz_i - 2\sum^m _{i=1}z_i^TW^TW^{-1T}z_i + \text{const} \\ &amp;= -\sum^m _{i=1}z_i^Tz_i + \text{const} \\ &amp;\propto -\text{tr}\left (W^T \left (\sum^m _{i=1}x_i^Tx_i \right )W \right ) \end{aligned}\]</span></p>
+<p>其中<span class="math inline">\(W = \{w_1,w_2,\dots,w_d\}\)</span>，考虑<span class="math inline">\(w_j\)</span>是标准正交基，<span class="math inline">\(\frac{1}{m-1}\sum^m_{i=1} x_ix_i^T\)</span>是协方差矩阵，则根据上式可得主成分分析的优化目标为</p>
+<p><span class="math display">\[\begin{aligned} \min _{W} \ \  -\text{tr}(W^TXX^TW) \\ \text{s.t.  } W^TW=I. \end{aligned}\]</span></p>
+<h3 id="最大可分性">最大可分性</h3>
+<p>使样本点<span class="math inline">\(x_i\)</span>在新空间超平面上的投影<span class="math inline">\(W^Tx_i\)</span>的方差最大化，投影后的样本点的协方差阵为<span class="math inline">\(\sum_i W^Tx_ix_I^TW\)</span>，于是优化目标为</p>
+<p><span class="math display">\[\begin{aligned} \max _{W} \ \  \text{tr}(W^TXX^TW) \\ \text{s.t.  } W^TW=1. \end{aligned}\]</span></p>
+<p>显然，与前文最近重构法所得结论等价。</p>
+<p>利用拉格朗日乘子法得</p>
+<p><span class="math display">\[XX^Tw_i = \lambda_i w_i\]</span></p>
+<p>之后，对协方差阵<span class="math inline">\(XX^T\)</span>进行特征值分解，使<span class="math inline">\(\lambda_1 \geqslant \lambda_2 \geqslant,\dots,\geqslant \lambda_d\)</span>，取前<span class="math inline">\(d&#39;\)</span>个特征值对应的特征向量，构成<span class="math inline">\(W^*=(w_1,w_2,\dots,w_{d&#39;})\)</span>，即取得PCA的解。</p>
+<p>PCA仅需保留<span class="math inline">\(W^*\)</span>与样本的均值向量即可通过简单的向量减法和矩阵-向量乘法将原数据集降维。在降维过程中有<span class="math inline">\((d-d&#39;)\)</span>个最小的特征值被舍弃，一方面，舍弃这部分信息可使样本的采样密度增大（重要动机）；另一方面，这些小的特征值通常与噪声相关，舍弃它们在一定程度上可以起到降噪的作用。</p>
+<h2 id="核化线性降维">10.4 核化线性降维</h2>
+<p>在线性降维方法中，假设从高维空间到低维空间的函数映射是线性的，但在现实任务中，很多情况都需要非线性映射才能找到恰当的低维嵌入。对于这种情况，如果直接使用线性降维方法，将会丢失原本的低维结构。原本采样的低维空间称为“<em>本真</em>”（intrinsic）低维空间。</p>
+<p>非线性降维的一种常见方法，即是基于核技巧对线性降维方法进行<em>核化</em>（kernelized）。以下以<em>核主成分分析</em>（Kernelized Principle Component Analysis，简称KPCA}）为例：</p>
+<p>假定将高维特征空间中的数据投影到由<span class="math inline">\(W=(w_1,w_2,\dots,w_d)\)</span>确定的超平面上，则对于<span class="math inline">\(w_j\)</span>由PCA中引入拉格朗日乘子的式子有</p>
+<p><span class="math display">\[\left ( \sum^m_{i=1}z_iz_i^T \right ) w_j = \lambda_jw_j\]</span></p>
+<p>其中<span class="math inline">\(z_i\)</span>是样本点<span class="math inline">\(x_i\)</span>在高维特征空间中的像。易知</p>
+<p><span class="math display">\[\begin{aligned} w_j &amp;= \frac{1}{\lambda_j}\left ( \sum^m_{i=1} z_iz_i^T \right )w_j = \sum^m_{i=1}z_i \frac{z_i^Tw_j}{\lambda_j} \\ &amp;= \sum^m_{i=1}z_i\alpha_i^j \end{aligned}\]</span></p>
+<p>其中<span class="math inline">\(\alpha_i^j = \frac{1}{\lambda_j}z_i^Tw_j\)</span>是<span class="math inline">\(\alpha_i\)</span>的第<span class="math inline">\(j\)</span>个分量。假定<span class="math inline">\(z_i\)</span>是由原始属性空间中的样本点<span class="math inline">\(x_i\)</span>通过映射$ <span class="math inline">\(产生，即\)</span>z_i = (x_i)<span class="math inline">\(，\)</span>i=1,2,,m$。</p>
+<ul>
+<li><p>如果<span class="math inline">\(\phi\)</span>可以被显式地表达出来，则通过它将样本映射至高维特征空间，再在特征空间中实施PCA即可。则有<span class="math display">\[\begin{aligned} \left ( \sum^m_{i=1}\phi(x_i)\phi(x_i)^T \right ) w_j = \lambda_jw_j \\ w_j=\sum^m_{i=1} \phi(x_i)\alpha_i^j \end{aligned}\]</span></p></li>
+<li><p>但在一般情况下，难以显式表达出<span class="math inline">\(\phi\)</span>的具体形式，所以引入核函数<span class="math display">\[\kappa(x_i,x_j) = \phi(x_i)^T\phi(x_j)\]</span>进一步有<span class="math display">\[K\alpha^j=\lambda_j\alpha^j\]</span>其中<span class="math inline">\(K\)</span>为<span class="math inline">\(\kappa\)</span>对应的核矩阵，<span class="math inline">\((K)_{ij}=\kappa(x_i,x_j)\)</span>，<span class="math inline">\(\alpha_j=(\alpha^j_1;\alpha^j_2;\dots;\alpha^j_m)\)</span>。显然，对上式进行特征值分解，即可取得相对应的特征向量。</p></li>
+</ul>
+<p>对新样本<span class="math inline">\(x\)</span>，其投影后的第<span class="math inline">\(j\)</span>（<span class="math inline">\(j=1,2,\dots,d&#39;\)</span>）维坐标为</p>
+<p><span class="math display">\[\begin{aligned} z_j &amp;= w^T_j\kappa(x) = \sum^m_{i=1}\alpha_i^j\kappa(x_i)^T\kappa(x) \\ &amp;= \sum^m_{i=1}\alpha_i^j\kappa(x_i,x) \end{aligned}\]</span></p>
+<p>其中<span class="math inline">\(\alpha_i\)</span>已经过规范化。从最终式中可以看出，为计算投影后的坐标需要对所有样本进行求和，所以它的计算开销较大。</p>
+<h2 id="流形学习">10.5 流形学习</h2>
+<p><strong>流形学习</strong>（manifold learning）：是一类借鉴了拓扑流形概念的降维方法。“流形”是指在局部与欧氏空间同胚的空间，即它在局部具有欧氏空间的性质，可以用欧氏距离进行距离计算。</p>
+<p>由此对降维带来启发：可以在局部建立降维映射关系，这样一来，即便其在原始空间内的分布再复杂，只要在局部仍具有欧氏空间性质，依旧可以利用推广到全局的局部映射关系完成映射。</p>
+<h3 id="等度量映射">10.5.1 等度量映射</h3>
+<p><strong>等度量映射</strong>（Isometric Mapping，简称Isomap）：基本出发点是，认为在低维嵌入高维后，由于高维空间中的直线距离在低维空间中是不可达的，所以高维空间中的直线距离存在误导性。主张以“<em>测地线</em>”（geodesic）作为低维嵌入流形的两点间距离，即在曲面上两点间的距离，同时是两点之间的本真距离。</p>
+<p>计算测地线距离，需要在流形的局部寻找近邻点，通过近邻点间的距离可用欧氏距离计算的性质，建立一个近邻连接图。在近邻连接图上计算得到的最短距离即为测地线距离。</p>
+<p>对于近邻连接图上的测地线距离，可利用Dijktra算法或Floyd算法计算。在得到距离后，可通过MDS方法对样本点进行降维处理，得到样本点的低维坐标。最后，以样本点的高维坐标为输入，低维坐标为输出，训练一个回归学习器用于对新样本的低维空间进行预测。显然，这仅是权宜之计，但目前还没有更好的方法。</p>
+<p>对近邻图的构建有两种方法：</p>
+<ul>
+<li>指定近邻点个数，指定最近的<span class="math inline">\(k\)</span>个样本点为近邻点，得到的近邻图为<span class="math inline">\(k\)</span>近邻图；</li>
+<li>指定距离阈值<span class="math inline">\(\epsilon\)</span>，距离小于<span class="math inline">\(\epsilon\)</span>的样本点即为近邻点，得到的近邻图为<span class="math inline">\(\epsilon\)</span>近邻图。</li>
+</ul>
+<p>以上两种方法均存在不足，因此使用时需谨慎，避免给后续计算造成误导。</p>
+<h3 id="局部线性嵌入">10.5.2 局部线性嵌入</h3>
+<p><strong>局部线性嵌入</strong>（Locally Linear Embedding，简称LLE）：LLE试图保持邻域内样本点之间的线性关系。</p>
+<p>LLE先为每个样本<span class="math inline">\(x\)</span>找到其近邻下标集合<span class="math inline">\(Q_i\)</span>，然后计算出基于<span class="math inline">\(Q_i\)</span>的样本点对<span class="math inline">\(x_i\)</span>进行线性重构的系数<span class="math inline">\(w_i\)</span>：</p>
+<p><span class="math display">\[\begin{aligned}\min_{w_1,w_2,\dots,w_m} &amp;\sum^m_{i=1}\left \| x_i - \sum_{j\in Q_i} w_{ij}x_j \right \|^2_2  \\ &amp;\text{s.t.  } \sum_{j \in Q_i} w_{ij} = 1 \end{aligned}\]</span></p>
+<p>其中，<span class="math inline">\(x_i\)</span>和<span class="math inline">\(x_j\)</span>均为已知，令<span class="math inline">\(C_{jk} = (x_i - x_j)^T(x_i-x_k)\)</span>，<span class="math inline">\(w_{ij}\)</span>有闭式解</p>
+<p><span class="math display">\[w_{ij} = \frac{\sum_{k \in Q_i} C_{jk}^{-1}}{\sum_{l,s \in Q_i} C_{ls}^{-1}}\]</span></p>
+<p>由于目标是保持其邻域内样本点之间的线性关系。所以LLE在低维空间中保持<span class="math inline">\(w_i\)</span>不变，那么，<span class="math inline">\(x_i\)</span>对应的低维空间坐标即可通过下式求解：</p>
+<p><span class="math display">\[\min_{z_1,z_2,\dots,z_m} \sum^m_{i=1} \left \| z_i - \sum_{j \in Q_i} w_{ij}z_j \right \|^2_2 \]</span></p>
+<p>不难发现，该式与求解线性重构系数<span class="math inline">\(w_i\)</span>的目标同形，唯一的区别在于需要确定的对象。于是，可令<span class="math inline">\(Z = (z_1,z_2,\dots,z_m) \in R^{d&#39; \times m}\)</span>，<span class="math inline">\((W)_{ij} = w _{ij}\)</span>，</p>
+<p><span class="math display">\[M = (I - W)^T(I - W)\]</span></p>
+<p>则可将目标重写为</p>
+<p><span class="math display">\[\begin{aligned} &amp;\min_Z \text{  tr} (ZMZ^T) \\ &amp;\text{  s.t.  } ZZ^T = I \end{aligned}\]</span></p>
+<p>显然，可以通过特征值分解求解，<span class="math inline">\(M\)</span>最小的<span class="math inline">\(d&#39;\)</span>个特征值对应的特征向量组成的矩阵即为<span class="math inline">\(Z^T\)</span>。</p>
+<h2 id="度量学习">10.6 度量学习</h2>
+<p>前面对数据进行降维处理的主要目的还是在于，减少数据的维度避免维数灾难，从而方便距离的计算。那么，如果可以直接进行距离学习，找到一个合适的距离度量，即不必再对数据进行降维了。这就是<em>度量学习</em>（metric learning）的基本动机。</p>
+<p>如果要进行度量学习，必须要先有一个固定的距离度量表达形式，目前还没有接触过附带参数的距离度量表达式，因此它们无法通过对数据集的学习进行改进，所以需要先做一个推广。</p>
+<p>对两个<span class="math inline">\(d\)</span>维样本<span class="math inline">\(x_i\)</span>和<span class="math inline">\(x_j\)</span>，它们之间的平方欧氏距离可以写作</p>
+<p><span class="math display">\[\text{dist}^2 _{ed}(x_i,x_j) = \left \| x_i - x_j \right \|^2_2 = \sum^d_{k=1} dist^2_{ij,k}\]</span></p>
+<p>其中，<span class="math inline">\(dist^2_{ij,k}\)</span>表示<span class="math inline">\(x_i\)</span>与<span class="math inline">\(x_j\)</span>在第<span class="math inline">\(k\)</span>维上的距离。若假定不同属性的重要性不同，则可引入权重变量<span class="math inline">\(w\)</span>，从而得到</p>
+<p><span class="math display">\[\begin{aligned} \text{dist}^2 _{wed}(x_i,x_j) &amp;= \left \| x_i - x_j \right \|^2_2 = \sum^d_{k=1} w_k \cdot dist^2_{ij,k} \\ &amp;= (x_i - x_j)^TW(x_i - x_j) \end{aligned}\]</span></p>
+<p>其中，<span class="math inline">\(w_{k} \geqslant 0\)</span>，<span class="math inline">\(W = \text{diag}(w)\)</span>是一个对角矩阵，<span class="math inline">\((W)_{ii} = w_i\)</span>。</p>
+<p>式中的<span class="math inline">\(W\)</span>可由学习得到，但需要注意的是，<span class="math inline">\(W\)</span>的非对角线元素均为零，意味着其属性之间无关，但在现实问题中，往往无法达到这一条件。因此，将式中的<span class="math inline">\(W\)</span>矩阵替换成一个普通的半正定对称矩阵<span class="math inline">\(M\)</span>，这样就得到了<em>马氏距离</em>（Mahalanobis distance）（在标准的马氏距离中<span class="math inline">\(M\)</span>为协方差矩阵的逆，即<span class="math inline">\(M=\Sigma^{-1}\)</span>，但在度量学习中其被赋予了更大的灵活性）</p>
+<p><span class="math display">\[\text{dist}_{\text{mah}}^2(x_i,x_j) = \left \| x_i - x_j \right \|^2_{M} = (x_i - x_j)^T M(x_i - x_j)\]</span></p>
+<p>其中<span class="math inline">\(M\)</span>亦称“度量矩阵”，度量学习即是对<span class="math inline">\(M\)</span>进行学习。需要注意的是，为了保持距离的非负且对称，<span class="math inline">\(M\)</span>必须是（半）正定矩阵，即必有正交基<span class="math inline">\(P\)</span>使得<span class="math inline">\(M\)</span>能写为<span class="math inline">\(M=PP^T\)</span>。</p>
+<p>之后，需要将<span class="math inline">\(M\)</span>直接嵌入到近邻分类器的评价指标中，以方便对<span class="math inline">\(M\)</span>进行学习。例，在<em>近邻成分分析</em>（Neighbourhood Component Analysis）中使用的方法。</p>
+<p>在近邻成分分析中，我们将在判别时普遍使用的多数投票法，替换为引入距离权重的概率投票法。对于任意样本<span class="math inline">\(x_j\)</span>，他对<span class="math inline">\(x_i\)</span>的分类结果影响的概率为</p>
+<p><span class="math display">\[p_{ij} = \frac{\exp(-\left \| x_i - x_j \right \|^2_M)}{\sum_l \exp(-\left \| x_i - x_l \right \|^2_M)}\]</span></p>
+<p>显然，当<span class="math inline">\(i=j\)</span>时，<span class="math inline">\(p_{ij}\)</span>最大，<span class="math inline">\(x_j\)</span>对<span class="math inline">\(x_i\)</span>的影响随距离增大而减小。以<em>留一法</em>（LOO）正确率的最大化为目标，则它被自身之外的所有样本正确分类的概率为</p>
+<p><span class="math display">\[p_i = \sum_{j \in \Omega_i} p_{ij}\]</span></p>
+<p>其中，<span class="math inline">\(\Omega_i\)</span>表示与<span class="math inline">\(x_i\)</span>属于同类别的样本的下标集合。则在整个样本集上的留一法正确率为</p>
+<p><span class="math display">\[\sum^m_{i=1}p_i = \sum^m_{i=1}\sum_{j \in \Omega_i} p_{ij}\]</span></p>
+<p>结合<span class="math inline">\(p_{ij}\)</span>的公式和<span class="math inline">\(M=PP^T\)</span>，可导出NCA的优化目标为</p>
+<p><span class="math display">\[\min_P 1 - \sum^m_{i=1}\sum_{j \in \Omega_i} \frac{\exp(-\left \| x_i - x_j \right \|^2_M)}{\sum_l \exp(-\left \| x_i - x_l \right \|^2_M)}\]</span></p>
+<p>对于这个无约束的优化问题，可以利用随机梯度算法或共轭梯度算法等方法对其求解，即可得到最大化近邻分类器LOO正确率的距离度量矩阵<span class="math inline">\(M\)</span>。</p>
+<p>除了可以使用监督学习目标中的错误率作为度量学习的优化目标以外，还可以在度量学习中引入领域知识。例如，如果已知某些样本相似、某些样本不相似，则可以根据此定义“<em>必连</em>”（must-link）约束集合<span class="math inline">\(\mathcal{M}\)</span>与“<em>勿连</em>”（connot-link）约束集合<span class="math inline">\(\mathcal{C}\)</span>。于是，可以通过<span class="math inline">\((x_i,x_j) \in \mathcal{M}\)</span>表示相似，<span class="math inline">\((x_i,x_j) \in \mathcal{C}\)</span>表示不相似。根据相似的样本之间距离较小，不相似的样本之间距离较大的原则，可以构建出关于度量矩阵<span class="math inline">\(M\)</span>的凸优化问题：</p>
+<p><span class="math display">\[\begin{aligned} &amp;\min_M \sum_{(x_i,x_j) \in \mathcal{M}} \left \| x_i - x_j \right \|^2_M \\ &amp;\text{  s.t.  } \sum_{(x_i,x_k) \in \mathcal{C}} \left \| x_i - x_k \right \|^2_M \geqslant 1, \\ &amp;\ \ \ \text{   } \text{   } \ \ \ \ M \succeq 0. \end{aligned}\]</span></p>
+<p>其中约束<span class="math inline">\(M \succeq 0\)</span>表示度量矩阵<span class="math inline">\(M\)</span>必须是半正定的。上式的意义在于：要求在与不相似样本间的距离不小于1的前提下，使相似样本间的距离尽可能小。</p>
+<p>不同度量学习方法对好的度量矩阵<span class="math inline">\(M\)</span>的要求不同，如果求得的<span class="math inline">\(M\)</span>是一个低秩矩阵，则通过对<span class="math inline">\(M\)</span>的特征值分解，总能找到一组正交基，其正交基数目等于矩阵<span class="math inline">\(M\)</span>的秩<span class="math inline">\(\text{rank}(M)\)</span>，小于原属性数<span class="math inline">\(d\)</span>。所以，此时度量学习学得的结果，可以衍生出一个降维矩阵<span class="math inline">\(P \in R^{d \times \text{rank}(M)}\)</span>，可用于降维。不过需要注意的是，不能依赖此类方法进行降维，因为通常情况下不要求度量矩阵<span class="math inline">\(M\)</span>是低秩的。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/《机器学习》/" rel="tag"># 《机器学习》</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/10/02/Chapter9聚类/" rel="next" title="Chapter9 聚类">
+                <i class="fa fa-chevron-left"></i> Chapter9 聚类
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Zero Zone</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">25</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">15</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#k近邻学习"><span class="nav-text">10.1 \(k\)近邻学习</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#低维嵌入"><span class="nav-text">10.2 低维嵌入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主成分分析"><span class="nav-text">10.3 主成分分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#最近重构性"><span class="nav-text">最近重构性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#最大可分性"><span class="nav-text">最大可分性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#核化线性降维"><span class="nav-text">10.4 核化线性降维</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#流形学习"><span class="nav-text">10.5 流形学习</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#等度量映射"><span class="nav-text">10.5.1 等度量映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#局部线性嵌入"><span class="nav-text">10.5.2 局部线性嵌入</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#度量学习"><span class="nav-text">10.6 度量学习</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Zero Zone</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a></div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+  <script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.4.js"></script>
+  <script>AV.initialize("wK5oOR6TzGguECTJdAa7L4aR-gzGzoHsz", "s9qatI3Dt50rrnzgEq2ylhbi");</script>
+  <script>
+    function showTime(Counter) {
+      var query = new AV.Query(Counter);
+      var entries = [];
+      var $visitors = $(".leancloud_visitors");
+
+      $visitors.each(function () {
+        entries.push( $(this).attr("id").trim() );
+      });
+
+      query.containedIn('url', entries);
+      query.find()
+        .done(function (results) {
+          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+          if (results.length === 0) {
+            $visitors.find(COUNT_CONTAINER_REF).text(0);
+            return;
+          }
+
+          for (var i = 0; i < results.length; i++) {
+            var item = results[i];
+            var url = item.get('url');
+            var time = item.get('time');
+            var element = document.getElementById(url);
+
+            $(element).find(COUNT_CONTAINER_REF).text(time);
+          }
+          for(var i = 0; i < entries.length; i++) {
+            var url = entries[i];
+            var element = document.getElementById(url);
+            var countSpan = $(element).find(COUNT_CONTAINER_REF);
+            if( countSpan.text() == '') {
+              countSpan.text(0);
+            }
+          }
+        })
+        .fail(function (object, error) {
+          console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+      var query = new AV.Query(Counter);
+
+      query.equalTo("url", url);
+      query.find({
+        success: function(results) {
+          if (results.length > 0) {
+            var counter = results[0];
+            counter.fetchWhenSave(true);
+            counter.increment("time");
+            counter.save(null, {
+              success: function(counter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
+              success: function(newcounter) {
+                var $element = $(document.getElementById(url));
+                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+              },
+              error: function(newcounter, error) {
+                console.log('Failed to create');
+              }
+            });
+          }
+        },
+        error: function(error) {
+          console.log('Error:' + error.code + " " + error.message);
+        }
+      });
+    }
+
+    $(function() {
+      var Counter = AV.Object.extend("Counter");
+      if ($('.leancloud_visitors').length == 1) {
+        addCount(Counter);
+      } else if ($('.post-title-link').length > 1) {
+        showTime(Counter);
+      }
+    });
+  </script>
+
+
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
