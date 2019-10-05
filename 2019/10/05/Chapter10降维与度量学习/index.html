@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="ZZ&#39;s blog">
 <meta property="og:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习">
 <meta property="og:image" content="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png">
-<meta property="og:updated_time" content="2019-10-05T01:39:21.061Z">
+<meta property="og:updated_time" content="2019-10-05T01:43:23.840Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Chapter10 降维与度量学习">
 <meta name="twitter:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习">
@@ -469,7 +469,7 @@
 <p><span class="math display">\[\left ( \sum^m_{i=1}z_iz_i^T \right ) w_j = \lambda_jw_j\]</span></p>
 <p>其中<span class="math inline">\(z_i\)</span>是样本点<span class="math inline">\(x_i\)</span>在高维特征空间中的像。易知</p>
 <p><span class="math display">\[\begin{aligned} w_j &amp;= \frac{1}{\lambda_j}\left ( \sum^m_{i=1} z_iz_i^T \right )w_j = \sum^m_{i=1}z_i \frac{z_i^Tw_j}{\lambda_j} \\ &amp;= \sum^m_{i=1}z_i\alpha_i^j \end{aligned}\]</span></p>
-<p>其中<span class="math inline">\(\alpha_i^j = \frac{1}{\lambda_j}z_i^Tw_j\)</span>是<span class="math inline">\(\alpha_i\)</span>的第<span class="math inline">\(j\)</span>个分量。假定<span class="math inline">\(z_i\)</span>是由原始属性空间中的样本点<span class="math inline">\(x_i\)</span>通过映射$ <span class="math inline">\(产生，即\)</span>z_i = (x_i)<span class="math inline">\(，\)</span>i=1,2,,m$。</p>
+<p>其中<span class="math inline">\(\alpha_i^j = \frac{1}{\lambda_j}z_i^Tw_j\)</span>是<span class="math inline">\(\alpha_i\)</span>的第<span class="math inline">\(j\)</span>个分量。假定<span class="math inline">\(z_i\)</span>是由原始属性空间中的样本点<span class="math inline">\(x_i\)</span>通过映射<span class="math inline">\(\phi\)</span>产生，即<span class="math inline">\(z_i = \phi(x_i)\)</span>，<span class="math inline">\(i=1,2,\dots,m\)</span>。</p>
 <ul>
 <li><p>如果<span class="math inline">\(\phi\)</span>可以被显式地表达出来，则通过它将样本映射至高维特征空间，再在特征空间中实施PCA即可。则有<span class="math display">\[\begin{aligned} \left ( \sum^m_{i=1}\phi(x_i)\phi(x_i)^T \right ) w_j = \lambda_jw_j \\ w_j=\sum^m_{i=1} \phi(x_i)\alpha_i^j \end{aligned}\]</span></p></li>
 <li><p>但在一般情况下，难以显式表达出<span class="math inline">\(\phi\)</span>的具体形式，所以引入核函数<span class="math display">\[\kappa(x_i,x_j) = \phi(x_i)^T\phi(x_j)\]</span>进一步有<span class="math display">\[K\alpha^j=\lambda_j\alpha^j\]</span>其中<span class="math inline">\(K\)</span>为<span class="math inline">\(\kappa\)</span>对应的核矩阵，<span class="math inline">\((K)_{ij}=\kappa(x_i,x_j)\)</span>，<span class="math inline">\(\alpha_j=(\alpha^j_1;\alpha^j_2;\dots;\alpha^j_m)\)</span>。显然，对上式进行特征值分解，即可取得相对应的特征向量。</p></li>
