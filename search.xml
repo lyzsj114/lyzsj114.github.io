@@ -96,8 +96,8 @@
     <url>%2F2018%2F03%2F04%2F%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE%2F</url>
     <content type="text"><![CDATA[概念 在数组中找到对应数据的下标的一种方法(优于遍历)。 要求：数组有序。 思路 利用数组中间值与查找数据比较，确定查找数据位置。 因而其时间复杂度为O(log2n) 代码 public int binarySearch(int value, int[] array){ int lo = 0; int up = array.length - 1; while(lo &lt;= up) { // 循环比较至查找结束 int key = (lo + up) / 2; // 取中间值比较 if(value &gt; array[key]) { lo = key; // 改变下界 缩小范围 } else if(value &lt; array[key]) { up = key; // 改变上界 缩小范围 } else { return key; // 查找到key } } return -1; // 未查找到 }]]></content>
       <tags>
-        <tag>java</tag>
         <tag>《Algorithms》</tag>
+        <tag>java</tag>
         <tag>算法</tag>
       </tags>
   </entry>
@@ -123,8 +123,8 @@
     <url>%2F2017%2F09%2F24%2F%E5%87%BD%E6%95%B0%E8%AF%95%E9%A2%98%2F</url>
     <content type="text"><![CDATA[试题来源知乎 ## 试题 编程/数学挑战题 函数f(n)满足以下条件： 1）定义域和值域都是正整数； 2）f(n) &lt; f(n + 1); 3）f(f(n)) = 3n; 求 f(2017). ## 思考 ∵ 当 f(1) = 1 时，明显不成立； 当 f(1) = 2 时，成立； 当 f(1) &gt;= 3 时，均不成立； ∴ f(1) = 2; f(2) = 3; ······ 分析可知： 两个被3整除的函数值间，函数值均匀分布。 ## 代码 class Test{ public static void main(String args[]){ System.out.println(f(2017)); } public static int f(int n){ if (n == 1) { return 2; } else if (n == 2) { return 3; } else if (n % 3 == 0) { return 3 * f(n / 3); } else { int nm = n; int na = n; // 取得小于n且能被3整除的数 while (nm % 3 != 0) { nm--; } // 取得大于n且能被3整除的数 while (na % 3 != 0) { na++; } return f(nm) + (f(na) - f(nm)) / (na - nm) * (n - nm); } } } //3864 //：~ ## 代码分析 1. 采用递归函数形式求解，省去繁琐循环； 2. 代码简介易读。]]></content>
       <tags>
-        <tag>java</tag>
         <tag>Algorithms</tag>
+        <tag>java</tag>
       </tags>
   </entry>
   <entry>
@@ -132,8 +132,8 @@
     <url>%2F2017%2F09%2F17%2F%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%AE%A1%E9%81%93%2F</url>
     <content type="text"><![CDATA[重定向与管道，均为在cmd中编译时的技巧。 重定向 符号：&gt; #### 用例 java Test args[0] args[1]··· &gt; data.txt #### 效果 将执行 Test 的输出结果储存至 data.txt 中 且命令行中不再输出 管道 符号：| #### 用例 java Test1 args[0] args[1]··· | java Test2 #### 效果 将执行 Test1 的输出结果作为运行 Test2 的参数输入 命令行中只显示 Test2 的输出结果]]></content>
       <tags>
-        <tag>java</tag>
         <tag>《Algorithms》</tag>
+        <tag>java</tag>
       </tags>
   </entry>
   <entry>
@@ -141,9 +141,9 @@
     <url>%2F2017%2F09%2F17%2FFibonacciSequence%2F</url>
     <content type="text"><![CDATA[FibonacciSequence简介 FibonacciSequence即斐波那契数列，指的是由 A1 = 1,A2 = 1,且 An+1 = An + An-1,组成的数列。 例：1，1，2，3，5，8··· 相关算法 以下代码仅写出关键模块 ### 1.for循环实现 - 初级版 int fi1 = 1; int fi2 = 2; if (input &lt;= 2) { switch (input) { case 1: System.out.print(&quot;1&quot;); case 2: System.out.print(&quot;1 ,&quot;); System.out.print(&quot;1&quot;); } } else { System.out.print(&quot;1 ,&quot; ); System.out.print(&quot;1 ,&quot;); for (int i = 0;i &lt; input - 2 ;i++ ) { if (i % 2 == 0) { fi1 = fi1 + fi2; System.out.print(fi1 + &quot; ,&quot;); } else { fi2 = fi1 + fi2; System.out.print(fi2 + &quot; ,&quot;); } } // 用两个变量交替相加实现 ### 2.for循环 - 进阶版 int f = 0; int g = 1; for (int i = 0;i &lt;= input ;i++ ) { System.out.println(f); f = f + g; g = f - g; } // 原理同上，写法更加简洁 ### 3.递归实现 public static int F(int i){ if (i == 1) { return 1; } else if (i == 2) { return 1; } return F(i - 2) + F(i - 1); } // 简便代码，更易读]]></content>
       <tags>
-        <tag>java</tag>
         <tag>Algorithms</tag>
         <tag>《Algorithms》</tag>
+        <tag>java</tag>
       </tags>
   </entry>
   <entry>

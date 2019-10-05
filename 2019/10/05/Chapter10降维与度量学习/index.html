@@ -79,18 +79,18 @@
 
 
 
-<meta name="description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习  10.1 \(k\)近邻学习 \(k\)近邻（\(k\)-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的\(k\)个“近邻”的">
+<meta name="description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习">
 <meta name="keywords" content="《机器学习》">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Chapter10 降维与度量学习">
 <meta property="og:url" content="http://www.zzforgood.top/2019/10/05/Chapter10降维与度量学习/index.html">
 <meta property="og:site_name" content="ZZ&#39;s blog">
-<meta property="og:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习  10.1 \(k\)近邻学习 \(k\)近邻（\(k\)-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的\(k\)个“近邻”的">
+<meta property="og:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习">
 <meta property="og:image" content="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png">
-<meta property="og:updated_time" content="2019-10-05T01:29:13.548Z">
+<meta property="og:updated_time" content="2019-10-05T01:31:40.299Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Chapter10 降维与度量学习">
-<meta name="twitter:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习  10.1 \(k\)近邻学习 \(k\)近邻（\(k\)-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的\(k\)个“近邻”的">
+<meta name="twitter:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习">
 <meta name="twitter:image" content="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png">
 
 
@@ -403,6 +403,7 @@
 </ul></li>
 <li>度量学习</li>
 </ul>
+<a id="more"></a>
 <h2 id="k近邻学习">10.1 <span class="math inline">\(k\)</span>近邻学习</h2>
 <p><strong><span class="math inline">\(k\)</span>近邻</strong>（<span class="math inline">\(k\)</span>-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的<span class="math inline">\(k\)</span>个“近邻”的样本点信息进行预测。通常，对分类任务采用“投票法”；在回归任务中使用“平均法”；还可基于距离进行加权，应用于投票或回归。</p>
 <p><strong>懒惰学习</strong>（lazy learning）：在训练阶段仅仅是把样本保存起来，训练时间开销为零，在收到测试样本后再进行处理。</p>
