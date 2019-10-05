@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="ZZ&#39;s blog">
 <meta property="og:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习">
 <meta property="og:image" content="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png">
-<meta property="og:updated_time" content="2019-10-05T01:31:40.299Z">
+<meta property="og:updated_time" content="2019-10-05T01:39:21.061Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Chapter10 降维与度量学习">
 <meta name="twitter:description" content="本文内容：  kk近邻学习 低维嵌入 主成分分析  最近重构性 最大可分性  核化线性降维 流形学习  等度量映射 局部线性嵌入  度量学习">
@@ -434,7 +434,7 @@
 <p>所以有</p>
 <p><span class="math display">\[b_{ij} = \frac{1}{2} (\text{dist}_ {i\cdot}^2+\text{dist}_ {\cdot j}^2) - \text{dist}_ {\cdot \cdot}^2 - \text{dist}_ {ij}^2\]</span></p>
 <p>由上式即可通过距离矩阵<span class="math inline">\(D\)</span>求得内积矩阵<span class="math inline">\(B\)</span>。</p>
-<p>对矩阵<span class="math inline">\(B\)</span>进行<em>特征值分解</em>（eigenvalue decomposition），<span class="math inline">\(B=V\Lambda V^T\)</span>，其中<span class="math inline">\(\Lambda=\text{diag}(\lambda_1,\lambda_2,\dots,\lambda_d)\)</span>为特征值构成的对角矩阵，$ _1 _2 _d <span class="math inline">\(，\)</span>V<span class="math inline">\(为特征向量矩阵。假定其中有\)</span>d^<em><span class="math inline">\(个非零特征值，构成对角矩阵\)</span>_ </em>=(_1,<em>2, ,</em>{d^ <em>})<span class="math inline">\(，\)</span>V_ </em><span class="math inline">\(表示相应的特征向量矩阵，则\)</span>Z$为</p>
+<p>对矩阵<span class="math inline">\(B\)</span>进行<em>特征值分解</em>（eigenvalue decomposition），<span class="math inline">\(B=V\Lambda V^T\)</span>，其中<span class="math inline">\(\Lambda=\text{diag}(\lambda_1,\lambda_2,\dots,\lambda_d)\)</span>为特征值构成的对角矩阵，<span class="math inline">\(\lambda_1 \geqslant \lambda_2 \geqslant \dots \geqslant \lambda_d\)</span>，<span class="math inline">\(V\)</span>为特征向量矩阵。假定其中有<span class="math inline">\(d^*\)</span>个非零特征值，构成对角矩阵<span class="math inline">\(\Lambda_ *=\text{diag}(\lambda_1,\lambda_2, \dots,\lambda_{d^ *})\)</span>，<span class="math inline">\(V_ *\)</span>表示相应的特征向量矩阵，则<span class="math inline">\(Z\)</span>为</p>
 <p><span class="math display">\[Z = \Lambda_*^{\frac{1}{2}}V_*^T \in R^{d^* \times m}\]</span></p>
 <p>在现实应用中为了有效降维，通常不会要求距离的严格相等，因此，可取<span class="math inline">\(d&#39; \ll d\)</span>个最大特征值构成对角矩阵<span class="math inline">\(\tilde{\Lambda} = \text{diag}(\lambda_1,\lambda_2,\dots,\lambda_{d&#39;})\)</span>，<span class="math inline">\(\tilde{V}\)</span>是相应的特征向量矩阵，则<span class="math inline">\(Z\)</span>为</p>
 <p><span class="math display">\[Z = \tilde{\Lambda}^{\frac{1}{2}}\tilde{V}^T \in R^{d&#39;\times m}\]</span></p>
