@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    多项式回归 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-多项式回归" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  多项式回归
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/04/22/%E5%A4%9A%E9%A1%B9%E5%BC%8F%E5%9B%9E%E5%BD%92/" class="article-date">
+  <time datetime="2019-04-22T05:20:25.000Z" itemprop="datePublished">2019-04-22</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>多项式回归问题<ul>
+<li><em>一次多项式回归</em></li>
+<li>多次多项式回归</li>
+</ul>
+</li>
+<li>代码实现</li>
+<li><strong>求解矩阵（方程组）方法归纳</strong><ul>
+<li>Cramer法则</li>
+<li>高斯消去法</li>
+<li>LU分解法</li>
+</ul>
+</li>
+</ul>
+<span id="more"></span>
+<h2 id="多项式回归问题"><a href="#多项式回归问题" class="headerlink" title="多项式回归问题"></a>多项式回归问题</h2><p>问题描述：对大多数数据集的驱动关系来说，都是非线性的。对于这类问题，我们可以采用一些数学模型进行替代求解。</p>
+<h3 id="一次多项式回归"><a href="#一次多项式回归" class="headerlink" title="一次多项式回归"></a><strong>一次多项式回归</strong></h3><p>一次多项式即为线性函数：$y = b<em>{0} + b</em>{1}x$，对其回归求解可以使用==最小二乘法导出系数的公式==：</p>
+<script type="math/tex; mode=display">b_{1}=\frac{n\sum x_{i}y_{i} - \sum x_{i}y_{i}}{n \sum x_{i}^2 -(\sum x_{i})^2}</script><script type="math/tex; mode=display">b_{0} = \bar{y} - b_{1}\bar{x}</script><p>这些公式根据正规方程组可以推知：</p>
+<script type="math/tex; mode=display">(\sum_{i=1}^{n}x_{i}^2)b_{1} + (\sum x_{i})b_{0} = \sum x_{i}y_{i}</script><script type="math/tex; mode=display">(\sum x_{i})b_{1} + nb_{0} = \sum y_{i}</script><p>方程组通过平方和最小化得到：</p>
+<script type="math/tex; mode=display">\sum_{n}^{i=1}(y_{i} - \tilde{y_{i}}) = \sum_{n}^{i=1}(y_{i} - b_{1}x_{i} - b_{0})^2</script><h3 id="多次多项式回归"><a href="#多次多项式回归" class="headerlink" title="多次多项式回归"></a>多次多项式回归</h3><p>以最简单的非线性一元多项式 $y = f(x) = b<em>{0} + b</em>{1}x + b<em>{2}x^2 + \cdot \cdot \cdot + b</em>{m}x^m$ 为例，其中m为多项式的次数，$b<em>{0},b</em>{1},b<em>{2},\cdot\cdot\cdot,b</em>{m}$为待定的系数。</p>
+<p>可以运用相同的最小二乘法方法，对给定的数据集找到任意次数为m的最佳拟合的多项式，假定小于数据集中独立数据点的个数。</p>
+<p>例：要找到拟合最佳的次数为 m=2 的多项式 $f(x) = b<em>{0} + b</em>{1} + b_{2}x^2$ （也叫作给定数据集的最小二乘抛物线），需要对求和式最小化。</p>
+<script type="math/tex; mode=display">\sum_{n}^{i=1}(y_{i} - b_{2}x_{i}^2 - b_{1}x_{i} - b_{0})^2</script><p>这个方程用来决定系数$b<em>{0}、b</em>{1}和b_{2}$。从微积分角度来讲，这个表达式具有如下性质：</p>
+<script type="math/tex; mode=display">z = \sum (A_{i} + B_{i}u + C_{i}v + D_{i}w)^2</script><p>通过求它的偏导数为0，对$z$最小化：</p>
+<script type="math/tex; mode=display">\frac{\partial z}{\partial u} = \frac{\partial z}{\partial v} = \frac{\partial z}{\partial w}</script><p>由此产生二次回归的正规方程：</p>
+<script type="math/tex; mode=display">nb_{0} + (\sum x_{i})b_{1} + (\sum x_{i}^2)b_{2} = \sum y_{i}</script><script type="math/tex; mode=display">(\sum x_{i})b_{0} + (\sum x_{i}^2)b_{1} + (\sum x_{i}^3)b_{2} = \sum x_{i}y_{i}</script><script type="math/tex; mode=display">(\sum x_{i}^2)b_{0} + (\sum x_{i}^3)b_{1} + (\sum x_{i}^4)b_{2} = \sum x_{i}^2y_{i}</script><p>即可将$b<em>{0},b</em>{1},b_{2}$同时解出。</p>
+<h2 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h2><p>本例中使用了Apache Commons math类协助计算。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.commons.math3.linear.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Example4</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> n = <span class="number">6</span>; <span class="comment">// 数据集点的个数</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[] x = &#123;<span class="number">20</span>,<span class="number">30</span>,<span class="number">40</span>,<span class="number">50</span>,<span class="number">60</span>,<span class="number">70</span>&#125;; <span class="comment">// 数据集 x</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[] y = &#123;<span class="number">52</span>,<span class="number">87</span>,<span class="number">136</span>,<span class="number">203</span>,<span class="number">290</span>,<span class="number">394</span>&#125;; <span class="comment">// 数据集 y</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[][] a; <span class="comment">// 构造3个正规方程的参数</span></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">double</span>[] b; <span class="comment">// 解集</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 正规方程 ab = w</span></span><br><span class="line">    <span class="comment">// 解为数组 b</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">double</span>[][] a = <span class="keyword">new</span> <span class="keyword">double</span>[<span class="number">3</span>][<span class="number">3</span>];</span><br><span class="line">        <span class="keyword">double</span>[] w = <span class="keyword">new</span> <span class="keyword">double</span>[<span class="number">3</span>];</span><br><span class="line">        deriveNormalEquations(a, w);</span><br><span class="line">        printNormalEquations(a, w);</span><br><span class="line">        solveNormalEquations(a, w);</span><br><span class="line">        printResults();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    ** 构造正规方程</span></span><br><span class="line"><span class="comment">    **     &#123;n           , sigma x   , sigma x^2&#125;</span></span><br><span class="line"><span class="comment">    ** a = &#123;sigma x     , sigma x^2 , sigma x^3&#125;</span></span><br><span class="line"><span class="comment">    **     &#123;sigma x^2   , sigma x^3 , sigma x^4&#125;</span></span><br><span class="line"><span class="comment">    **</span></span><br><span class="line"><span class="comment">    **     &#123;sigma y     &#125;</span></span><br><span class="line"><span class="comment">    ** w = &#123;sigma xy    &#125;</span></span><br><span class="line"><span class="comment">    **     &#123;sigma x^2y  &#125;</span></span><br><span class="line"><span class="comment">    **/</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">deriveNormalEquations</span><span class="params">(<span class="keyword">double</span>[][] a, <span class="keyword">double</span>[] w)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> n = y.length;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; n; i++) &#123;</span><br><span class="line">            <span class="keyword">double</span> xi = x[i];</span><br><span class="line">            <span class="keyword">double</span> yi = y[i];</span><br><span class="line">            a[<span class="number">0</span>][<span class="number">0</span>] = n;</span><br><span class="line">            a[<span class="number">0</span>][<span class="number">1</span>] = a[<span class="number">1</span>][<span class="number">0</span>] += xi;</span><br><span class="line">            a[<span class="number">0</span>][<span class="number">2</span>] = a[<span class="number">1</span>][<span class="number">1</span>] = a[<span class="number">2</span>][<span class="number">0</span>] += xi * xi;</span><br><span class="line">            a[<span class="number">1</span>][<span class="number">2</span>] = a[<span class="number">2</span>][<span class="number">1</span>] += xi * xi * xi;</span><br><span class="line">            a[<span class="number">2</span>][<span class="number">2</span>] = xi * xi * xi * xi;</span><br><span class="line">            w[<span class="number">0</span>] += yi;</span><br><span class="line">            w[<span class="number">1</span>] += xi * yi;</span><br><span class="line">            w[<span class="number">2</span>] += xi * xi * yi;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    ** 打印正规方程</span></span><br><span class="line"><span class="comment">    **/</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printNormalEquations</span><span class="params">(<span class="keyword">double</span>[][] a, <span class="keyword">double</span>[] w)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; a.length; i++) &#123;</span><br><span class="line">            System.out.printf(<span class="string">&quot;%8.0fb0 + %6.0b1 + %8.0fb2 = %7.0f%n&quot;</span>, a[i][<span class="number">0</span>], a[i][<span class="number">1</span>], a[i][<span class="number">2</span>], w[i]);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    ** 解正规方程</span></span><br><span class="line"><span class="comment">    **/</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">solveNormalEquations</span><span class="params">(<span class="keyword">double</span>[][] a, <span class="keyword">double</span>[] ww)</span> </span>&#123;</span><br><span class="line">        RealMatrix m = <span class="keyword">new</span> Array2DRowRealMatrix(a, <span class="keyword">false</span>); <span class="comment">// 通过已有数组构造正规方程</span></span><br><span class="line">        LUDecomposition lud = <span class="keyword">new</span> LUDecomposition(m); <span class="comment">// 创建 LU分解 类</span></span><br><span class="line">        DecompositionSolver solver = lud.getSolver(); <span class="comment">// 获取解类</span></span><br><span class="line">        RealVector v = <span class="keyword">new</span> ArrayRealVector(ww, <span class="keyword">false</span>); <span class="comment">// 创建v向量</span></span><br><span class="line">        b =  solver.solve(v).toArray(); <span class="comment">// 获取解</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">printResults</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.printf(<span class="string">&quot;f(t) = %.2f + %.3ft + %.5ft^2%n&quot;</span>, b[<span class="number">0</span>], b[<span class="number">1</span>], b[<span class="number">2</span>]);</span><br><span class="line">        System.out.printf(<span class="string">&quot;f(55) = %.1f%n&quot;</span>, f(<span class="number">55</span>,b));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">    ** 构造 f(x) 方程</span></span><br><span class="line"><span class="comment">    **/</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">f</span><span class="params">(<span class="keyword">double</span> t, <span class="keyword">double</span>[] b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> b[<span class="number">0</span>] + b[<span class="number">1</span>] * t + b[<span class="number">2</span>] * t * t;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="求解矩阵（方程组）方法反思"><a href="#求解矩阵（方程组）方法反思" class="headerlink" title="求解矩阵（方程组）方法反思"></a><strong>求解矩阵（方程组）方法反思</strong></h2><p>对矩阵方程求解一般有以下方法：</p>
+<ul>
+<li>Cramer法则</li>
+<li>高斯消去法</li>
+<li>LU分解法</li>
+</ul>
+<h3 id="Cramer法则"><a href="#Cramer法则" class="headerlink" title="Cramer法则"></a>Cramer法则</h3><h4 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h4><h5 id="对n个n元线性方程组，当其常数项-b-1-b-2-cdots-b-n-不全为0时，线性方程组被称为非齐次方程组"><a href="#对n个n元线性方程组，当其常数项-b-1-b-2-cdots-b-n-不全为0时，线性方程组被称为非齐次方程组" class="headerlink" title="对n个n元线性方程组，当其常数项$b{1},b{2},\cdots,b_{n}$不全为0时，线性方程组被称为非齐次方程组"></a>对n个n元线性方程组，当其常数项$b<em>{1},b</em>{2},\cdots,b_{n}$不全为0时，线性方程组被称为非齐次方程组</h5><script type="math/tex; mode=display">\left\{\begin{matrix}a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = b_{1}
+\\ a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = b_{2}
+\\ \cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdot
+\\a_{n1}x_{1} + a_{n2}x_{2} + \cdots + a_{nn}x_{n} = b_{n}
+\end{matrix}\right.</script><p>令 $A = [a<em>{ij}]</em>{n \times n}, X = (x<em>{1},x</em>{2},\cdots,x<em>{n})^T, \beta = (b</em>{1}, b<em>{2}, \cdots, b</em>{n})^T$ ，其中$A$为线性方程的系数矩阵，$\beta$是由常数组成的列向量。线性方程组的矩阵形式为 $AX=\beta$。</p>
+<h5 id="对n个n元线性方程组，当其常数项-b-1-b-2-cdots-b-n-全为0时，线性方程组被称为齐次方程组"><a href="#对n个n元线性方程组，当其常数项-b-1-b-2-cdots-b-n-全为0时，线性方程组被称为齐次方程组" class="headerlink" title="对n个n元线性方程组，当其常数项$b{1},b{2},\cdots,b_{n}$全为0时，线性方程组被称为齐次方程组"></a>对n个n元线性方程组，当其常数项$b<em>{1},b</em>{2},\cdots,b_{n}$全为0时，线性方程组被称为齐次方程组</h5><script type="math/tex; mode=display">\left\{\begin{matrix}a_{11}x_{1} + a_{12}x_{2} + \cdots + a_{1n}x_{n} = 0
+\\ a_{11}x_{1} + a_{12}x_{2} + \cdot\cdot\cdot + a_{1n}x_{n} = 0
+\\ \cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdots\cdot
+\\a_{n1}x_{1} + a_{n2}x_{2} + \cdots + a_{nn}x_{n} = 0
+\end{matrix}\right.</script><p>此时，线性方程组的矩阵形式为$AX=O$</p>
+<p>系数构成的行列式称为该方程组的系数行列式D，即</p>
+<script type="math/tex; mode=display">D = \begin{vmatrix}
+a_{11} & a_{12} & \cdots & a_{1n}\\
+a_{21} & a_{22} & \cdots & a_{2n}\\
+\vdots & \vdots & \ddots  & \vdots\\
+a_{n1} & a_{n2} & \cdots & a_{nn}
+\end{vmatrix}</script><h4 id="定理"><a href="#定理" class="headerlink" title="定理"></a>定理</h4><h5 id="解法1"><a href="#解法1" class="headerlink" title="解法1"></a>解法1</h5><p>对于系数矩阵$A$可逆的线性方程组，即系数行列式$D \neq 0$。有唯一解，解为</p>
+<script type="math/tex; mode=display">X_{0} = A^{-1} \beta</script><h5 id="解法2"><a href="#解法2" class="headerlink" title="解法2"></a>解法2</h5><p>对于系数矩阵$A$可逆的线性方程组，即系数行列式$D \neq 0$。有唯一解，解为</p>
+<script type="math/tex; mode=display">X_{0} = \frac {D_{j}}{D} (j = 1,2,\cdots,n)</script><p>其中$D_{j}$是将D中第$j$列对应元素换为常数项$\beta$，而其他保持不变得到的行列式。</p>
+<h4 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h4><p>使用Cramer法则时，对于多于两个或三个方程的系统，会十分低效，其渐进的复杂度为$O(n \times n!)$。因此，通常不考虑使用Cramer法则进行求解。</p>
+<h3 id="高斯消去法"><a href="#高斯消去法" class="headerlink" title="高斯消去法"></a>高斯消去法</h3><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><h5 id="核心"><a href="#核心" class="headerlink" title="核心"></a>核心</h5><ol>
+<li>两方程互换位置，解不变。</li>
+<li>一方程乘以非零常数k，解不变。</li>
+<li>一方程加上另一方程，解不变。</li>
+</ol>
+<h4 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h4><ol>
+<li>对一线性方程组的矩阵形式$AX = \beta$，可构造如下形式：</li>
+</ol>
+<script type="math/tex; mode=display">\begin{Bmatrix}
+a_{11} & a_{12} & \cdots & a_{1n} & | & b_{1}\\
+a_{21} & a_{22} & \cdots & a_{2n} & | & b_{2}\\
+\vdots & \vdots & \ddots & \vdots & | & \vdots\\
+a_{n1} & a_{n2} & \cdots & a_{nn} & | & b_{n}
+\end{Bmatrix}</script><ol>
+<li>通过初等行变换（即根据核心原理），将左侧$n \times n$矩阵化为单位矩阵$I$，右侧即为所求解$X_{0}$。</li>
+</ol>
+<script type="math/tex; mode=display">\begin{Bmatrix}
+1 & 0 & \cdots & 0 & | & x_{1}\\
+0 & 1 & \cdots & 0 & | & x_{2}\\
+\vdots & \vdots & \ddots & \vdots & | & \vdots\\
+0 & 0 & \cdots & 1 & | & x_{n}
+\end{Bmatrix}</script><h4 id="后记-1"><a href="#后记-1" class="headerlink" title="后记"></a>后记</h4><ol>
+<li>高斯消元法的时间复杂度为$O(n^3)$。</li>
+<li>高斯消去法可用于任何域。</li>
+<li>高斯消去法应用时对于普通矩阵来说是稳定的。</li>
+</ol>
+<h3 id="LU分解法"><a href="#LU分解法" class="headerlink" title="LU分解法"></a>LU分解法</h3><h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><p>LU分解是指，将一个 $n \times n$ 的方阵$A$（所有顺序主子式不为0），转化为以下形式：<br>$A = LU$（所有顺序主子式为0时，矩阵不一定不可以进行LU分解）<br>其中，L、U分别为上三角矩阵和下三角矩阵。</p>
+<p><em>顺序主子式</em><br>设$A$为$n \times n$的矩阵，子式</p>
+<script type="math/tex; mode=display">D_{i} = \begin{vmatrix}
+a_{11} & a_{12} & \cdots & a_{1i}\\
+a_{21} & a_{22} & \cdots & a_{2i}\\
+\vdots & \vdots & \ddots  & \vdots\\
+a_{i1} & a_{i2} & \cdots & a_{ii}
+\end{vmatrix}
+(i = 1,2,\cdots,n)</script><p>被称为$A$的$i$阶顺序主子式。</p>
+<h4 id="应用-1"><a href="#应用-1" class="headerlink" title="应用"></a>应用</h4><ol>
+<li>将满足条件的$A$分解为上三角矩阵$L$和下三角矩阵$U$</li>
+</ol>
+<script type="math/tex; mode=display">A = LDU</script><p>其中$D$为对角矩阵，或分解为</p>
+<script type="math/tex; mode=display">A = PLUQ</script><p>其中P为置换矩阵，Q为排列矩阵。</p>
+<ol>
+<li>将原方程等价代换，求解。</li>
+</ol>
+<p>$AX = \beta$ —&gt; $LUX = \beta$</p>
+<p>$\therefore Y = L^{-1}\beta$ —&gt; $X = U^{-1}Y$</p>
+<h4 id="后记-2"><a href="#后记-2" class="headerlink" title="后记"></a>后记</h4><ol>
+<li>LU分解法在==本质上是高斯消去法==的一种表达形式。</li>
+<li>LU分解法的==时间复杂度一般在$O(\frac{2n^3}{3})$左右==。</li>
+<li>利用LU分解法求逆时，时间复杂度在$O(n^2)$左右，较高斯消去法快。</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>求解非线性多项式回归问题，思路与线性方程回归类似，将多次问题看作多元。</li>
+<li>利用Apache Commons math库中的RealMatrix、LUDecomposition、RealVector等类可对多项式回归问题快速求解。</li>
+<li>求解矩阵时在LU分解法适用的情况下，一般快于高斯消去法，但高斯消去法适用任何域。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/04/22/%E5%A4%9A%E9%A1%B9%E5%BC%8F%E5%9B%9E%E5%BD%92/" data-id="ckv7nxmo20015mcoj1viqhj2o" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java/" rel="tag">Java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8AJava-Data-Analysis%E3%80%8B/" rel="tag">《Java Data Analysis》</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E5%9B%9E%E5%BD%92/" rel="tag">回归</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%9F%A9%E9%98%B5%E6%B1%82%E8%A7%A3/" rel="tag">矩阵求解</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/07/23/%E7%8E%B0%E4%BB%A3%E7%AE%97%E6%B3%95/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      现代算法
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2018/03/04/%E4%BA%8C%E5%88%86%E6%9F%A5%E6%89%BE/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">二分查找</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

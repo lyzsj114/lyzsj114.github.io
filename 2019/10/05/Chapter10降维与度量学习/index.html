@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    Chapter10 降维与度量学习 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-Chapter10降维与度量学习" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  Chapter10 降维与度量学习
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/10/05/Chapter10%E9%99%8D%E7%BB%B4%E4%B8%8E%E5%BA%A6%E9%87%8F%E5%AD%A6%E4%B9%A0/" class="article-date">
+  <time datetime="2019-10-05T01:27:16.000Z" itemprop="datePublished">2019-10-05</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>kk近邻学习</li>
+<li>低维嵌入</li>
+<li>主成分分析<ul>
+<li>最近重构性</li>
+<li>最大可分性</li>
+</ul>
+</li>
+<li>核化线性降维</li>
+<li>流形学习<ul>
+<li>等度量映射</li>
+<li>局部线性嵌入</li>
+</ul>
+</li>
+<li>度量学习</li>
+</ul>
+<span id="more"></span>
+<h2 id="10-1-k-近邻学习"><a href="#10-1-k-近邻学习" class="headerlink" title="10.1 $k$近邻学习"></a>10.1 $k$近邻学习</h2><p><strong>$k$近邻</strong>（$k$-Nearest Neighbor，简称kNN）：是一种常用的监督学习方法。其在给定测试样本的情况下，基于某种距离度量找出训练集中与其最靠近的$k$个“近邻”的样本点信息进行预测。通常，对分类任务采用“投票法”；在回归任务中使用“平均法”；还可基于距离进行加权，应用于投票或回归。</p>
+<p><strong>懒惰学习</strong>（lazy learning）：在训练阶段仅仅是把样本保存起来，训练时间开销为零，在收到测试样本后再进行处理。</p>
+<p><strong>急切学习</strong>（eager learning）：在训练阶段就对样本进行学习处理的方法。</p>
+<p>$k$近邻学习是“<em>懒惰学习</em>”（lazy learning）的著名代表。因为它与其他学习方法相比有一个明显的不同之处：它没有显式的训练过程。</p>
+<p><img src="https://i.loli.net/2019/10/02/wjOdJsx6cg5qbv2.png" alt="$k$近邻分类器示意图"></p>
+<p>显然，$k$是一个重要参数，显著决定分类结果。同时，采用不同的距离计算方法，“近邻”可能会有显著差别，从而会导致分类结果显著不同。</p>
+<p>假定距离计算是恰当的情况下，讨论最邻近分类器（1NN，即$k=1$）在二分类任务上的性能。</p>
+<p>对给定测试样本$x$，有最近邻样本$z$，则最近邻分类器出错的概率即$x$的标记与$z$不同的概率</p>
+<script type="math/tex; mode=display">P(err) = 1 - \sum_{c \in \gamma}P(c|x)P(c|z)</script><p>假设样本独立同分布，且对任意$x$和任意正小数$\delta$，在$x$附近$\delta$距离范围内总能找到一个训练样本$z$。令$c^*=\argmax_{c \in \gamma}P(c|x)$表示贝叶斯最优分类的结果，则</p>
+<script type="math/tex; mode=display">\begin{aligned} P(err) &= 1 - \sum_{c \in \gamma}P(c|x)P(c|z) \\ &\simeq 1 - \sum_{c \in \gamma}P^2(c|x) \\ &\leqslant 1 - P^2(c^* |x)\\ &= \left ( 1 + P(c^* |x) \right ) \left ( 1 - P(c^* |x) \right ) \\ &\leqslant 2\times \left ( 1 - P(c^*|x) \right ) \end{aligned}</script><p>于是，可以得出结论：虽然$k$近邻分类器简单，但其错误率不会超过最优贝叶斯分类器错误率的2倍。</p>
+<h2 id="10-2-低维嵌入"><a href="#10-2-低维嵌入" class="headerlink" title="10.2 低维嵌入"></a>10.2 低维嵌入</h2><p>在上节对$k$近邻分类器性能的分析中，对样本作出假设：对任意$x$和任意正小数$\delta$，在$x$附近$\delta$范围内总能找到一个训练样本$z$，即样本密度足够大，这被称为<em>密采样</em>（density sample）。在现实中，对均匀分布的样本点归一化后，若假定$\delta = 0.001$，即需要1000个样本点，但这仅仅是对于单属性条件而言，若在20个属性的条件下，则需要样本点的个数即为$(10^3)^{20} = 10^{60}$，显然，这是无法接受的。</p>
+<p>所以，发生这种在高维情形下出现的数据样本稀疏、距离计算困难的等问题时，需要辅以方法缓解“<em>维数灾难</em>”（curse of dimensionality）。其中，一个重要的途径是<em>降维</em>（dimension reduction），亦称“维数约简”。</p>
+<p>降维将通过某些数学变换将原始高维属性空间转变为一个低维“<em>子空间</em>”（subspace），从而使子空间中样本密度大幅提高，同时简化了距离计算。这针对于需要面对高维的数据样本，却仅有低维分布与其学习任务密切相关的情况，此时被称为高维空间中的一个低维“<em>嵌入</em>”（embedding）。</p>
+<p><strong>多维缩放</strong>（Multiple Dimension Scaling，简称MDS）：一种经典的降维方法，可以在低维空间中保持原始空间中样本之间的距离。以下作简单介绍：</p>
+<p>假定$m$个样本在原始空间中的距离矩阵维$D \in R^{m\times m}$，其第$i$行第$j$个元素$\text{dist}<em>{ij}$为样本$x_i$到$x_j$的距离。目标是获得样本在$d’$维空间中的表示$Z \in R^{d’ \times m}$，$d’ \leqslant d$，且任意两样本在$d’$维空间中的欧氏距离等于原始空间中的距离，即$\left | z_i - z_j \right | =\text{dist}</em>{ij}$。</p>
+<p>令$B=Z^TZ \in R^{m\times m}$，$B$是样本降维后对应的内积矩阵，$b_{ij} = z_i^Tz_j$，从而有</p>
+<script type="math/tex; mode=display">\begin{aligned} \text{dist}_{ij}^2 &= \left \| z_i \right \|^2 + \left \| z_j \right \|^2 - 2 z_i^T z_j \\ &= b_{ii} + b_{jj} - 2b_{ij} \end{aligned}</script><p>为便于后续讨论，中心化降维后的样本$Z$，即有$\sum^m<em>{i=1}z_i=0$。显然，此时矩阵$B$的行和列之后均为零，$\sum^m</em>{j=1} b<em>{ij} = \sum^m</em>{i=1} b_{ij} = 0$，则可知</p>
+<script type="math/tex; mode=display">\begin{aligned} \sum^m_{i=1} \text{dist}_ {ij}^2 = \sum^m_{i=1}(b_{ii} + b_{jj} - 2b_{ij}) = \text{tr}(B) + mb_{jj} \\ \sum^m_{j=1} \text{dist}_ {ij}^2 = \sum^m_{j=1}(b_{ii} + b_{jj} - 2b_{ij}) = \text{tr}(B) + mb_{ii} \\ \sum^m_{i=1}\sum^m_{j=1} \text{dist}_ {ij}^2 = \sum^m_{i=1}\sum^m_{j=1}(b_{ii} + b_{jj} - 2b_{ij}) = 2m\text{tr}(B) \end{aligned}</script><p>进一步可知</p>
+<script type="math/tex; mode=display">\begin{aligned} \text{dist}_ {i\cdot}^2 = \frac{1}{m} \sum^m_{j=1}\text{dist}_ {ij}^2 = \frac{\text{tr}(B)}{m} + b_{jj} \\ \text{dist}_ {\cdot j}^2 = \frac{1}{m}\sum^m_{i=1}\text{dist}_ {ij}^2 = \frac{\text{tr}(B)}{m} + b_{ii} \\ \text{dist}_ {\cdot \cdot}^2 = \frac{1}{m^2}\sum^m_{i=1}\sum^m_{j=1}\text{dist}_ {ij}^2 = 2\frac{\text{tr}(B)}{m} \end{aligned}</script><p>所以有</p>
+<script type="math/tex; mode=display">b_{ij} = \frac{1}{2} (\text{dist}_ {i\cdot}^2+\text{dist}_ {\cdot j}^2) - \text{dist}_ {\cdot \cdot}^2 - \text{dist}_ {ij}^2</script><p>由上式即可通过距离矩阵$D$求得内积矩阵$B$。</p>
+<p>对矩阵$B$进行<em>特征值分解</em>（eigenvalue decomposition），$B=V\Lambda V^T$，其中$\Lambda=\text{diag}(\lambda<em>1,\lambda_2,\dots,\lambda_d)$为特征值构成的对角矩阵，$\lambda_1 \geqslant \lambda_2 \geqslant \dots \geqslant \lambda_d$，$V$为特征向量矩阵。假定其中有$d^*$个非零特征值，构成对角矩阵$\Lambda</em> <em>=\text{diag}(\lambda<em>1,\lambda_2, \dots,\lambda</em>{d^ </em>})$，$V_ *$表示相应的特征向量矩阵，则$Z$为</p>
+<script type="math/tex; mode=display">Z = \Lambda_*^{\frac{1}{2}}V_*^T \in R^{d^* \times m}</script><p>在现实应用中为了有效降维，通常不会要求距离的严格相等，因此，可取$d’ \ll d$个最大特征值构成对角矩阵$\tilde{\Lambda} = \text{diag}(\lambda<em>1,\lambda_2,\dots,\lambda</em>{d’})$，$\tilde{V}$是相应的特征向量矩阵，则$Z$为</p>
+<script type="math/tex; mode=display">Z = \tilde{\Lambda}^{\frac{1}{2}}\tilde{V}^T \in R^{d'\times m}</script><p>一般而言，为得到原始子空间，最简单的方法是对原始高维空间进行线性变换，对给定$d$维空间中的样本$x = (x_1,x_2,\dots,x_m) \in R^{d \times m}$，变换后得到$d’ \leqslant d$维空间中的样本</p>
+<script type="math/tex; mode=display">Z = W^T X</script><p>其中，$W\in R^{d\times d’}$是变换矩阵，$Z \in R^{d’ \times m}$是降维后的矩阵。变化矩阵可以看作$d’$个$d$维基向量，$z<em>i=W^Tx_i$是第$i$个样本与这$d’$个基向量分别作内积而得到的$d’$维属性基向量，即$z_i$是原属性$x_i$在新坐标系${w_1,w_2,\dots,w</em>{d’}}$中的坐标向量，若$w_i$和$w_j$（$i \neq j$）正交，则新坐标系是一个正交坐标系，$W$为正交变换。这种基于线性变换的降维方法称为线性降维方法。</p>
+<h2 id="10-3-主成分分析"><a href="#10-3-主成分分析" class="headerlink" title="10.3 主成分分析"></a>10.3 主成分分析</h2><p><strong>主成分分析</strong>（Principal Component Analysis，简称PCA）：是最常用的一种降维方法。使用一个超平面对正交属性空间内的所有样本点进行恰当的表达，即将所有样本点投影到一个超平面上，这个超平面大概需要如下性质：</p>
+<ul>
+<li>最近重构性：样本点到这个超平面的距离足够近；</li>
+<li>最大可分性：样本点在这个超平面上的投影尽可能分开；</li>
+</ul>
+<p>基于以上两个性质，可分别得到主成分分析的两种等价推导。</p>
+<h3 id="最近重构性"><a href="#最近重构性" class="headerlink" title="最近重构性"></a>最近重构性</h3><p>假定数据已中心化，则有$\sum^m<em>{i=1}x_i=0$，假定变换后的新坐标系为${w_1,w_2,\dots,w_d}$，其中$w_i$是标准正交基向量，$\left | w_i \right |_2 = 1$，$w_i^Tw_j=0$（$i\neq j$）。丢弃新坐标系中的部分坐标，使维度降到$d’ &lt; d$，则样本点$x_i$在$d’$维上的投影为$z=(z</em>{i1},z<em>{i2},\dots,z</em>{id’})$，其中$z<em>{ij}=w_j^Tx_i$是$x_i$在低维$j$下的投影，基于$z_i$重构$x_i$可得到$\hat x_i = \sum^{d’}</em>{j=1}z _{ij}w_j$。</p>
+<p>考虑整个样本集，原样本点与其基于投影重构的样本点$\hat x_i$之间的距离为</p>
+<script type="math/tex; mode=display">\begin{aligned} \sum^m_{i=1} \left \| \sum^{d'}_{j=1}z _{ij}w_j-x_i \right \|^2_2 &= \sum^m_{i=1} \left \| Wz_i - x_i \right \|_2^2 \\ &= \sum^m _{i=1}(Wz_i)^TWz_i - 2\sum^m_{i=1}z_i^TW^Tx_i + \sum^m _{i=1}x_i^Tx_i \\ &= \sum^m _{i=1}z_i^TW^TWz_i - 2\sum^m _{i=1}z_i^TW^TW^{-1T}z_i + \text{const} \\ &= -\sum^m _{i=1}z_i^Tz_i + \text{const} \\ &\propto -\text{tr}\left (W^T \left (\sum^m _{i=1}x_i^Tx_i \right )W \right ) \end{aligned}</script><p>其中$W = {w<em>1,w_2,\dots,w_d}$，考虑$w_j$是标准正交基，$\frac{1}{m-1}\sum^m</em>{i=1} x_ix_i^T$是协方差矩阵，则根据上式可得主成分分析的优化目标为</p>
+<script type="math/tex; mode=display">\begin{aligned} \min _{W} \ \  -\text{tr}(W^TXX^TW) \\ \text{s.t.  } W^TW=I. \end{aligned}</script><h3 id="最大可分性"><a href="#最大可分性" class="headerlink" title="最大可分性"></a>最大可分性</h3><p>使样本点$x_i$在新空间超平面上的投影$W^Tx_i$的方差最大化，投影后的样本点的协方差阵为$\sum_i W^Tx_ix_I^TW$，于是优化目标为</p>
+<script type="math/tex; mode=display">\begin{aligned} \max _{W} \ \  \text{tr}(W^TXX^TW) \\ \text{s.t.  } W^TW=1. \end{aligned}</script><p>显然，与前文最近重构法所得结论等价。</p>
+<p>利用拉格朗日乘子法得</p>
+<script type="math/tex; mode=display">XX^Tw_i = \lambda_i w_i</script><p>之后，对协方差阵$XX^T$进行特征值分解，使$\lambda<em>1 \geqslant \lambda_2 \geqslant,\dots,\geqslant \lambda_d$，取前$d’$个特征值对应的特征向量，构成$W^*=(w_1,w_2,\dots,w</em>{d’})$，即取得PCA的解。</p>
+<p>PCA仅需保留$W^*$与样本的均值向量即可通过简单的向量减法和矩阵-向量乘法将原数据集降维。在降维过程中有$(d-d’)$个最小的特征值被舍弃，一方面，舍弃这部分信息可使样本的采样密度增大（重要动机）；另一方面，这些小的特征值通常与噪声相关，舍弃它们在一定程度上可以起到降噪的作用。</p>
+<h2 id="10-4-核化线性降维"><a href="#10-4-核化线性降维" class="headerlink" title="10.4 核化线性降维"></a>10.4 核化线性降维</h2><p>在线性降维方法中，假设从高维空间到低维空间的函数映射是线性的，但在现实任务中，很多情况都需要非线性映射才能找到恰当的低维嵌入。对于这种情况，如果直接使用线性降维方法，将会丢失原本的低维结构。原本采样的低维空间称为“<em>本真</em>”（intrinsic）低维空间。</p>
+<p>非线性降维的一种常见方法，即是基于核技巧对线性降维方法进行<em>核化</em>（kernelized）。以下以<em>核主成分分析</em>（Kernelized Principle Component Analysis，简称KPCA}）为例：</p>
+<p>假定将高维特征空间中的数据投影到由$W=(w_1,w_2,\dots,w_d)$确定的超平面上，则对于$w_j$由PCA中引入拉格朗日乘子的式子有</p>
+<script type="math/tex; mode=display">\left ( \sum^m_{i=1}z_iz_i^T \right ) w_j = \lambda_jw_j</script><p>其中$z_i$是样本点$x_i$在高维特征空间中的像。易知</p>
+<script type="math/tex; mode=display">\begin{aligned} w_j &= \frac{1}{\lambda_j}\left ( \sum^m_{i=1} z_iz_i^T \right )w_j = \sum^m_{i=1}z_i \frac{z_i^Tw_j}{\lambda_j} \\ &= \sum^m_{i=1}z_i\alpha_i^j \end{aligned}</script><p>其中$\alpha_i^j = \frac{1}{\lambda_j}z_i^Tw_j$是$\alpha_i$的第$j$个分量。假定$z_i$是由原始属性空间中的样本点$x_i$通过映射$\phi$产生，即$z_i = \phi(x_i)$，$i=1,2,\dots,m$。</p>
+<ul>
+<li><p>如果$\phi$可以被显式地表达出来，则通过它将样本映射至高维特征空间，再在特征空间中实施PCA即可。则有<script type="math/tex">\begin{aligned} \left ( \sum^m_{i=1}\phi(x_i)\phi(x_i)^T \right ) w_j = \lambda_jw_j \\ w_j=\sum^m_{i=1} \phi(x_i)\alpha_i^j \end{aligned}</script></p>
+</li>
+<li><p>但在一般情况下，难以显式表达出$\phi$的具体形式，所以引入核函数<script type="math/tex">\kappa(x_i,x_j) = \phi(x_i)^T\phi(x_j)</script>进一步有<script type="math/tex">K\alpha^j=\lambda_j\alpha^j</script>其中$K$为$\kappa$对应的核矩阵，$(K)_{ij}=\kappa(x_i,x_j)$，$\alpha_j=(\alpha^j_1;\alpha^j_2;\dots;\alpha^j_m)$。显然，对上式进行特征值分解，即可取得相对应的特征向量。</p>
+</li>
+</ul>
+<p>对新样本$x$，其投影后的第$j$（$j=1,2,\dots,d’$）维坐标为</p>
+<script type="math/tex; mode=display">\begin{aligned} z_j &= w^T_j\kappa(x) = \sum^m_{i=1}\alpha_i^j\kappa(x_i)^T\kappa(x) \\ &= \sum^m_{i=1}\alpha_i^j\kappa(x_i,x) \end{aligned}</script><p>其中$\alpha_i$已经过规范化。从最终式中可以看出，为计算投影后的坐标需要对所有样本进行求和，所以它的计算开销较大。</p>
+<h2 id="10-5-流形学习"><a href="#10-5-流形学习" class="headerlink" title="10.5 流形学习"></a>10.5 流形学习</h2><p><strong>流形学习</strong>（manifold learning）：是一类借鉴了拓扑流形概念的降维方法。“流形”是指在局部与欧氏空间同胚的空间，即它在局部具有欧氏空间的性质，可以用欧氏距离进行距离计算。</p>
+<p>由此对降维带来启发：可以在局部建立降维映射关系，这样一来，即便其在原始空间内的分布再复杂，只要在局部仍具有欧氏空间性质，依旧可以利用推广到全局的局部映射关系完成映射。</p>
+<h3 id="10-5-1-等度量映射"><a href="#10-5-1-等度量映射" class="headerlink" title="10.5.1 等度量映射"></a>10.5.1 等度量映射</h3><p><strong>等度量映射</strong>（Isometric Mapping，简称Isomap）：基本出发点是，认为在低维嵌入高维后，由于高维空间中的直线距离在低维空间中是不可达的，所以高维空间中的直线距离存在误导性。主张以“<em>测地线</em>”（geodesic）作为低维嵌入流形的两点间距离，即在曲面上两点间的距离，同时是两点之间的本真距离。</p>
+<p>计算测地线距离，需要在流形的局部寻找近邻点，通过近邻点间的距离可用欧氏距离计算的性质，建立一个近邻连接图。在近邻连接图上计算得到的最短距离即为测地线距离。</p>
+<p>对于近邻连接图上的测地线距离，可利用Dijktra算法或Floyd算法计算。在得到距离后，可通过MDS方法对样本点进行降维处理，得到样本点的低维坐标。最后，以样本点的高维坐标为输入，低维坐标为输出，训练一个回归学习器用于对新样本的低维空间进行预测。显然，这仅是权宜之计，但目前还没有更好的方法。</p>
+<p>对近邻图的构建有两种方法：</p>
+<ul>
+<li>指定近邻点个数，指定最近的$k$个样本点为近邻点，得到的近邻图为$k$近邻图；</li>
+<li>指定距离阈值$\epsilon$，距离小于$\epsilon$的样本点即为近邻点，得到的近邻图为$\epsilon$近邻图。</li>
+</ul>
+<p>以上两种方法均存在不足，因此使用时需谨慎，避免给后续计算造成误导。</p>
+<h3 id="10-5-2-局部线性嵌入"><a href="#10-5-2-局部线性嵌入" class="headerlink" title="10.5.2 局部线性嵌入"></a>10.5.2 局部线性嵌入</h3><p><strong>局部线性嵌入</strong>（Locally Linear Embedding，简称LLE）：LLE试图保持邻域内样本点之间的线性关系。</p>
+<p>LLE先为每个样本$x$找到其近邻下标集合$Q_i$，然后计算出基于$Q_i$的样本点对$x_i$进行线性重构的系数$w_i$：</p>
+<script type="math/tex; mode=display">\begin{aligned}\min_{w_1,w_2,\dots,w_m} &\sum^m_{i=1}\left \| x_i - \sum_{j\in Q_i} w_{ij}x_j \right \|^2_2  \\ &\text{s.t.  } \sum_{j \in Q_i} w_{ij} = 1 \end{aligned}</script><p>其中，$x<em>i$和$x_j$均为已知，令$C</em>{jk} = (x<em>i - x_j)^T(x_i-x_k)$，$w</em>{ij}$有闭式解</p>
+<script type="math/tex; mode=display">w_{ij} = \frac{\sum_{k \in Q_i} C_{jk}^{-1}}{\sum_{l,s \in Q_i} C_{ls}^{-1}}</script><p>由于目标是保持其邻域内样本点之间的线性关系。所以LLE在低维空间中保持$w_i$不变，那么，$x_i$对应的低维空间坐标即可通过下式求解：</p>
+<script type="math/tex; mode=display">\min_{z_1,z_2,\dots,z_m} \sum^m_{i=1} \left \| z_i - \sum_{j \in Q_i} w_{ij}z_j \right \|^2_2</script><p>不难发现，该式与求解线性重构系数$w<em>i$的目标同形，唯一的区别在于需要确定的对象。于是，可令$Z = (z_1,z_2,\dots,z_m) \in R^{d’ \times m}$，$(W)</em>{ij} = w _{ij}$，</p>
+<script type="math/tex; mode=display">M = (I - W)^T(I - W)</script><p>则可将目标重写为</p>
+<script type="math/tex; mode=display">\begin{aligned} &\min_Z \text{  tr} (ZMZ^T) \\ &\text{  s.t.  } ZZ^T = I \end{aligned}</script><p>显然，可以通过特征值分解求解，$M$最小的$d’$个特征值对应的特征向量组成的矩阵即为$Z^T$。</p>
+<h2 id="10-6-度量学习"><a href="#10-6-度量学习" class="headerlink" title="10.6 度量学习"></a>10.6 度量学习</h2><p>前面对数据进行降维处理的主要目的还是在于，减少数据的维度避免维数灾难，从而方便距离的计算。那么，如果可以直接进行距离学习，找到一个合适的距离度量，即不必再对数据进行降维了。这就是<em>度量学习</em>（metric learning）的基本动机。</p>
+<p>如果要进行度量学习，必须要先有一个固定的距离度量表达形式，目前还没有接触过附带参数的距离度量表达式，因此它们无法通过对数据集的学习进行改进，所以需要先做一个推广。</p>
+<p>对两个$d$维样本$x_i$和$x_j$，它们之间的平方欧氏距离可以写作</p>
+<script type="math/tex; mode=display">\text{dist}^2 _{ed}(x_i,x_j) = \left \| x_i - x_j \right \|^2_2 = \sum^d_{k=1} dist^2_{ij,k}</script><p>其中，$dist^2_{ij,k}$表示$x_i$与$x_j$在第$k$维上的距离。若假定不同属性的重要性不同，则可引入权重变量$w$，从而得到</p>
+<script type="math/tex; mode=display">\begin{aligned} \text{dist}^2 _{wed}(x_i,x_j) &= \left \| x_i - x_j \right \|^2_2 = \sum^d_{k=1} w_k \cdot dist^2_{ij,k} \\ &= (x_i - x_j)^TW(x_i - x_j) \end{aligned}</script><p>其中，$w<em>{k} \geqslant 0$，$W = \text{diag}(w)$是一个对角矩阵，$(W)</em>{ii} = w_i$。</p>
+<p>式中的$W$可由学习得到，但需要注意的是，$W$的非对角线元素均为零，意味着其属性之间无关，但在现实问题中，往往无法达到这一条件。因此，将式中的$W$矩阵替换成一个普通的半正定对称矩阵$M$，这样就得到了<em>马氏距离</em>（Mahalanobis distance）（在标准的马氏距离中$M$为协方差矩阵的逆，即$M=\Sigma^{-1}$，但在度量学习中其被赋予了更大的灵活性）</p>
+<script type="math/tex; mode=display">\text{dist}_{\text{mah}}^2(x_i,x_j) = \left \| x_i - x_j \right \|^2_{M} = (x_i - x_j)^T M(x_i - x_j)</script><p>其中$M$亦称“度量矩阵”，度量学习即是对$M$进行学习。需要注意的是，为了保持距离的非负且对称，$M$必须是（半）正定矩阵，即必有正交基$P$使得$M$能写为$M=PP^T$。</p>
+<p>之后，需要将$M$直接嵌入到近邻分类器的评价指标中，以方便对$M$进行学习。例，在<em>近邻成分分析</em>（Neighbourhood Component Analysis）中使用的方法。</p>
+<p>在近邻成分分析中，我们将在判别时普遍使用的多数投票法，替换为引入距离权重的概率投票法。对于任意样本$x_j$，他对$x_i$的分类结果影响的概率为</p>
+<script type="math/tex; mode=display">p_{ij} = \frac{\exp(-\left \| x_i - x_j \right \|^2_M)}{\sum_l \exp(-\left \| x_i - x_l \right \|^2_M)}</script><p>显然，当$i=j$时，$p_{ij}$最大，$x_j$对$x_i$的影响随距离增大而减小。以<em>留一法</em>（LOO）正确率的最大化为目标，则它被自身之外的所有样本正确分类的概率为</p>
+<script type="math/tex; mode=display">p_i = \sum_{j \in \Omega_i} p_{ij}</script><p>其中，$\Omega_i$表示与$x_i$属于同类别的样本的下标集合。则在整个样本集上的留一法正确率为</p>
+<script type="math/tex; mode=display">\sum^m_{i=1}p_i = \sum^m_{i=1}\sum_{j \in \Omega_i} p_{ij}</script><p>结合$p_{ij}$的公式和$M=PP^T$，可导出NCA的优化目标为</p>
+<script type="math/tex; mode=display">\min_P 1 - \sum^m_{i=1}\sum_{j \in \Omega_i} \frac{\exp(-\left \| x_i - x_j \right \|^2_M)}{\sum_l \exp(-\left \| x_i - x_l \right \|^2_M)}</script><p>对于这个无约束的优化问题，可以利用随机梯度算法或共轭梯度算法等方法对其求解，即可得到最大化近邻分类器LOO正确率的距离度量矩阵$M$。</p>
+<p>除了可以使用监督学习目标中的错误率作为度量学习的优化目标以外，还可以在度量学习中引入领域知识。例如，如果已知某些样本相似、某些样本不相似，则可以根据此定义“<em>必连</em>”（must-link）约束集合$\mathcal{M}$与“<em>勿连</em>”（connot-link）约束集合$\mathcal{C}$。于是，可以通过$(x_i,x_j) \in \mathcal{M}$表示相似，$(x_i,x_j) \in \mathcal{C}$表示不相似。根据相似的样本之间距离较小，不相似的样本之间距离较大的原则，可以构建出关于度量矩阵$M$的凸优化问题：</p>
+<script type="math/tex; mode=display">\begin{aligned} &\min_M \sum_{(x_i,x_j) \in \mathcal{M}} \left \| x_i - x_j \right \|^2_M \\ &\text{  s.t.  } \sum_{(x_i,x_k) \in \mathcal{C}} \left \| x_i - x_k \right \|^2_M \geqslant 1, \\ &\ \ \ \text{   } \text{   } \ \ \ \ M \succeq 0. \end{aligned}</script><p>其中约束$M \succeq 0$表示度量矩阵$M$必须是半正定的。上式的意义在于：要求在与不相似样本间的距离不小于1的前提下，使相似样本间的距离尽可能小。</p>
+<p>不同度量学习方法对好的度量矩阵$M$的要求不同，如果求得的$M$是一个低秩矩阵，则通过对$M$的特征值分解，总能找到一组正交基，其正交基数目等于矩阵$M$的秩$\text{rank}(M)$，小于原属性数$d$。所以，此时度量学习学得的结果，可以衍生出一个降维矩阵$P \in R^{d \times \text{rank}(M)}$，可用于降维。不过需要注意的是，不能依赖此类方法进行降维，因为通常情况下不要求度量矩阵$M$是低秩的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/10/05/Chapter10%E9%99%8D%E7%BB%B4%E4%B8%8E%E5%BA%A6%E9%87%8F%E5%AD%A6%E4%B9%A0/" data-id="ckv7nxmmq0001mcoj3xh2halq" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8A%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%8B/" rel="tag">《机器学习》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/10/17/Chapter11%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E4%B8%8E%E7%A8%80%E7%96%8F%E5%AD%A6%E4%B9%A0/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Chapter11 特征选择与稀疏学习
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2019/10/02/Chapter9%E8%81%9A%E7%B1%BB/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">Chapter9 聚类</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

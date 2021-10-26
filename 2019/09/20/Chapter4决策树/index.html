@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    Chapter4 决策树 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-Chapter4决策树" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  Chapter4 决策树
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/09/20/Chapter4%E5%86%B3%E7%AD%96%E6%A0%91/" class="article-date">
+  <time datetime="2019-09-20T04:39:16.000Z" itemprop="datePublished">2019-09-20</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>基本流程</li>
+<li>划分选择<ul>
+<li>信息增益</li>
+<li>增益率</li>
+<li>基尼指数</li>
+</ul>
+</li>
+<li>剪枝处理<ul>
+<li>预剪枝</li>
+<li>后剪枝</li>
+</ul>
+</li>
+<li>连续与缺失值<ul>
+<li>连续值处理</li>
+<li>缺失值处理</li>
+</ul>
+</li>
+<li>多变量决策树</li>
+</ul>
+<span id="more"></span>
+<h2 id="4-1-基本流程"><a href="#4-1-基本流程" class="headerlink" title="4.1 基本流程"></a>4.1 基本流程</h2><p><strong>决策树</strong>（decision tree）：基于树结构进行决策的一种常见的机器学习算法。决策树学习的目的在于，产生一棵泛化能力强的决策树，其基本流程采用“<em>分而治之</em>”（divide-and-conquer）的策略（伪代码如下）。</p>
+<figure class="highlight vb"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">输入：训练集 D = &#123;(x1,y1),(x2,y2),...,(xm,ym)&#125;;</span><br><span class="line">      属性集 A = &#123;a1,a2,...,ad&#125;.</span><br><span class="line">过程：函数TreeGenerate(D,A)</span><br><span class="line">生成结点node;</span><br><span class="line"><span class="keyword">if</span> D中样本全属于同一类别C <span class="keyword">then</span></span><br><span class="line">    将node标记为C类叶结点; <span class="keyword">return</span>;</span><br><span class="line"><span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line"><span class="keyword">if</span> A == 空集 <span class="built_in">OR</span> D中样本在A上取值相同 <span class="keyword">then</span></span><br><span class="line">    将node标记为叶结点，其类别标记为D中样本数最多的类; <span class="keyword">return</span>;</span><br><span class="line"><span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line">从A中选择最优划分属性a*;</span><br><span class="line"><span class="keyword">for</span> a*的每一个值av* <span class="keyword">do</span></span><br><span class="line">    为node生成一个分支; 令Dv表示D中在a*上取值为av*的样本子集;</span><br><span class="line">    <span class="keyword">if</span> Dv 为空 <span class="keyword">then</span></span><br><span class="line">        将分支结点标记为叶结点，其类别标记为D中样本最多的类; <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        以TreeGenerate(Dv, A\&#123;a*&#125;)为分支结点</span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">if</span></span><br><span class="line"><span class="keyword">end</span> <span class="keyword">for</span></span><br><span class="line">输出：以node为根结点的一颗决策树</span><br></pre></td></tr></table></figure>
+<h2 id="4-2-划分选择"><a href="#4-2-划分选择" class="headerlink" title="4.2 划分选择"></a>4.2 划分选择</h2><p>划分选择的方法是决策树学习的关键。一般而言，随着划分过程的进行，在决策树的分支结点所包含的样本应该是越来越接近同一类，其接近同一类的程度被称为“<em>纯度</em>”（purity）。</p>
+<h3 id="4-2-1-信息增益"><a href="#4-2-1-信息增益" class="headerlink" title="4.2.1 信息增益"></a>4.2.1 信息增益</h3><p><strong>信息熵</strong>（information entropy）：是度量样本集合纯度最常用的一种指标，对样本集合$D$中的第$k$类样本所占的比例为$p_k(k=1,2,…,\left | \gamma \right |)$的信息熵为</p>
+<script type="math/tex; mode=display">Ent(D) = -\sum^{\left | \gamma \right |}_{k=1} p_k \log_2{p_k}</script><p>（计算中约定：若$p=0$，则$p\log_2p = 0$）</p>
+<p>显然，Ent(D)的值越小，集合D的纯度越高。（Ent(D)的最小值为0，最大值为$\log_2 {\left | \gamma \right |}$）</p>
+<p>为衡量使用某一属性进行划分所获得的“纯度提升”，定义“<em>信息增益</em>”（information gain）.</p>
+<p><strong>信息增益</strong>（information gain）：是度量使用某一属性进行划分所获得的“纯度提升”。假定离散属性$a$有$V$个可能的取值${a^1,a^2,…,a^V}$，若使用$a$来对样本集$D$进行划分，则会产生$V$个分支结点，其中第$v$个分支结点包含了$D$中所有在属性$a$上取值为$a_v$的样本，记为$D^v$。</p>
+<script type="math/tex; mode=display">Gain(D,a) = Ent(D) - \sum^V_{v=1} \frac{\left | D^v \right |}{\left | D \right |}Ent(D^v)</script><p>其中$\frac{\left | D^v \right |}{\left | D \right |}$为分支结点的权重，即分支结点的样本数越多，影响越大。显然，信息增益越大，则使用属性$a$进行划分所获得的“纯度提升”越大。ID3决策树学习算法就是以信息增益为准则划分属性的。</p>
+<h3 id="4-2-2-增益率"><a href="#4-2-2-增益率" class="headerlink" title="4.2.2 增益率"></a>4.2.2 增益率</h3><p>实际上，“信息增益”会对可取值较多的属性产生偏好，为减少这种不利影响，可以不直接使用“信息增益”，而是使用“<em>增益率</em>”（gain ratio）来选择最优划分属性。</p>
+<script type="math/tex; mode=display">Gain\_ratio(D,a) = \frac{Gain(D,a)}{\mathbb{IV}(a)}</script><p>其中</p>
+<script type="math/tex; mode=display">\mathbb{IV}(a) = -\sum^V_{v=1} \frac{|D^v|}{|D|} \log_2 ^\frac{|D^v|}{|D|}</script><p>称为属性a的“<em>固有值</em>”（intrinsic value），其值会随着属性a可取值数量的增大而增大。</p>
+<p>需要注意的是，增益率会对可取值数目较少的属性产生偏好，因此通常不直接使用增益率。在C4.5算法中，先从候选划分属性中找出信息增益高于平均水平的属性，再从中选择增益率最高的。</p>
+<h3 id="4-2-3-基尼指数"><a href="#4-2-3-基尼指数" class="headerlink" title="4.2.3 基尼指数"></a>4.2.3 基尼指数</h3><p>另一种较为常用的度量数据集纯度的方法——基尼指数：</p>
+<script type="math/tex; mode=display">Gini(D) = \sum ^{|\gamma|}_{k=1} \sum_{k' \neq k} p_kp_{k'} = 1 - \sum ^{|\gamma|}_{k=1} p_k^2</script><p>直观地，Gini(D)反应了从数据集D中随机抽取两个样本，其类别标记不一致的概率，所以，Gini(D)越小，数据集D的纯度越高。</p>
+<p>则属性a的基尼指数为</p>
+<script type="math/tex; mode=display">Gini\_index(D,a) = \sum ^V_{v=1} \frac{\left | D^v \right |}{\left | D \right |} Gini(D^v)</script><p>所以，从A中选择基尼指数最小的属性作为最优划分属性。</p>
+<h2 id="4-3-剪枝处理"><a href="#4-3-剪枝处理" class="headerlink" title="4.3 剪枝处理"></a>4.3 剪枝处理</h2><p><strong>剪枝</strong>（pruning）：决策树学习处理过拟合的主要手段。分为两种基本策略：预剪枝和后剪枝。</p>
+<h3 id="4-3-1-预剪枝"><a href="#4-3-1-预剪枝" class="headerlink" title="4.3.1 预剪枝"></a>4.3.1 预剪枝</h3><p><strong>预剪枝</strong>（prepruning）：在决策树生成过程中，对每个结点在划分前进行估计，如果其无法使决策树的泛化性能提升，即将该结点标记为叶结点。</p>
+<p>预剪枝的特性：</p>
+<ol>
+<li>可以减少分支的“展开”，一方面降低了过拟合的风险，另一方面减少了训练时间和测试时间的开销；</li>
+<li>相对地，预剪枝基于贪心的本质，容易陷入局部最小的情况，可能会使预剪枝决策树欠拟合。</li>
+</ol>
+<h3 id="4-3-2-后剪枝"><a href="#4-3-2-后剪枝" class="headerlink" title="4.3.2 后剪枝"></a>4.3.2 后剪枝</h3><p><strong>后剪枝</strong>（post-pruning）：在生成决策树后，自底向上地对每个非叶结点进行检查，如果将其替换为叶结点，能提高决策树的泛化性能，则保留替换。</p>
+<p>后剪枝的特性：</p>
+<ol>
+<li>由于后剪枝保留的分支更多，所以欠拟合的风险较小，泛化性能也要优于预剪枝决策树。</li>
+<li>相对地，后剪枝过程是基于已生成的决策树的，而且需要对每个非叶结点逐一检查，大大增加了训练时间。</li>
+</ol>
+<h2 id="4-4-连续与缺失值"><a href="#4-4-连续与缺失值" class="headerlink" title="4.4 连续与缺失值"></a>4.4 连续与缺失值</h2><h3 id="4-4-1-连续值处理"><a href="#4-4-1-连续值处理" class="headerlink" title="4.4.1 连续值处理"></a>4.4.1 连续值处理</h3><p>在决策树中使用的一般为离散值，因此，若要在决策树中使用连续值，就需要使用连续值离散化技术对连续值进行处理。其中最简单的策略是采用<em>二分法</em>（bi-partition）（可见于C4.5决策树算法）。</p>
+<p><strong>二分法</strong>（bi-partition）：对给定的样本集$D$和连续属性$a$，针对属性$a$对样本集进行排序，记为${a^1,a^2,…,a^n}$。将区间$[a^i,a^{i+1})$的中点作为候选划分点，即</p>
+<script type="math/tex; mode=display">T_a = \{\frac{a^i+a^{i+1}}{2}|1 \leq i \leq n-1 \}</script><p>之后将候选点作为离散属性处理即可。</p>
+<h3 id="4-4-2-缺失值处理"><a href="#4-4-2-缺失值处理" class="headerlink" title="4.4.2 缺失值处理"></a>4.4.2 缺失值处理</h3><p>在数据集中常出现缺失值，若直接舍去该样本将造成极大的信息浪费，因而需要对缺失值进行处理。</p>
+<p>待解决的问题有：</p>
+<ol>
+<li>如何在属性值缺失的情况下进行划分属性选择；</li>
+<li>给定划分属性，若样本在该属性上的值缺失，如何对该样本进行划分。</li>
+</ol>
+<p>给定训练集$D$和属性$a$，令$\tilde D$表示在属性$a$上没有缺失值的样本子集，那么根据上述问题1，我们仅可用$\tilde D$来判断属性$a$的优劣。为每个样本$x$赋予权重$\omega _x$，在决策树学习初始阶段权重均为1，定义</p>
+<script type="math/tex; mode=display">\rho = \frac{\sum _{x \in \tilde D} \omega_x}{\sum _{x \in D} \omega_x}</script><script type="math/tex; mode=display">\tilde p_k = \frac{\sum _{x \in \tilde D_k} \omega_x}{\sum _{x \in \tilde D} \omega_x} \ \ (1 \leq k \leq |\gamma|)</script><script type="math/tex; mode=display">\tilde r_v = \frac{\sum _{x \in \tilde D^v} \omega_x}{\sum _{x \in \tilde D} \omega_x} \ \ (1 \leq v \leq V)</script><p>显然，$\rho$对应无缺失值样本在所有样本中占的比例，$\tilde p_k$对应k类的样本在无缺失值样本中占的比例，$\tilde r_v$对应在属性$a$上取值为$a^v$的样本在无缺失值样本中所占的比例。因此，信息增益函数化为</p>
+<script type="math/tex; mode=display">\begin{aligned} Gain(D,a) &= \rho \times Gain(\tilde D,a) \\ &= \rho \times [Ent(\tilde D) - \sum ^V _{v=1}\tilde r_vEnt(\tilde D^v)] \end{aligned}</script><p>其中</p>
+<script type="math/tex; mode=display">Ent(\tilde D) = - \sum ^{|\gamma|}_{k=1} \tilde p_k \log_2^{\tilde p_k}</script><p>至此仅解决了问题1，对于问题2，需要通过修改权值$\omega _x$实现。若样本$x$属性$a$的值已知，则正常处理；样本$x$属性$a$的值未知，则将$x$同时划入所有子节点，并将样本权值在与属性$a^v$对应的子节点中调整为$\tilde r_v \cdot \omega _x$。这相当于将同一个样本，以不同的概率划入到不同的子节点中去。</p>
+<p>上述算法是C4.5中使用的缺失值处理算法。</p>
+<h2 id="4-5-多变量决策树"><a href="#4-5-多变量决策树" class="headerlink" title="4.5 多变量决策树"></a>4.5 多变量决策树</h2><p>将单变量决策树直接推广到多变量时，$d$个属性的样本点对应了$d$维空间中的点，则对其分类即在该空间中寻找分类边界。</p>
+<p>决策树所形成的分类边界有一个明显的特点：<em>轴平行</em>（axis-parallel），即它的分类边界由若干个和轴平行的线段组成。这使得它的分类边界具有较好的可解释性，但是相对地，其生成的决策树将十分复杂，预测需要进行大量的属性测试，预测时间开销将会很大。</p>
+<p>因此，若使用“斜的”分类边界将大大简化决策树模型。“<em>多变量决策树</em>”（multivariate decision tree）即是能实现斜划分甚至更复杂划分的决策树。</p>
+<p>以常见的斜划分多变量决策树为例，在其学习过程中，不是为每个非叶结点寻找一个最优划分属性，而是寻找最优划分属性组合即线性分类器。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/09/20/Chapter4%E5%86%B3%E7%AD%96%E6%A0%91/" data-id="ckv7nxmmw0005mcojhvig0vtm" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8A%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%8B/" rel="tag">《机器学习》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/09/20/Chapter5%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Chapter5 神经网络
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2019/09/20/Chapter3%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">Chapter3 线性模型</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    Chapter3 线性模型 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-Chapter3线性模型" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  Chapter3 线性模型
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/09/20/Chapter3%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B/" class="article-date">
+  <time datetime="2019-09-20T04:39:15.000Z" itemprop="datePublished">2019-09-20</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>基本形式</li>
+<li>线性回归</li>
+<li>对数几率回归<ul>
+<li>对数几率回归应用</li>
+</ul>
+</li>
+<li>线性判别分析</li>
+<li>多分类学习</li>
+<li>附录<ul>
+<li>范数</li>
+<li>瑞利熵和广义瑞利熵</li>
+<li>矩阵的迹</li>
+</ul>
+</li>
+</ul>
+<span id="more"></span>
+<h2 id="3-1-基本形式"><a href="#3-1-基本形式" class="headerlink" title="3.1 基本形式"></a>3.1 基本形式</h2><p><em>线性模型</em>（linear model）学得一个通过属性的线性组合进行预测的函数，用向量形式写成</p>
+<script type="math/tex; mode=display">f(x) = \omega ^T x + b</script><p>即通过训练集，学得$\omega$和$b$即可得到此线性模型。</p>
+<p>由于$\omega$直观体现了相应$x$的权重，因此线性模型具有很好的<em>可解释性</em>（comprehensibility）或<em>可理解性</em>（understandability）。</p>
+<h2 id="3-2-线性回归"><a href="#3-2-线性回归" class="headerlink" title="3.2 线性回归"></a>3.2 线性回归</h2><ul>
+<li>针对于离散型属性的处理：<ul>
+<li>有序型，直接将离散值转化为连续值</li>
+<li>无序型，对应有k个离散值的属性，转化为k阶(0,1)向量</li>
+</ul>
+</li>
+</ul>
+<p>在将离散型属性转化为连续型之后，一般使用最小二乘法对线性回归模型进行参数估计，即可得到所求线性回归模型。</p>
+<p>需要注意的是，在一些特殊情况下，建立的线性回归模型中变量数可能会超过样例数，此时会解出多个$\omega$值，此时将由学习算法的归纳偏好决定，比较常见的做法是引入<em>正则化</em>（regularization）项。</p>
+<p>此外，还可以用线性函数对非线性函数映射。一般地，对单调可微函数$g(\cdot)$（连续且充分光滑），令</p>
+<script type="math/tex; mode=display">y = g^{-1}(\omega^Tx+b)</script><p>得到的模型称为“<em>广义线性模型</em>”（generalized linear model），其中函数$g(\cdot)$称为“<em>联系函数</em>”（link function）。</p>
+<h2 id="3-3-对数几率回归"><a href="#3-3-对数几率回归" class="headerlink" title="3.3 对数几率回归"></a>3.3 对数几率回归</h2><p>在回归学习的情况下做分类任务时，需要构造单调可微函数，将产生的预测值转换为真实标记。对于二分类问题，即将$z=\omega^Tx+b$的实值$z$转化为0/1值问题，最理想的是“<em>单位越阶函数</em>”（unit-step function）</p>
+<script type="math/tex; mode=display">y = \begin{cases}
+0, & \text{ if } z<0; \\
+0.5, & \text{ if } z=0; \\
+1, & \text{ if } z>0.
+\end{cases}</script><p>但由于上式函数不连续，因此需要一个近似它的单调可微的替代函数（surrogate function）。常用的替代函数是对数几率函数（logistic function）：</p>
+<script type="math/tex; mode=display">y = \frac{1}{1+e^{-z}}</script><p>在应用该模型时，可以得到x，y之间关系为</p>
+<script type="math/tex; mode=display">y=\frac{1}{1+e^{-(\omega^Tx+b)}}</script><p>则有</p>
+<script type="math/tex; mode=display">\ln \frac{y}{1-y} = \omega ^Tx+b</script><p>若视y为样本x为正例的可能性，则$\ln \frac{y}{1-y}$，反应的即为x的“<em>对数几率</em>”（log odds，亦称logit）。</p>
+<p>所以该模型的本质是，用线性回归模型去逼近真实值的对数几率。因此，该模型称为“<em>对数几率回归</em>”（logistic regression，亦称logit regression）。回归指的仅是其内层算法逻辑，并非模型的目标，所以该模型是一种分类学习方法而非回归方法。其优点在于，对数据的分布不作要求；并且，其预测结果是对于类别的偏向概率；此外，该函数模型是在任意阶上可导的凸函数，可以使用数值优化算法求得最优解。</p>
+<h3 id="对数几率回归模型应用"><a href="#对数几率回归模型应用" class="headerlink" title="对数几率回归模型应用"></a>对数几率回归模型应用</h3><p>在实际应用中，计算其参数需要使用<em>极大似然法</em>（maximum likelihood method）和<em>凸优化理论</em>实现，具体此处略过不表。</p>
+<h2 id="3-4-线性判别分析"><a href="#3-4-线性判别分析" class="headerlink" title="3.4 线性判别分析"></a>3.4 线性判别分析</h2><p><strong>线性判别分析</strong>（Linear Discriminant Analysis，简称LDA）：一种经典的线性学习方法，亦称“Fisher判别分析”（严格来说，LDA比Fisher判别分析多了各类样本协方差矩阵相同且满秩的假设）。主要思想为，利用投影将训练集样例降维处理，同时根据类别的异同改变其相对距离，最后通过投影的位置对类别进行划分。</p>
+<p>对给定数据集$D={(x_i,y_i)}^m_i=1$，$y_i \in {0.1}$，令$X_i$、$\mu _i$、$\Sigma_i$分别表示第i类示例的集合、均值向量、协方差矩阵。若将数据投影到直线$\omega$上，两类样本的中心在直线上的投影分别为$\omega^T\mu _0$和$\omega^T \mu _1$；若将样本全部投射到直线上，则两类样本的协方差分别为$\omega^T \Sigma _0\omega$和$\omega^T \Sigma _1\omega$，由于直线是一维空间，因此$\omega^T\mu _0$和$\omega^T \mu _1$、$\omega^T \Sigma _0\omega$和$\omega^T \Sigma _1\omega$均为实数。</p>
+<p><strong>LDA的主要原理</strong>：为了使同类样例的投影点尽可能靠近，有以下方法：</p>
+<ol>
+<li>使同类样例投影点的协方差$\omega^T \Sigma _0\omega + \omega^T \Sigma _1\omega$尽可能小</li>
+<li>使异类样例投影点尽可能远离，即使异类样例投影点中心之间的距离$\left | \omega^T\mu_0 - \omega^T\mu_1 \right |^2_2$尽可能大$^{[1]}$</li>
+</ol>
+<p>同时考虑以上条件，即可得到欲最大化目标</p>
+<script type="math/tex; mode=display">\begin{aligned} J &= \frac{\left \| \omega^T\mu_0 - \omega^T\mu_1 \right \|^2_2}{\omega^T \Sigma _0\omega + \omega^T \Sigma _1\omega} \\ &=\frac{\omega^T(\mu_0-\mu_1)(\mu_0-\mu_1)^T\omega}{\omega^T(\Sigma_0+\Sigma_1)\omega} \end{aligned}</script><p>定义“<em>类内散度矩阵</em>”（within-class scatter matrix）</p>
+<script type="math/tex; mode=display">S_\omega=\Sigma_0 + \Sigma_1</script><p>以及“<em>类间散度矩阵</em>”（between-class scatter matrix）</p>
+<script type="math/tex; mode=display">S_b = (\mu_0 - \mu_1)(\mu_0 - \mu_1)^T</script><p>所以，前式可以化简为</p>
+<script type="math/tex; mode=display">J = \frac{\omega^T S_{b}\omega}{\omega^T S_{\omega}\omega}</script><p>得到LDA的优化目标，同时也是$S<em>b$与$S</em>\omega$的“<em>广义瑞利熵</em>”（generalized Rayleigh quotient）$^{[2]}$。</p>
+<p>值得一提的是，LDA存在贝叶斯决策理论的解释，当两类样例集同先验、满足高斯分布且协方差相等时，达到最优分类。</p>
+<p><strong>LDA的多分类推广</strong> LDA可以推广到多分类问题中，假设存在N个类，第i类中样例数为$m_i$，样例总数为$m$，由此定义以下概念</p>
+<p>全局散度矩阵$S_t$：</p>
+<script type="math/tex; mode=display">S_t = S_b +S_\omega = \sum ^m_{i=1} (x_i-\mu)(x_i-\mu)^T</script><p>（其中$\mu$为所有样例的均值向量，即$\mu = \frac{1}{m}\sum ^m_{i=1}x_i$）</p>
+<p>类内散度矩阵$S_\omega$：</p>
+<script type="math/tex; mode=display">S_\omega = \sum^N_{i=1}S_{\omega_i},</script><script type="math/tex; mode=display">S_{\omega_i} = \sum^{m_i}_{k=1}(x_k-\mu)(x_k-\mu)^T</script><p>类间散度矩阵$S_b$：</p>
+<script type="math/tex; mode=display">S_b = S_t-S_\omega = \sum^N_{i=1} m_i(\mu_i-\mu)(\mu_i-\mu)^T</script><p>显然，利用$S<em>t$、$S</em>\omega$、$S_b$中的任意两者，即可构造用于多分类任务的LDA模型。常见的一种是采用优化目标</p>
+<script type="math/tex; mode=display">\max_W = \frac{tr(W^TS_bW)}{tr(W^TS_\omega W)}</script><p>（其中$W \in \mathbb{R}^{d \times (N-1)}$）</p>
+<p>上式可通过引入广义特征值问题求解</p>
+<script type="math/tex; mode=display">S_b W = \lambda S_\omega W</script><p>$W$的闭式解是$S^{-1}_\omega S_b$的$d’$个最大非零广义特征值所对应的向量组成的矩阵（$d’ \leqslant N-1$）</p>
+<p>可将$W$看作一个投影矩阵，即多分类LDA将样本投影到$d’$维空间，一般情况下，$d’$远小于原有的属性数$d$。因此，LDA可以作为降维算法使用。</p>
+<h2 id="3-5-多分类学习"><a href="#3-5-多分类学习" class="headerlink" title="3.5 多分类学习"></a>3.5 多分类学习</h2><p>对于多分类学习，部分情况下可以直接将二分类算法直接推广到多分类，但在大多数情况下，都是利用二分类学习器来解决多分类问题。</p>
+<p>·<em>理解不足，内容且略</em></p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="1-范数"><a href="#1-范数" class="headerlink" title="[1] 范数"></a>[1] 范数</h3><p>文中$\left | \cdot \right |$为范数，具有长度概念的函数，常用的有</p>
+<p>1-范数：</p>
+<script type="math/tex; mode=display">\left \| x \right \|_1 = \sum^{n}_{i=1} \left | x_i \right |</script><p>2-范数：</p>
+<script type="math/tex; mode=display">\left \| x \right \|_2 = (\sum^{n}_{i=1} x_i^2 )^{\frac{1}{2}}</script><p>$\infin$-范数：</p>
+<script type="math/tex; mode=display">\left \| x \right \|_\infin = \max_i \left | x_i \right |</script><p>$p$-范数：</p>
+<script type="math/tex; mode=display">\left \| x \right \|_p = (\sum^{n}_{i=1} \left | x_i \right |^p )^{\frac{1}{p}}</script><h3 id="2-瑞利熵和广义瑞利熵"><a href="#2-瑞利熵和广义瑞利熵" class="headerlink" title="[2] 瑞利熵和广义瑞利熵"></a>[2] 瑞利熵和广义瑞利熵</h3><p><strong>厄米特矩阵</strong>（Hermitian Matrix）：指共轭矩阵。</p>
+<p><strong>瑞利熵</strong>（Raylei quotient）：</p>
+<script type="math/tex; mode=display">R(A,x) = \frac{x^HAx}{x^Hx}</script><p>$x$为非零向量，A为$n\times n的Hermitian矩阵$。<br>需要注意的是，瑞利熵$R(A,x)$有一个重要性质，即它的最大值等于矩阵A的最大特征值，最小值等于矩阵A的最小特征值，即</p>
+<script type="math/tex; mode=display">\lambda_{\min} \leqslant \frac{x^HAx}{x^Hx} \leqslant \lambda _{\max}</script><p><strong>广义瑞利熵</strong>（generalized Rayleigh quotient）：</p>
+<script type="math/tex; mode=display">R(A,B,x) = \frac{x^HAx}{x^HBx}</script><p>B为正定矩阵，其余参数同瑞利熵。<br>令$x=B^{-\frac{1}{2}}x’$，则可将分母转化为</p>
+<script type="math/tex; mode=display">x^HBx = x'^Hx</script><p>分子则转化为</p>
+<script type="math/tex; mode=display">x^HAx = x'^HB^{-\frac{1}{2}}AB^{-\frac{1}{2}}x'</script><p>此时$R(A,B,x)$转化为</p>
+<script type="math/tex; mode=display">R(A,B,x') = \frac{x'^HB^{-\frac{1}{2}}AB^{-\frac{1}{2}}x'}{x'^Hx'}</script><p>由瑞利熵性质知，广义瑞利熵的最大值即为$B^{-\frac{1}{2}}AB^{-\frac{1}{2}}$的最大特征值。</p>
+<h3 id="3-矩阵的迹"><a href="#3-矩阵的迹" class="headerlink" title="[3] 矩阵的迹"></a>[3] 矩阵的迹</h3><p>指矩阵主对角线上的元素之和，也是所有特征值之和，使用tr(·)表示。</p>
+<script type="math/tex; mode=display">tr(A) = \sum^n_{i=1} a_{ii}</script>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/09/20/Chapter3%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B/" data-id="ckv7nxmmv0004mcojhdre9h1b" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8A%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%8B/" rel="tag">《机器学习》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/09/20/Chapter4%E5%86%B3%E7%AD%96%E6%A0%91/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Chapter4 决策树
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2019/08/26/Chapter-2-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8E%E9%80%89%E6%8B%A9/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">Chapter2 模型评估与选择</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

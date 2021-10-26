@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    FibonacciSequence |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-FibonacciSequence" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  FibonacciSequence
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2017/09/17/FibonacciSequence/" class="article-date">
+  <time datetime="2017-09-17T03:25:43.000Z" itemprop="datePublished">2017-09-17</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <h2 id="FibonacciSequence简介"><a href="#FibonacciSequence简介" class="headerlink" title="FibonacciSequence简介"></a>FibonacciSequence简介</h2><span id="more"></span>
+<p>FibonacciSequence即斐波那契数列，指的是由 A1 = 1,A2 = 1,且 An+1 = An + An-1,组成的数列。<br>例：1，1，2，3，5，8···</p>
+<h2 id="相关算法"><a href="#相关算法" class="headerlink" title="相关算法"></a>相关算法</h2><p><em>以下代码仅写出关键模块</em></p>
+<h3 id="1-for循环实现-初级版"><a href="#1-for循环实现-初级版" class="headerlink" title="1.for循环实现 - 初级版"></a>1.for循环实现 - 初级版</h3><hr>
+<pre><code>int fi1 = 1;
+int fi2 = 2;
+if (input &lt;= 2) &#123;
+    switch (input) &#123;
+        case 1:
+            System.out.print(&quot;1&quot;);
+            case 2:
+            System.out.print(&quot;1 ,&quot;);
+            System.out.print(&quot;1&quot;);
+        &#125;
+    &#125;
+else &#123;
+    System.out.print(&quot;1 ,&quot; );
+    System.out.print(&quot;1 ,&quot;);
+    for (int i = 0;i &lt; input - 2 ;i++ ) &#123;
+        if (i % 2 == 0) &#123;
+            fi1 = fi1 + fi2;
+            System.out.print(fi1 + &quot; ,&quot;);
+        &#125;
+        else &#123;
+            fi2 = fi1 + fi2;
+            System.out.print(fi2 + &quot; ,&quot;);
+        &#125;
+    &#125;
+// 用两个变量交替相加实现
+</code></pre><h3 id="2-for循环-进阶版"><a href="#2-for循环-进阶版" class="headerlink" title="2.for循环 - 进阶版"></a>2.for循环 - 进阶版</h3><hr>
+<pre><code>int f = 0;
+int g = 1;
+for (int i = 0;i &lt;= input ;i++ ) &#123;
+    System.out.println(f);
+    f = f + g;
+    g = f - g;
+&#125;
+// 原理同上，写法更加简洁
+</code></pre><h3 id="3-递归实现"><a href="#3-递归实现" class="headerlink" title="3.递归实现"></a>3.递归实现</h3><hr>
+<pre><code>public static int F(int i)&#123;
+    if (i == 1) &#123;
+        return 1;
+    &#125;
+    else if (i == 2) &#123;
+        return 1;
+    &#125;
+    return F(i - 2) + F(i - 1);
+&#125;
+// 简便代码，更易读
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2017/09/17/FibonacciSequence/" data-id="ckv7nxmn9000jmcoj3t20gv8e" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Algorithms/" rel="tag">Algorithms</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/java/" rel="tag">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8AAlgorithms%E3%80%8B/" rel="tag">《Algorithms》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2017/09/17/%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%AE%A1%E9%81%93/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      重定向与管道
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2017/08/26/Java%E4%B8%ADforeach(%E5%88%9D%E8%AF%86)/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">Java中foreach(初识)</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

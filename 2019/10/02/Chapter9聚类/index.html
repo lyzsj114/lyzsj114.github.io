@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    Chapter9 聚类 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-Chapter9聚类" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  Chapter9 聚类
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/10/02/Chapter9%E8%81%9A%E7%B1%BB/" class="article-date">
+  <time datetime="2019-10-02T07:30:11.000Z" itemprop="datePublished">2019-10-02</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>聚类任务</li>
+<li>性能度量<ul>
+<li>外部指标</li>
+<li>内部指标</li>
+</ul>
+</li>
+<li>距离计算</li>
+<li>原型聚类<ul>
+<li>k均值算法（k-means）</li>
+<li>学习向量量化</li>
+<li>高斯混合聚类</li>
+</ul>
+</li>
+<li>密度聚类</li>
+<li>层次聚类</li>
+</ul>
+<span id="more"></span>
+<h2 id="9-1-聚类任务"><a href="#9-1-聚类任务" class="headerlink" title="9.1 聚类任务"></a>9.1 聚类任务</h2><p>聚类任务是常见的无监督学习方法之一，也是无监督学习中研究最多、应用最广的方法。</p>
+<p><strong>无监督学习</strong>（unsupervised learning）：训练样本的标记信息是未知的，目标是通过对无标记训练样本的学习来揭示数据的内在性质和规律，为进一步的数据分析提供基础。</p>
+<p>聚类算法可将样本子集划分为几个不相交的子集，其中每个子集（<em>簇</em>cluster）可能对应于不同的潜在概念。聚类仅能自动划分出簇，其中每个簇的概念语义需要自行判断。聚类可以作为一个单独的过程，也可作为其他学习任务的前驱过程。</p>
+<p>聚类算法涉及两大基本问题：性能度量和距离计算。</p>
+<h2 id="9-2-性能度量"><a href="#9-2-性能度量" class="headerlink" title="9.2 性能度量"></a>9.2 性能度量</h2><p>聚类性能度量亦称聚类的“<em>有效性指标</em>”（validity index），一方面评估衡量学习器性能的好坏，另一方面如果明确了最终的目标的性能度量，则可直接作为聚类过程的优化目标。</p>
+<p>聚类算法期望聚类结果表现“<em>簇内相似度</em>”（intra-cluster similarity）高，且“<em>簇间相似度</em>”（inter-cluster similarity）低。聚类性能度量大致可分为两类：</p>
+<ul>
+<li>外部指标（external index）：将聚类结果与“<em>参考模型</em>”（reference model）进行比较得到的指标；</li>
+<li>内部指标（internal index）：直接考察聚类结果而不利用任何参考模型的指标。</li>
+</ul>
+<h3 id="外部指标"><a href="#外部指标" class="headerlink" title="外部指标"></a>外部指标</h3><p>对数据集$D = {x_1,x_2,…,x_m}$，通过聚类得到的簇划分为$C={C_1,C_2,…,C_k}$，参考模型的簇划分为$C^<em>={C^</em>_1,C^<em>_2,…,C^</em>_s}$，$\lambda$和$\lambda^<em>$分别表示在$C$和$C^</em>$中对应的簇标记向量，将样本两两配对考虑，定义以下指标：</p>
+<script type="math/tex; mode=display">a = |SS|, SS = \{(x_i,x_j)|\lambda_i = \lambda_j, \lambda^*_i=\lambda^*_j, i < j\}</script><script type="math/tex; mode=display">b = |SD|, SD = \{(x_i,x_j)|\lambda_i = \lambda_j, \lambda^*_i \neq \lambda^*_j, i < j\}</script><script type="math/tex; mode=display">c = |DS|, DS = \{(x_i,x_j)|\lambda_i \neq \lambda_j, \lambda^*_i=\lambda^*_j, i < j\}</script><script type="math/tex; mode=display">d = |DD|, DD = \{(x_i,x_j)|\lambda_i \neq \lambda_j, \lambda^*_i \neq \lambda^*_j, i < j\}</script><p>显然，有$a+b+c+d=C^2_m=\frac{m(m-1)}{2}$。根据以上定义，可导出以下聚类性能度量外部指标：</p>
+<ul>
+<li>Jaccard系数（Jaccard Coeffient，简称JC）<script type="math/tex">JC=\frac{a}{a+b+c}</script></li>
+<li>FM指数（Fowlkes and Mallows Index，简称FMI）<script type="math/tex">FMI=\sqrt{\frac{a}{a+b}\cdot\frac{a}{a+c}}</script></li>
+<li>Rand指数（Rand Index，简称RI）<script type="math/tex">RI=\frac{2(a+d)}{m(m-1)}</script></li>
+</ul>
+<p>显然，上述性能度量的结果值均在$[0,1]$区间，值越大越好。</p>
+<h3 id="内部指标"><a href="#内部指标" class="headerlink" title="内部指标"></a>内部指标</h3><p>对聚类结果的簇划分$C={C<em>1,C_2,…,C_k}$，$\mu_i$代表簇$C_i$的中心点，$\mu_i=\frac{1}{|C_i|}\sum</em>{1 \leqslant j \leqslant |C_i|}x_j$，定义</p>
+<script type="math/tex; mode=display">\begin{aligned} \text{avg}(C) &= \frac{2}{|C|(|C|-1)}\sum_{1\leqslant i < j \leqslant |C|}\text{dist}(x_i,x_j) \\ \text{diam}(C) &= \max_{1 \leqslant i < j \leqslant |C|}\text{dist}(x_i,x_j) \\ d_{\min}(C_i,C_j) &= \min_{x_i \in C_i, x_j \in C_j} \text{dist}(x_i,x_j) \\ d_{\text{cen}}(C_i,C_j) &= \text{dist}(\mu_i, \mu_j)\end{aligned}</script><p>基于以上定义可导出下列聚类性能度量的内部指标：</p>
+<ul>
+<li>DB指数（Davies-Bouldin Index，简称DBI）<script type="math/tex">DBI=\frac{1}{k}\sum^k_{i=1}\max_{j \neq i}\left ( \frac{\text{avg}(C_i) + \text{avg}(C_j)}{d_{\text{cen}(C_i,C_j)}} \right )</script></li>
+<li>Dunn指数（Dunn Index，简称DI）<script type="math/tex">DI=\min_{1\leqslant i \leqslant k}\left \{ \min_{j\neq i}\left ( \frac{d_{\min}(C_i,C_j)}{\max_{1\leqslant l \leqslant k}\text{diam}(C_l)} \right ) \right \}</script></li>
+</ul>
+<p>显然，DBI的值越小越好；DI相反，值越大越好。</p>
+<h2 id="9-3-距离计算"><a href="#9-3-距离计算" class="headerlink" title="9.3 距离计算"></a>9.3 距离计算</h2><p>对距离函数$\text{dist}(\cdot, \cdot)$的要求：</p>
+<ul>
+<li>非负性：$\text{dist}(x_i, x_j) \geqslant 0$；</li>
+<li>对称性：$\text{dist}(x_i, x_j) = \text{dist}(x_j, x_i)$；</li>
+<li>同一性：$\text{dist}(x_i, x_j) = 0$，当且仅当$x_i=x_j$时成立；</li>
+<li>直递性：$\text{dist}(x_i, x_j) \leqslant \text{dist}(x_i, x_k) + \text{dist}(x_k, x_j)$.</li>
+</ul>
+<p>于是，可根据上述要求构造相应的距离函数$\text{dist}(x_i, x_j)$。</p>
+<p>对给定样本$x<em>i=(x</em>{i1}, x<em>{i2}, \dots,x</em>{in})$和$x<em>j=(x</em>{j1},x<em>{j2},\dots,x</em>{jn})$，当其为连续属性或有序离散属性时，最常用“<em>闵可夫斯基距离</em>”（Minkowski distance）</p>
+<script type="math/tex; mode=display">\text{dist}_{\text{mk}}(x_i, x_j)=\left \| x_i-x_j\right \|_p = \left ( \sum^n_{u=1} |x_{iu} - x_{ju}|^p \right )^{\frac{1}{p}}</script><p>对$p \geqslant 1$，上式即满足距离度量的基本性质。<br>对$p=2$，闵可夫斯基距离退化为<em>欧式距离</em>（Euclidean distance）<script type="math/tex">\text{dist}_{\text{ed}}(x_i, x_j)= \left \| x_i - x_j \right \|_2 = \sqrt{\sum^n_{u=1}|x_{iu}-x_{ju}|^2}</script><br>对$p=1$，闵可夫斯基距离退化为<em>曼哈顿距离</em>（Manhattan distance）<script type="math/tex">\text{dist}_{\text{man}}(x_i, x_j)= \left \| x_i - x_j \right \| = \sum^n_{u=1}|x_{iu}-x_{ju}|</script><br>对$p \rightarrow \infty$，得到切比雪夫距离。</p>
+<p>而对于无序离散属性，可采用VDM（Value Difference Metric）法。令$m_{u,a}$表示在属性$u$上取值为$a$的样本数，$k$为样本簇数，则VDM距离为</p>
+<script type="math/tex; mode=display">VDM_{p}(a,b) = \sum^k_{i=1}\left |\frac{m_{u,a,i}}{m_{u,a}}-\frac{m_{u,b,i}}{m_{u,b}} \right |^p</script><p>再通过结合VDM和闵可夫斯基距离，即可得到解决混合问题的距离度量</p>
+<script type="math/tex; mode=display">MinkovDM_p(x_i,x_j)=\left ( \sum_{u=1}^{n_c} |x_{iu}-x_{ju}|^p + \sum^n_{u=n_c+1} VDM_p(x_{iu},x_{ju})\right )^{\frac{1}{p}}</script><p>其中，$n$为属性数，$n_c$为有序属性数。在样本空间中不同属性的重要性不同时，可使用“<em>加权距离</em>”（weighted distance），以闵可夫斯基距离为例：</p>
+<script type="math/tex; mode=display">\text{dist}_{\text{wmk}}(x_i, x_j) = \left ( \sum^n_{u=1} w_u \cdot |x_{iu} - x_{ju}|^p \right )^{\frac{1}{p}}</script><p>其中权重$w<em>u \geqslant 0(u=1,2,\dots,n)$表征不同属性的重要性，通常$\sum^n</em>{u=1}w_u = 1$。</p>
+<p>需要注意的是，“<em>相似度度量</em>”（similarity measure）是基于某种形式的距离定义的。但用于相似度度量的距离未必要满足距离度量的所有基本性质，尤其是直递性，可根据是否满足直递性将距离度量分为度量距离和非度量距离（non-metric distance）。</p>
+<p>在现实任务中，基于数据样本确定合适的距离计算式，这一过程被称为“<em>距离度量学习</em>”（distance metric learning）。</p>
+<h2 id="9-4-原型聚类"><a href="#9-4-原型聚类" class="headerlink" title="9.4 原型聚类"></a>9.4 原型聚类</h2><p>通过对样本中一组具有代表性的点（原型）的刻画，表示出聚类的整体结构。通常是先对原型进行初始化，然后对原型进行迭代更新求解。</p>
+<h3 id="9-4-1-k均值算法（k-means）"><a href="#9-4-1-k均值算法（k-means）" class="headerlink" title="9.4.1 k均值算法（k-means）"></a>9.4.1 k均值算法（k-means）</h3><p>对给定样本集$D={x_1,x_2,\dots,x_m}$，聚类所得簇划分$C={C_1,C_2,\dots,C_k}$，最小化平方误差</p>
+<script type="math/tex; mode=display">E = \sum^k_{i=1}\sum_{x \in C_i}\left \| x-\mu_i \right \|^2_2</script><p>其中，$\mu<em>i=\frac{1}{|C_i|}\sum</em>{x\in C_i}x$，即簇$C_i$的均值向量。</p>
+<p>对上式求解是个NP难的问题，需考察样本集上所有簇划分。因此，k-means算法采用贪心策略通过迭代优化来求近似最优解。</p>
+<p><img src="https://i.loli.net/2019/10/01/6YZWih32L4yuPgS.png" alt="k-means流程"></p>
+<p>其中，计算新均值变量的方法为$\mu<em>i’ = \frac{1}{|C_i|}\sum</em>{x \in C_i} x$。</p>
+<h3 id="9-4-2-学习向量量化"><a href="#9-4-2-学习向量量化" class="headerlink" title="9.4.2 学习向量量化"></a>9.4.2 学习向量量化</h3><p><strong>学习向量量化</strong>（Learning Vector Quantization，简称LVQ）：是有监督的聚类方法，利用监督信息来辅助聚类，也同样是寻找一组原型向量来刻画聚类结构，可以看作竞争学习SMO算法的有监督拓展。</p>
+<p>给定样本集$D={(x<em>1,y_1), (x_2,y_2), \dots, (x_m,y_m)}$对应每个$x_j$是由$n$个属性描述的特征向量$(x</em>{j1};x<em>{j2};\dots;x</em>{jn})$，$y_j \in \gamma$是样本$x_j$的类别标记。</p>
+<p>LVQ的目标是学得一组确定簇标记的$n$维原型向量${p_1,p_2,\dots,p_q}$，其对应的簇标记是预先设定的，为$t_i \in \gamma(i=1,2,\dots,q)$，即从$|\gamma|$种簇中聚类出$q$个新的簇。</p>
+<p>LVQ简要流程：</p>
+<ol>
+<li>$n$维原型向量进行初始化，根据预设的簇标记向量${t_1,t_2,\dots,t_q}$从样本中随机选取确定原型向量${p_1,p_2,\dots,p_q}$；</li>
+<li>计算距离矩阵$d<em>{m\times q}=\left {d_ji|d_ji=\left | x_j-p_i \right |</em> 2 \right }$。找出行中最小的元素，确定$p <em> {i^<em> }$，$i^ </em> = \argmin </em> {i \in (1,2,\dots,q)}d <em> {ji}$。判断$x </em> j$的簇标记是否与$p<em>{i^*}$的簇标记$t</em>{i^ *}$相同<ul>
+<li>相同，则使$x<em>j \Rightarrow p</em>{i^<em>}$距离缩短$$p’ = p_{i^ </em>}+\eta(x<em>j-p</em>{i^ *})$$</li>
+<li>不相同，则使$x<em>j \Rightarrow p</em>{i^<em>}$距离增加$$p’ = p_{i^ </em>}-\eta(x<em>j-p</em>{i^ <em>})$$<br>将$p_{i^</em>}$更新为$p’$；</li>
+</ul>
+</li>
+<li>持续迭代(2)直至满足条件（达到最大迭代轮数或原型向量更新程度小于阈值）。</li>
+</ol>
+<p>获得最终的原型向量${p_1, p_2, \dots, p_q}$后，可利用其对样本空间进行划分，将任意样本$x$，划入与其距离最近的原型向量所代表的簇中，即对样本空间$\chi$的簇划分${R_1,R_2, \dots, R_q}$有</p>
+<script type="math/tex; mode=display">R_i=\{x \in \chi| \left \| x-p_i \right \| \leqslant \left \| x-p_{i'} \right \|, i \neq i'\}</script><p>这种划分通常称为“<em>Voronoi剖分</em>”。</p>
+<h3 id="9-4-3-高斯混合聚类"><a href="#9-4-3-高斯混合聚类" class="headerlink" title="9.4.3 高斯混合聚类"></a>9.4.3 高斯混合聚类</h3><p>与其他方法不同的是，高斯混合聚类采用概率模型来表达聚类原型。$n$维多元高斯分布的概率密度函数为</p>
+<script type="math/tex; mode=display">p(x) = \frac{1}{(2\pi)^{\frac{n}{2}}|\Sigma|^{\frac{1}{2}}}e^{-\frac{1}{2}(x-\mu)^T\Sigma^{-1}(x-\mu)}</script><p>为明确表达出高斯分布与相应参数的依赖关系，将其概率密度函数记为$p(x|\mu,\Sigma)$。若使每个混合成分（聚类簇）对应一个高斯分布，定义一个由$k$个混合成分构成的高斯混合分布</p>
+<script type="math/tex; mode=display">p_\mathcal{M}(x)=\sum^k_{i=1}\alpha_i \cdot p(x|\mu_i,\Sigma_i)</script><p>其中，$\mu<em>i$与$\Sigma_i$是第i个混合成分的参数，$\alpha_i&gt;0$是对应的“混合系数”（mixture-coeffcient），有$\sum^k</em>{i=1} \alpha_i = 1$。</p>
+<p>假设样本是由该高斯混合分布给出，以$\alpha_1,\alpha_2, \dots,\alpha_k$为选择第$i$个高斯混合成分的先验概率。根据选定的混合成分的概率密度函数进行采样，从而得到当前样本。</p>
+<p>训练集$D={x_1,x_2,\dots,x_n}$由上述过程生成，随机变量$z_j \in {1,2,\dots,k}$为生成样本$x_j$的高斯混合成分。显然，$p(z_j=i)=\alpha_i$，计算$z_j$的后验分布</p>
+<script type="math/tex; mode=display">\begin{aligned} p_{\mathcal{M}}(z_j=i|x_j)&=\frac{p(z_j=i)\cdot p_{\mathcal{M}}(x_j|z_j=i)}{p_{\mathcal{M}}(x_j)} \\ &= \frac{\alpha_i\cdot p(x_j|\mu_i,\Sigma_i)}{\sum^k_{u=1}\alpha_u p(x_j|\mu_u,\Sigma_u)}\end{aligned}</script><p>$p<em>{\mathcal{M}(z_j=i|x_j)}$即为$x_j$由第$i$个高斯混合分布生成的后验概率，记作$\gamma</em>{ji}$。</p>
+<p>显然，可以根据每个混合成分，定义一个分类簇，即在高斯混合分布已知时，有$k$个簇分类$C={C_1,C_2,\dots,C_k}$，记每个样本$x_j$分类簇标记为$\lambda_j$，则有</p>
+<script type="math/tex; mode=display">\lambda_j= \argmax_{i \in \{1,2,\dots,k\}} \gamma_{ji}</script><p>综上，可看出高斯混合聚类是以其概率模型对原型进行刻画的，而其簇划分则以后验概率决定。</p>
+<p>之后，问题就在于对模型参数${(\alpha_i,\mu_i,\Sigma_i)| 1 \leqslant i \leqslant k}$的求解上，对给定样本集$D$，可以采用极大似然估计，即最大化对数似然</p>
+<script type="math/tex; mode=display">\begin{aligned} LL(D) &= \ln(\prod^m_{j=1}p_{\mathcal{M}}(x_j))\\ &= \sum^m_{j=1}\ln \left ( \sum^k_{i=1} \alpha_i\cdot p(x_j|\mu_i,\Sigma_i) \right ) \end{aligned}</script><p>常用EM算法对上式进行迭代化求解。</p>
+<p>若参数${(\alpha_i,\mu_i,\Sigma_i)| 1 \leqslant i \leqslant k}$能使上式最大化，则对参数$\mu_i$和$\Sigma_i$有</p>
+<script type="math/tex; mode=display">\begin{cases} \frac{\partial LL(D)}{\partial \mu_i} = 0, \\ \frac{\partial LL(D)}{\partial \Sigma_i} = 0, \\ \gamma_{ji} = p_{\mathcal{M}}(z_j=i|x_j). \end{cases}</script><p>即</p>
+<script type="math/tex; mode=display">\begin{cases} \mu_i = \frac{\sum^m_{j=1}\gamma_{ji}x_j}{\sum^m_{j=1}\gamma_{ji}}, \\ \Sigma_i = \frac{\sum^m_{j=1}\gamma_{ji}(x_j-\mu_i)(x_j-\mu_i)^T}{\sum^m_{j=1}\gamma_{ji}}. \end{cases}</script><p>显然，各混合成分的均值可通过样本加权平均来估计，样本权重是每个样本属于该成分的后验概率。</p>
+<p>对于混合系数$\alpha<em>i$，由于其存在约束条件$\alpha_i \geqslant 0$和$\sum^k</em>{i=1}\alpha_i = 1$，所以在计算最大化$LL(D)$时，需要考虑$LL(D)$的拉格朗日形式</p>
+<script type="math/tex; mode=display">LL(D) + \lambda \left ( \sum^k_{i=1} \alpha_i -1 \right )</script><p>其中$\lambda$是拉格朗日乘子，由于上式为达到极值点的情况，所以有对$\alpha_i$的导数为0，则有</p>
+<script type="math/tex; mode=display">\sum^m_{j=1} \frac{p(x_j|\mu_i,\Sigma_i)}{\sum^k_{l=1}\alpha_l\cdot p(x_j|\mu_j,\Sigma_l)} + \lambda = 0</script><p>对等式两边同乘$\alpha_i$，并对所有混合成分进行求和，即可得</p>
+<script type="math/tex; mode=display">\begin{aligned} -\sum^k_{i=1} \alpha_i \lambda &= \sum^k_{i=1}\sum^m_{j=1}\frac{\alpha_i \cdot p(x_j|\mu_i,\Sigma_i)}{\sum^k_{l=1}\alpha_j \cdot p(x_j|\mu_l,\Sigma_l)} \\ -\lambda &= \sum^k_{i=1}\sum^m_{j=1}\gamma_{ji} \\ -\lambda &= m \end{aligned}</script><p>由上述关系对原式继续变形，可得</p>
+<script type="math/tex; mode=display">\sum^m_{j=1} \frac{p(x_j|\mu_i,\Sigma_i)}{\sum^k_{l=1}\alpha_l\cdot p(x_j|\mu_j,\Sigma_l)} + \lambda = \sum^m_{j=1} \frac{\gamma_i}{\alpha_i} = m</script><p>即</p>
+<script type="math/tex; mode=display">\alpha_i = \frac{1}{m} \sum^m_{j=1}\gamma_{ji}</script><p>即每个高斯成分的混合系数由样本属于该成分的平均后验概率确定。</p>
+<p>通过上述推导，获得了更新参数${(\alpha<em>i,\mu_i,\Sigma_i)| 1 \leqslant i \leqslant k}$的公式，因此高斯混合模型的EM算法为：在每步迭代中，先根据当前参数来计算每个样本属于每个高斯成分的后验概率$\gamma</em>{ji}$（E步）；再根据参数的更新公式，更新参数模型（M步）。</p>
+<h2 id="9-5-密度聚类"><a href="#9-5-密度聚类" class="headerlink" title="9.5 密度聚类"></a>9.5 密度聚类</h2><p><strong>密度聚类</strong>：亦称“<em>基于密度的聚类</em>”（density-based clustering），密度聚类假设聚类结构能通过样本分布的紧密程度确定。一般地，密度聚类算法从样本密度角度考察样本之间的可连接性，并基于可连接样本不断扩展聚类簇以获得最终的聚类结果。</p>
+<p><strong>DBSCAN</strong>（Density-Based Spatial Clustering of Applications with Noise）：一种著名的密度聚类算法，基于一组“<em>邻域</em>”（neighborhood）参数$(\epsilon,MinPts)$来刻画样本分布的紧密程度。对给定数据集$D={x_1,x_2,\dots,x_m}$，定义以下几个概念：</p>
+<ul>
+<li>$\epsilon$-邻域：对$x<em>j \in D$，其$\epsilon$-邻域包含样本集$D$中与$x_j$的距离不大于$\epsilon$的样本，即$N</em>{\epsilon}(x_j) = {x_i \in D|\text{dist}(x_i,x_j) \leqslant \epsilon}$；</li>
+<li>核心对象（core object）：若$x<em>j$的邻域至少包含$MinPts$个样本，即$|N</em>{\epsilon}(x_j)| \geqslant MinPts$，则$x_j$是一个核心对象；</li>
+<li>密度直达（directly density-reachable）：若$x_j$位于$x_i$的$\epsilon$-邻域中，且$x_i$是核心对象，则称$x_j$由$x_i$密度直达（通常不满足对称性）；</li>
+<li>密度可达（density-reachable）：对$x<em>i$与$x_j$，若存在样本序列$p_1,p2,\dots,p_n$，其中$p_1=x_i,p_n=x_j$且$p</em>{i+1}$由$p_i$密度直达，则称$x_j$由$x_i$密度可达（满足直递性，但不满足对称性）；</li>
+<li>密度相连（density-connected）：对$x_i$与$x_j$，若存在$x_k$使得$x_i$与$x_j$均由$x_k$密度可达，则称$x_i$与$x_j$密度相连（满足对称性）。</li>
+</ul>
+<p>上述概念的直观显示为</p>
+<p><img src="https://i.loli.net/2019/10/02/JUtQi6ae3u1Wkh4.png" alt="DBSCAN示意图"></p>
+<p>图为$MinPts=3$时的情况，其中，虚线圈出的是$\epsilon$-邻域，$x_1$是核心对象，$x_2$由$x_1$密度直达，$x_3$由$x_1$密度可达，$x_3$与$x_4$密度相连。</p>
+<p>基于上述概念，DBSCAN的簇定义为：由密度可达关系导出的最大的密度相连样本集合。形式化地说，给定邻域参数$(\epsilon,MinPts)$，簇$C \subseteq D$是满足以下性质的非空样本子集：</p>
+<ul>
+<li>连接性（connectivity）：$x_i \in C$，$x_j \in C \Rightarrow x_j$与$x_i$密度相连；</li>
+<li>最大性（maximality）：$x_i \in C$，$x_j$由$x_i$密度可达$\Rightarrow x_j \in C$。</li>
+</ul>
+<p>因此，满足连接性与最大性的簇，即是以$x$为核心对象，由$x$密度可达的所有样本组成的集合$X = {x’ \in D|x’$由$x$密度可达$}$。</p>
+<p>于是，DBSCAN的主要流程为：</p>
+<p><img src="https://i.loli.net/2019/10/02/xJcUs1anvBRoqNY.png" alt="DBSCAN流程图"></p>
+<h2 id="9-6-层次聚类"><a href="#9-6-层次聚类" class="headerlink" title="9.6 层次聚类"></a>9.6 层次聚类</h2><p><strong>层次聚类</strong>（hierarchical clustering）：是一类在不同层次上对数据集进行划分，最终形成树形结构的聚类算法。数据集的划分有“自底向上”的聚合策略和“自顶向下”的分拆策略。</p>
+<p><strong>AGNES</strong>（AGglomerative NESting）：是一种采用自底向上聚合策略的层次聚类算法。它先将所有样本均看作一个分类簇，在算法运行的每一步中找出距离最近的两个聚类簇进行合并，重复该过程直至达到目标聚类簇的个数。</p>
+<p>在上述过程中的关键在于，计算聚类簇之间的距离。由于每个簇都是一个样本集合，因此，只需要采用关于集合的某种距离即可。对给定的聚类簇$C_i$和$C_j$，可通过下式计算距离（集合间的距离计算常用<em>豪斯多夫距离</em>Hausdorff distance）：</p>
+<ul>
+<li>最小距离：<script type="math/tex">d_{\min}(C_i,C_j) = \min_{x \in C_i, z \in C_j}\text{dist}(x,z)</script></li>
+<li>最大距离：<script type="math/tex">d_{\max}(C_i,C_j) = \max_{x \in C_i, z \in C_j}\text{dist}(x,z)</script></li>
+<li>平均距离：<script type="math/tex">d_{\text{avg}}(C_i,C_j) = \frac{1}{|C_i||C_j|} \sum_{x \in C_i} \sum_{z \in C_j}\text{dist}(x,z)</script></li>
+</ul>
+<p>显然，最小距离由两个簇的最近样本决定，最大距离由两个簇的最近样本决定，平均距离由两个簇的全部样本决定。对应于计算聚类簇间的距离$d<em>{\min}$、$d</em>{\max}$、$d_{\text{avg}}$，AGNES算法相应的称为“<em>单链接</em>”（single-linkage）、“<em>全链接</em>”（complete-linkage）或“<em>均链接</em>”（average-linkage）算法。</p>
+<p>令AGNES算法一直执行到将所有样本划分到同一个簇中时，可以得到一个“<em>树状图</em>”（dendrogram）。将分割层逐步提升，即可得到聚类簇逐渐减少的聚类结果。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/10/02/Chapter9%E8%81%9A%E7%B1%BB/" data-id="ckv7nxmn8000hmcoje7s9g6yx" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8A%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%8B/" rel="tag">《机器学习》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/10/05/Chapter10%E9%99%8D%E7%BB%B4%E4%B8%8E%E5%BA%A6%E9%87%8F%E5%AD%A6%E4%B9%A0/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Chapter10 降维与度量学习
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2019/10/02/Chapter8%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">Chapter8 集成学习</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

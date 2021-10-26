@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    Chapter6 支持向量机 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-Chapter6支持向量机" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  Chapter6 支持向量机
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/09/20/Chapter6%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/" class="article-date">
+  <time datetime="2019-09-20T04:39:18.000Z" itemprop="datePublished">2019-09-20</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>间隔与支持向量</li>
+<li>对偶问题</li>
+<li>核函数</li>
+<li>软间隔与正则化</li>
+<li>支持向量回归</li>
+<li>核方法</li>
+<li>附录<ul>
+<li>拉格朗日乘数法</li>
+<li>二次规划</li>
+</ul>
+</li>
+</ul>
+<span id="more"></span>
+<h2 id="6-1-间隔与支持向量"><a href="#6-1-间隔与支持向量" class="headerlink" title="6.1 间隔与支持向量"></a>6.1 间隔与支持向量</h2><p>对给定的训练集$D = {(x_1,y_1),(x_2,y_2),\dots,(x_m,y_m)}, \ y_i \in {-1,+1}$，在样本空间中找到一个划分超平面，将不同类别的样本分开。</p>
+<p><img src="https://i.loli.net/2019/09/03/mGFb8kqxBOV2rfv.png" alt="存在多个划分超平面将两类训练样本分开"></p>
+<p>直观而言，应该是红色线的划分效果最好，因为该划分超平面对训练样本的局部扰动的“容忍”性最好。如果因训练集的局限性或噪声的因素，导致样本点更加接近划分超平面的话，对红色线划分结果影响最小，因此其鲁棒性最强，对未见过的示例泛化性能最好。</p>
+<p>在样本空间中，划分超平面可以用如下线性方程描述：</p>
+<script type="math/tex; mode=display">\omega^T x + b = 0</script><p>其中$\omega = (\omega_1;\omega_2;;\dots;\omega_d)$为法向量，决定超平面的方向；$b$为位移项，决定超平面与原点间的距离。将由$\omega$、$b$确定的超平面记作$(\omega,b)$，则样本中任意点到超平面的距离可写为</p>
+<script type="math/tex; mode=display">r = \frac{|\omega^T x + b|}{\left \| \omega \right \|}</script><p>假设一个能对样本集正确分类的超平面$(\omega,b)$，对于$(x_i,y_i) \in D$，若$y_i=+1$，则有$\omega^T x + b &gt; 0$；若$y_i = -1$，则有$\omega^T x + b &lt; 0$。令</p>
+<script type="math/tex; mode=display">\begin{cases}
+\omega^T x + b \geqslant +1& ,\text{  } y_i= +1, \\
+\omega^T x + b \leqslant +1 & ,\text{  } y_i= -1.
+\end{cases}</script><p>距离超平面距离最近的几个样本使上式等号成立，其被称为“<em>支持向量</em>”（support vector），如下图所示。</p>
+<p><img src="https://i.loli.net/2019/09/03/7DM1bECXtJpILxa.png" alt="支持向量与间隔"></p>
+<p>其中，被圈中的点所对应的特征向量即为支持向量，而$\gamma$表示两个异类支持向量到超平面距离之和，被称为“<em>间隔</em>”（margin）。</p>
+<script type="math/tex; mode=display">\gamma = \frac{2}{\left \| \omega \right \|}</script><p>根据分析，当超平面的间隔最大时，该超平面即为最优划分超平面。则</p>
+<script type="math/tex; mode=display">\max _{\omega,b} \frac{2}{\left \| \omega \right \|}</script><script type="math/tex; mode=display">s.t.~~y_i(\omega^T x_i + b) \geqslant 1, ~~ i = 1,2,\dots,m.</script><p>显然，为了最大化间隔，需要最小化$\left | \omega \right |^{-1}$，等价于最小化$\left | \omega \right |^2$。所以，目标可以转化为</p>
+<script type="math/tex; mode=display">\min _{\omega,b} \frac{1}{2} \left \| \omega \right \|^2</script><script type="math/tex; mode=display">s.t. ~~ y_i(\omega^T x_i + b) \geqslant 1, ~~ i = 1,2,\dots,m.</script><p>这就是<em>支持向量机</em>（Support Vector Machine，简称SVM）的基本型。</p>
+<h2 id="6-2-对偶问题"><a href="#6-2-对偶问题" class="headerlink" title="6.2 对偶问题"></a>6.2 对偶问题</h2><p>我们希望通过求解上述SVM的基本型来得到大间隔划分超平面所对应的模型</p>
+<script type="math/tex; mode=display">f(x) = \omega^T x + b</script><p>其中$\omega$和$b$是模型参数。显然，SVM的基本型是一个<em>凸二次规划</em>（convex quadratic programming）问题，将使用如下方法进行求解。</p>
+<p>将支持向量机中的划分超平面看作约束条件，并将SVM的基本型转化为其拉格朗日对偶函数（$\alpha _i \geqslant 0, i = 1,2,\dots,m$）$^{[1]}$</p>
+<script type="math/tex; mode=display">L(\omega,b,\alpha) = \frac{1}{2} \left \| \omega \right \|^2 + \sum^m_{i=1} \alpha_i[1-y_i(\omega^Tx_i + b)]</script><p>令$L(\omega,b,\alpha)$对$\omega$和$b$的偏导为零可得</p>
+<script type="math/tex; mode=display">\omega = \sum^m_{i=1} \alpha_i y_i x_i</script><script type="math/tex; mode=display">\sum^m_{i=1} \alpha_i y_i = 0</script><p>将两式作为对偶函数的约束条件代入，可将$L(\omega,b,\alpha)$中的$\omega$和$b$消去，于是SVM基本型的对偶问题即为</p>
+<script type="math/tex; mode=display">\max_\alpha \sum^m_{i=1} \alpha_i - \frac{1}{2} \sum^m_{i=1} \sum^m_{j=1}\alpha_i \alpha_j y_i y_j x_i^T x_j</script><script type="math/tex; mode=display">s.t. \ \ \sum^m_{i=1} \alpha_i y_i = 0,</script><script type="math/tex; mode=display">\alpha_i \geqslant 0, \ \ i = 1,2,\dots,m.</script><p>解出$\alpha$后，即可得到模型</p>
+<script type="math/tex; mode=display">f(x) = \omega^T x + b = \sum^m_{i=1} \alpha_i y_i x_i^T x_i + b</script><p>同时，还需注意到的是，在原问题转化为拉格朗日对偶问题过程中，需要额外满足约束条件——KKT条件，即</p>
+<script type="math/tex; mode=display">\begin{cases} \alpha_i \geqslant 0 \\ y_if(x_i) - 1 \geqslant 0 \\ \alpha_i(y_if(x_i)-1) = 0 \end{cases}</script><p>显然，当$y_if(x_i) = 1$时，$\alpha_i &gt; 0$，这时该点才会对问题产生影响；否则，$y_if(x_i) \neq 1$，$\alpha_i = 0$，对问题无影响。又因为$y_if(x_i)=1$时，即为样本点在最大间隔边界上的情况，即对应支持向量，所以这种训练方法被称为支持向量机。</p>
+<p>总而言之，支持向量机在训练完成后，大部分的训练样本都不需要保留，最终模型仅与支持向量有关。</p>
+<p>而在过程中，SVM基本型的对偶问题显然是一个二次规划问题$^{[2]}$，虽然可以直接使用二次规划算法对其求解，但考虑该问题具有特殊性，于是有人提出了针对于此类问题的高效算法，其中SMO是一个著名的代表。</p>
+<p><strong>序列最小优化算法</strong>（Sequential Minimal Optimization）：基本思路为，先固定$\alpha<em>i$之外的所有参数，求$\alpha_i$上的极值，由于存在约束$\sum^m</em>{i=1} \alpha_i y_i = 0$，若固定$\alpha_i$之外的其他变量，则$\alpha_i$可由其他变量导出。于是，SMO每次选择两个变量$\alpha_i$和$\alpha_j$，并固定其他参数。之后，SMO不断执行如下两步直至收敛：</p>
+<ul>
+<li>随机选取两变量$\alpha_i$，$\alpha_j$；</li>
+<li>固定$\alpha_i$，$\alpha_j$之外的参数，并求解二次规划，获得更新后的$\alpha_i$和$\alpha_j$值.</li>
+</ul>
+<p>在固定其他变量的前提下，试验证明，如果选取的$\alpha_i$、$\alpha_j$中有一个不符合KKT条件，在迭代后目标函数将会增大。直观而言，该变量对KKT条件违背的越大，更新后的目标函数值增加越大。因此，SMO先选取违背KKT条件最大的变量，和使目标函数增长最快的变量。这里SMO采用了启发式算法：选取对应样本之间间隔最大的两变量，以此代替复杂度较高的比较目标函数增幅操作。直观的解释是：两个差别很大的变量，与对应两个十分相似的变量相比，对它们进行更新会带给目标函数值更大的变化。</p>
+<p>SMO算法的高效之处在于，其固定其他参数后，仅考虑$\alpha_i$、$\alpha_j$两个变量时，优化过程十分高效。</p>
+<p>仅考虑$\alpha_i$、$\alpha_j$两个变量时，上述对偶问题中的约束条件可重写为</p>
+<script type="math/tex; mode=display">\alpha_i y_i + \alpha_j y_j = c \ \ , \ \ \alpha_i \geqslant 0 \ \ , \ \ \alpha_j \geqslant 0</script><p>其中</p>
+<script type="math/tex; mode=display">c = -\sum^m_{k \neq i,j} \alpha_k y_k</script><p>是使$\sum^m_{i=1} \alpha_i y_i$成立的常数。用</p>
+<script type="math/tex; mode=display">\alpha_i y_i + \alpha_j y_j = c</script><p>消去上述对偶问题目标函数中的变量$\alpha_j$，此时仅有约束$\alpha_i \geqslant 0$，于是得到具有闭式解的二次规划问题，可以高效地计算出更新后的$\alpha_i$、$\alpha_j$。</p>
+<p>之后，可以通过对任意支持向量$(x_s,y_s)$的条件$y_s f(x_s) = 1$来求解$b$的值，即</p>
+<script type="math/tex; mode=display">y_s(\sum^m_{i \in S} \alpha_i y_i x^T_ix_s + b) = 1</script><p>其中，$S = {i|\alpha_i &gt; 0, i = 1,2,\dots,m}$，是所有支持向量的下标集。显然，可以通过取任意的支持向量对$b$的值求解，但有一种更鲁棒的解法，就是对所有支持向量计算得到的$b$取平均值</p>
+<script type="math/tex; mode=display">b = \frac{1}{|S|}\sum_{s \in S}(\frac{1}{y_s} - \sum_{i \in S}\alpha_iy_ix_i^Tx_s)</script><h2 id="6-3-核函数"><a href="#6-3-核函数" class="headerlink" title="6.3 核函数"></a>6.3 核函数</h2><p>一般地，在原始样本空内不存在一个能正确划分两类样本的超平面（“异或”问题）。对此，可通过非线性映射将样本从原始空间映射到更高维的特征空间，使样本在这个特征空间内线性可分。</p>
+<script type="math/tex; mode=display">x \mapsto \phi(x)</script><p>如果原始空间是有限维，即属性数有限，那么必然存在一个高维特征空间使样本可分。在特征空间划分超平面所对应的模型</p>
+<script type="math/tex; mode=display">f(x) = \omega^T \phi(x) + b</script><p>于是，原问题可改写为</p>
+<script type="math/tex; mode=display">\min_{w,b} \frac{1}{2} \left \| \omega \right \|</script><script type="math/tex; mode=display">s.t. \ \ \ y_i(\omega^T \phi(x) + b) \geqslant 1</script><p>那么，其对偶问题为</p>
+<script type="math/tex; mode=display">\max_\alpha \sum^m_{i=1}\alpha_i - \frac{1}{2} \sum^m_{i=1}\sum^m_{j=1} \alpha_i \alpha_j y_i y_j \phi(x_i)^T \phi(x_j)</script><script type="math/tex; mode=display">\!\!\! s.t. \ \ \ \sum^m_{i=1} \alpha_i y_i = 0 \ ,</script><script type="math/tex; mode=display">\alpha_i \geqslant 0 \ , \ i = 1,2,\dots,m.</script><p>由于是在$\phi(x)$构造的高维空间内，计算$\phi(x_i)^T \phi(x_j)$内积通常是极为困难的。为了避开这个障碍，通过定义核函数</p>
+<script type="math/tex; mode=display">\kappa(x_i,x_j) = \phi(x_i)^T \phi(x_j)</script><p>用$\kappa(x_i,x_j)$代替其复杂的高维运算，使其在原始空间内进行计算，这种方法称为“<em>核技巧</em>”（kernel trick）。</p>
+<p>进而，对偶函数可重写为</p>
+<script type="math/tex; mode=display">\max_\alpha \sum^m_{i=1}\alpha_i - \frac{1}{2} \sum^m_{i=1} \sum^m_{j=1} \alpha_i \alpha_j y_i y_j \kappa(x_i,x_j)</script><script type="math/tex; mode=display">\!\!\! s.t. \ \ \ \sum^m_{i=1} \alpha_i y_i = 0 \ ,</script><script type="math/tex; mode=display">\alpha_i \geqslant 0 \ , \ i = 1,2,\dots,m.</script><p>解得$\alpha_i$后，可得到</p>
+<script type="math/tex; mode=display">\begin{aligned} f(x) &= \omega ^T \phi (x) + b \\ &= \sum^m_{i=1} \alpha_iy_i \phi(x_i)^T \phi(x) + b \\ &= \sum^m_{i=1} \alpha_i y_i \kappa(x_i,x) + b \end{aligned}</script><p>显然，模型最优解可通过训练样本的核函数展开，这一展式亦称为“<em>支持向量展式</em>”（support vector expansion）。下面讨论核函数的确定及其性质。</p>
+<p><strong>核函数 定理1</strong>  令$\chi$为输入空间，$\kappa(\cdot,\cdot)$是定义在$\chi \times \chi$上的对称函数（即$f(x_i,x_j) = f(x_j,x_i)$的函数），则$\kappa$是核函数当且仅当对于任意数据$D = {x_1,x_2,\dots,x_m}$，“<em>核矩阵</em>”（kernel matrix）总是正定的：</p>
+<script type="math/tex; mode=display">K = \begin{bmatrix}
+\kappa(x_1,x_1) & \dots & \kappa(x_1,x_j) & \dots & \kappa(x_1,x_m)\\
+\vdots & \ddots & \vdots & \ddots & \vdots\\
+\kappa(x_i,x_1) & \dots & \kappa(x_i,x_j) & \dots & \kappa(x_i,x_m)\\
+\vdots & \ddots & \vdots & \ddots & \vdots\\
+\kappa(x_m,x_1) & \dots & \kappa(x_m,x_j) & \dots & \kappa(x_m,x_m)
+\end{bmatrix}</script><p>上述定理表明，只要一个对称函数所对应的核矩阵是半正定的，它就能作为核函数使用。实际上，对任意的核矩阵都能找到一个映射关系$\phi$与之对应。也就是说，任何一个核函数都隐式地定义了一个称为“<em>再生核希尔伯特空间</em>”（Reproducing Kernel Hilbert Space，简称RKHS）的特征空间。</p>
+<p>经过上述分析，我们希望样本能在特征空间内线性可分，因此，支持向量机的性能与特征空间的选取有很大的关系。一般地，我们不知道特征映射的形式，也就无从选择合适的核函数，而且核函数只是隐式地定义了这个特征空间。所以，“核函数选择”是支持向量机中的最大变数。</p>
+<blockquote>
+<p>这方面有一些基本经验，例如对文本数据通常采用线性核，情况不明时可先尝试高斯核，以下是常用核函数表</p>
+</blockquote>
+<p><img src="https://i.loli.net/2019/09/10/1dl4hAucpwbI6oQ.jpg" alt="常用核函数"></p>
+<p>此外，核函数还可以通过组合得到，如：</p>
+<ul>
+<li>若$\kappa_1$和$\kappa_2$为核函数，则对于任意正数$\gamma_1$、$\gamma_2$，其线性组合<script type="math/tex">\gamma_1 \kappa_1 + \gamma_2 \kappa_2</script>也是核函数；</li>
+<li>若$\kappa_1$和$\kappa_2$为核函数，则核函数的直积<script type="math/tex">\kappa_1 \bigotimes \kappa_2(x,z) = \kappa_1(x,z)\kappa_2(x,z)</script>也是核函数；</li>
+<li>若$\kappa_1$为核函数，则对于任意函数$g(x)$，<script type="math/tex">\kappa(x,z) = g(x)\kappa_1(x,z)g(z)</script>也是核函数。</li>
+</ul>
+<h2 id="6-4-软间隔与正则化"><a href="#6-4-软间隔与正则化" class="headerlink" title="6.4 软间隔与正则化"></a>6.4 软间隔与正则化</h2><p>前面的讨论中，一直假定训练样本在训练空间或特征空间中是线性可分的，但在现实任务中，往往很难确定合适的核函数，并且即便找到了，这个结果也有过拟合的可能。</p>
+<p>缓解该问题的一个办法是允许支持向量机在一些样本上出错，因此，引入“<em>软间隔</em>”（soft margin）的概念。</p>
+<p>我们将之前所使用的间隔概念，即满足约束条件</p>
+<script type="math/tex; mode=display">\begin{cases} \omega^T x_i + b \geqslant +1, & y_i = +1; \\ \omega^T x_i + b \leqslant -1, & y_i = -1. \end{cases}</script><p>称为“<em>硬间隔</em>”（hard margin）。相对地，软间隔则允许一部分样本不满足约束。</p>
+<p>当然在能够最大化间隔的同时，要尽量减少不满足约束的样本个数，由此问题优化目标可重写为</p>
+<script type="math/tex; mode=display">\min_{\omega,b} \frac{1}{2} \left \| \omega \right \|^2 + C\sum^m_{i=1} \ell _{0/1}(y_i(\omega^Tx_i + b)-1)</script><p>其中$C&gt;0$是一个常数，$\ell_{0/1}$是“0/1损失函数”。</p>
+<script type="math/tex; mode=display">y = \begin{cases} 1 ,& \text{if  } \  z < 0; \\ 0,& \text{otherwise.} \end{cases}</script><p>显然，当$C \to \infin$时，所有的样本点均需满足约束条件；而$C$取有限值时，可以在一定范围内接受部分样本不满足约束。</p>
+<p>按照惯例，$\ell<em>{0/1}$具有非凸、不连续等不太好的数学性质，所以需要使用其他损失函数来代替，以便于问题的求解。代替的函数被称为“<em>替代损失</em>”（surrogate loss），替代损失函数一般是连续的凸函数，且是$\ell</em>{0/1}$的上界。</p>
+<p><img src="https://i.loli.net/2019/09/07/oLuOtFQmWiyA14H.png" alt="三种损失函数"></p>
+<p>上图中的损失函数分别对应：</p>
+<ul>
+<li>红色，0/1损失函数：$\ell_{0/1}(z)$；</li>
+<li>黑色，hinge损失：$\ell_{hinge}(z) = \max(0,1-z)$；</li>
+<li>绿色，指数损失（exponential loss）：$\ell_{exp}(z) = \exp(-z)$；</li>
+<li>绿色，对率损失（logistic loss）：$\ell_{log}(z) = log(1+\exp(-z))$.</li>
+</ul>
+<p>采用hinge损失代替0/1损失，同时引入松弛变量$\xi_i \geqslant 0$，得到常用的“软间隔支持向量机”</p>
+<script type="math/tex; mode=display">\min_{\omega,b,\xi_i} \frac{1}{2} \left \| \omega \right \|^2 + C \sum^m_{i=1} \xi_i</script><script type="math/tex; mode=display">\text{s.t. }\ y_i(\omega^Tx_i + b) \geqslant 1-\xi_i</script><script type="math/tex; mode=display">\xi \geqslant 0, \ \ i=1,2,\dots,m.</script><p>其中$\xi_i = max(0,1-y_i(\omega^Tx_i + b))$。之后的计算与之前无损失函数时的相同，区别仅为此时$0 \leqslant \alpha \leqslant C$，其他过程详见<strong>6.3 核函数</strong>一节。</p>
+<p>值得注意的是，在使用对率损失代替0/1损失时，得到的模型类似于对率回归模型。实际上，支持向量机与对率回归的优化目标相近，通常情况下性能也相仿。但相比之下，一方面，对率回归的输出具有概率意义；可直接用于多分类任务。另一方面，hinge损失的特性使支持向量机的解具有稀疏性，而对率损失是光滑单调的递减函数，不具备类似支持向量机的概念，所以其需要依赖更多的训练样本，预测开销更大。</p>
+<p>使用其他的损失函数替代0/1损失函数所得到的模型，其特点与替代损失函数直接相关，但它们具有一个共性：优化目标中的第一项用来描述划分超平面的“间隔”大小，另一项用来表述训练集上的误差，可写为更一般的形式</p>
+<script type="math/tex; mode=display">\min_f \Omega(f) + C\sum^m_{i=1} \ell(f(x_i),y_i)</script><p>其中$\Omega(f)$称为“<em>结构风险</em>”（strutural risk），由模型$f$的性质决定；第二项$\sum^m_{i=1} \ell(f(x_i),y_i)$称为“<em>经验风险</em>”（empirical risk），由模型和训练数据的契合程度决定；$C$用于对二者进行折中，为引入使用者的意图提供途径，同时有助于削减假设空间，降低了过拟合的风险。上式代表的问题称为“<em>正则化</em>”（regularization）问题，$\Omega(f)$称为正则化项，$C$称为正则化常数。$L_p$范数是常用的正则化项，其中$L_0$、$L_1$范数倾向于$\omega$的分量尽量稀疏，$L_2$范数倾向于$\omega$的分量尽量稠密。</p>
+<h2 id="6-5-支持向量回归"><a href="#6-5-支持向量回归" class="headerlink" title="6.5 支持向量回归"></a>6.5 支持向量回归</h2><p>考虑支持向量方法的回归问题，给定训练样本$D = {(x_1,y_1),(x_2,y_2),\dots,(x_m,y_m)}$，$y \in \mathbb{R}$，希望学得一个形如$f(x) = \omega^Tx + b$的回归模型，使得$f(x)$与$y$尽可能地接近，$\omega$和$b$是待确定的参数。</p>
+<p>支持向量回归（Support Vector Regression，简称SVR）与传统回归方法的区别在于损失的计算方法不同，传统回归方法是计算每个样本的预测输出$f(x)$与真实输出$y$之间的差别作为损失，仅当$f(x) = y$时损失才为零；而支持向量回归允许在一定范围$\epsilon$内认为$f(x)$与$y$的值无差别，即仅当$f(x)$与$y$之间的差别绝对值大于$\epsilon$时，才会计算损失。</p>
+<p>于是，SVR问题可形式化为</p>
+<script type="math/tex; mode=display">\min_{\omega,b} \frac{1}{2} \left \| \omega \right \|^2 + C\sum^m_{i=1}\ell_{\epsilon}(f(x_i)-y_i)</script><p>其中，$C$为正则化常数，$\ell_{\epsilon}$是$\epsilon$-不敏感（$\epsilon$-insensitive loss）函数</p>
+<script type="math/tex; mode=display">\ell_{\epsilon} = \begin{cases} 0, &\text{if } |z| \leqslant \epsilon, \\ |z|-\epsilon, &\text{otherwise.} \end{cases}</script><p>引入松弛变量$\xi_i$和$\hat\xi_i$将问题重写为</p>
+<script type="math/tex; mode=display">\min_{\omega,b,\xi_i,\hat\xi_i}\frac{1}{2} \left \| \omega \right \|^2 + C \sum^m_{i=1}(\xi_i + \hat \xi_i)</script><script type="math/tex; mode=display">\text{s.t. } \ f(x_i) - y_i \leqslant \epsilon + \xi_i</script><script type="math/tex; mode=display">y_i - f(x_i) \leqslant \epsilon + \hat\xi_i</script><script type="math/tex; mode=display">\xi \geqslant 0, \ \hat\xi_i \geqslant 0, \ i=1,2,\dots,m.</script><p>之后的求解及优化等计算与支持向量机一致，不再赘述。值得注意的是，在支持向量机中的方法，都可以应用到支持向量回归中，例如求解更鲁棒的$b$值，使用特征空间映射选取核函数等。</p>
+<h2 id="6-6-核方法"><a href="#6-6-核方法" class="headerlink" title="6.6 核方法"></a>6.6 核方法</h2><p>回顾SVM和SVR模型，给定训练样本${(x_1,y_1),(x_2,y_2),\dots,(x_m,y_m)}$，发现二者均能表示成$\kappa(x,x_i)$的线性组合，并且总结出如下结论：</p>
+<p><strong>核方法 定理2 表示定理</strong> 令$\mathbb{H}$为核函数$\kappa$对应的再生核希尔伯特空间，$\left | h \right |_{\mathbb{H}}$表示$\mathbb{H}$空间中关于$h$的范数，对于任意单调递增函数$\Omega:[0,\infin] \mapsto \mathbb{R}$和任意非负损失函数$\ell:\mathbb{R}^m \mapsto [0,\infin]$，优化问题</p>
+<script type="math/tex; mode=display">\min_{h \in \mathbb{H}} F(h) = \Omega(\left \| h \right \|_{\mathbb{H}} + \ell(h(x_1),h(x_2),\dots,h(x_m))</script><p>的解总可写为</p>
+<script type="math/tex; mode=display">h^*(x) = \sum^m_{i=1}\alpha_i\kappa(x,x_i)</script><p>表示定理对损失函数没有限制，对正则化项$\Omega$仅要求单调递增（不一定是凸函数），这显示出核函数的巨大威力。</p>
+<p>基于核函数的一系列学习方法，统称为“<em>核方法</em>”（kernel methods）。最常见的是，通过引入核函数将线性学习器拓展为非线性学习器，例如通过核化将线性判别分析（LDA）转化为“<em>核线性判别分析</em>”（Kernelized Linear Discriminant Analysis，简称KLDA）。<em>此处不再证明</em></p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><h3 id="1-拉格朗日乘数法"><a href="#1-拉格朗日乘数法" class="headerlink" title="[1] 拉格朗日乘数法"></a>[1] 拉格朗日乘数法</h3><p><strong>拉格朗日乘数法</strong>（Lagrange multipliers）：一种寻找多元函数在一组约束条件下的极值的方法。通过引入拉格朗日乘数$\lambda$，可将有$d$个变量与$k$个约束条件的最优化问题转化为具有$d+k$个变量的无约束优化问题求解。</p>
+<p>对于一个等式约束的优化问题，假定$x$是$d$维向量，需寻找最优$x^*$使目标函数$f(x)$最小且满足$g(x)=0$。从几何角度解释，我们需要在约束函数确定的$d-1$维曲面上寻找使目标函数最小（大）化的点（该曲面称为约束曲面）。于是可以得到如下结论：</p>
+<ul>
+<li>对于约束曲面上的任意点$x$，该点的梯度$\triangledown g(x)$正交于约束曲面；</li>
+<li>在最优点$x^<em>$，目标函数在该点的梯度$\triangledown f(x^ </em>)$正交于约束曲面。</li>
+</ul>
+<p>由此可知，在最优点$x_*$，梯度$\triangledown g(x)$和$\triangledown f(x)$的方向必相同或相反，即存在$\lambda \neq 0$使得</p>
+<script type="math/tex; mode=display">\triangledown f(x^ *) + \lambda \triangledown g(x^ *) = 0,</script><p>$\lambda$称为拉格朗日乘数，定义拉格朗日函数</p>
+<script type="math/tex; mode=display">L(x,\lambda) = f(x) + \lambda g(x)</script><p>而对于不等式约束$g(x) \leqslant 0$时，最优点$x^<em>$在$g(x) &lt; 0$的区域中或在边界$g(x) = 0$上。当$g(x) &lt; 0$时，约束$g(x) \leqslant 0$不起作用，可以直接使$\triangledown f(x) = 0$来获得最优点；$g(x) = 0$时，即相当于等式情况，但需注意的是这时使$\triangledown f(x^</em>) + \lambda \triangledown g(x^ *) = 0$成立的$\lambda &gt; 0$。整合两种情况，发现必然存在$\lambda g(x) = 0$。因此，在约束$g(x) \leqslant 0$下最小化$f(x)$，可转化为在如下约束下最小化目标函数的拉格朗日函数：</p>
+<script type="math/tex; mode=display">
+\begin{cases}
+g(x) \leqslant 0; \\
+\lambda \geqslant 0; \\
+\lambda g(x) = 0.
+\end{cases}</script><p>以上条件称为<strong>Karush-Kuhn-Tucker（简称KKT）条件</strong>。</p>
+<p>之后，可以将以上做法推广到多个约束，考虑具有$m$个等式约束和$n$个不等式约束且可行域$\mathbb{D} \subset \mathbb{R}^d$非空的优化问题</p>
+<script type="math/tex; mode=display">\min _x f(x)</script><script type="math/tex; mode=display">s.t. \ \ h_i(x) = 0 \ \ (i = 1,...,m),</script><script type="math/tex; mode=display">g_j(x) \leqslant 0 \ \ (j = 1,...,n).</script><p>引入拉格朗日乘数$\lambda = (\lambda_1, \lambda_2,\dots, \lambda_m)^T$和$\mu = (\mu_1, \mu_2, \dots,\mu_n)^T$，相应的拉格朗日函数为</p>
+<script type="math/tex; mode=display">L(x,\mathbf{\lambda},\mathbf{\mu}) = f(x) + \sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1} \mu_j g_j(x)</script><p>同时，由不等式引入的KKT条件（$j=1,2,\dots,n$）为</p>
+<script type="math/tex; mode=display">\begin{cases} g_j(x) \leqslant 0; \\ \mu_j \geqslant 0; \\ \mu_j g_j(x) = 0. \end{cases}</script><p>对于优化问题，可以从“<em>主问题</em>”（primal problem）和“<em>对偶问题</em>”（dual problem）两个方面考虑。对该优化问题而言，可基于以上拉格朗日函数，构造其拉格朗日“<em>对偶函数</em>”（dual function）$\Gamma:\mathbb{R}^m \times \mathbb{R}^n \mapsto \mathbb{R}$定义为</p>
+<script type="math/tex; mode=display">\begin{aligned}\Gamma(\lambda,\mu) &= \inf_{x \in \mathbb{D}} L(x,\lambda,\mu) \\ &=\inf_{x \in \mathbb{D}} (f(x) + \sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1}\mu_j g_j(x) \end{aligned}</script><p>上式中$\inf-$表示<em>下确界</em>（infimum）。</p>
+<p>若$\tilde x \in \mathbb{D}$为主问题可行域中的点，则对任意$\mu \succeq 0$和$\lambda$都有</p>
+<script type="math/tex; mode=display">\sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1}\mu_j g_j(x) \leqslant 0</script><p>进而有</p>
+<script type="math/tex; mode=display">\Gamma (\lambda,\mu) = \inf _{x \in \mathbb{D}} L(x,\lambda,\mu) \leqslant L(\tilde x,\lambda,\mu) \leqslant f(\tilde x).</script><p>若主问题$min_x f(x)$最优值为$p^*$，则对任意$\mu \succeq 0$和$\lambda$都有</p>
+<script type="math/tex; mode=display">\Gamma (\lambda,\mu) \leqslant p^*</script><p>即对偶函数给初了主问题最优值的下界，且这个下界取决于$\mu$和$\lambda$的值。于是，很自然地想到对偶函数能获得的最好下界是什么？这就引出优化问题</p>
+<script type="math/tex; mode=display">\max_{\lambda,\mu} \Gamma (\lambda,\mu) \ \ s.t. \mu \succeq 0.</script><p>上式即为主问题的对偶问题，其中$\lambda$和$\mu$称为“<em>对偶变量</em>”（dual variable）。无论主问题的凸性如何，对偶问题始终是凸优化问题。</p>
+<p>考虑对偶问题</p>
+<script type="math/tex; mode=display">\max_{\lambda,\mu} \Gamma(\lambda,\mu) = d^*</script><p>显然有$d^<em> \leqslant p^</em> $，这被称为“<em>弱对偶性</em>”（weak duality）；若$d^<em> = p^</em> $成立，则称该问题具有“<em>强对偶性</em>”（strong duality），此时该对偶问题能获得主问题的最优下界。对一般问题而言，强对偶性通常不成立，但若满足Slater条件，则强对偶性必然成立，且此时有</p>
+<script type="math/tex; mode=display">\sum^m_{i=1} \lambda_i h_i(x) + \sum^n_{j=1}\mu_j g_j(x) = 0</script><p>之后，将拉格朗日函数分别对原变量和对偶变量求导，并令导数为0，即可解决。</p>
+<h3 id="2-二次规划"><a href="#2-二次规划" class="headerlink" title="[2] 二次规划"></a>[2] 二次规划</h3><p><strong>二次规划</strong>（Quadratic Programming）：目标函数是变量的二次函数，约束条件是变量的线性不等式的一类优化问题。</p>
+<p>假定变量个数为$d$，约束条件为$m$，则标准的二次规划问题形如：</p>
+<script type="math/tex; mode=display">\min_x \frac{1}{2}x^TQx + c^Tx</script><script type="math/tex; mode=display">s.t. \ \ Ax \leqslant b</script><p>其中，$x$为$d$维向量，$Q \in R^{d \times d}$为实对称矩阵，$A \in R^{m \times d}$为实矩阵，$b \in R^m$和$c \in R^d$为实向量，$Ax \leqslant b$的每一行对应一个约束。</p>
+<ul>
+<li>Q—半正定矩阵时，目标函数为凸函数，若此时约束条件$Ax \leqslant b$的可行域非空，且目标函数在此可行域内有下界，则该问题有全局最小值。</li>
+<li>Q—正定矩阵时，该问题有唯一最小值</li>
+<li>Q—非正定矩阵时，目标函数将有多个平稳点和局部最小值，此时是NP难问题。</li>
+</ul>
+<p>对二次规划问题的常用解法有：椭球法（ellipsoid method）、内点法（interior point）、增广拉格朗日法（augmented Lagrangian）、梯度投影法（gradient projection）等。若Q为正定矩阵，则相应的二次规划问题可由椭球法在多项式时间内求解。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/09/20/Chapter6%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/" data-id="ckv7nxmn0000amcojagvs0g5g" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8A%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%8B/" rel="tag">《机器学习》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/09/20/Chapter7%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%88%86%E7%B1%BB%E5%99%A8/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Chapter7 贝叶斯分类器
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2019/09/20/Chapter5%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">Chapter5 神经网络</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

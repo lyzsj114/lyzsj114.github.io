@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    Chapter8 集成学习 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-Chapter8集成学习" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  Chapter8 集成学习
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/10/02/Chapter8%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0/" class="article-date">
+  <time datetime="2019-10-02T07:29:11.000Z" itemprop="datePublished">2019-10-02</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>个体与集成</li>
+<li>Boosting<ul>
+<li>权重更新公式</li>
+<li>样本分布更新公式</li>
+</ul>
+</li>
+<li>Bagging与随机森林<ul>
+<li>Bagging</li>
+<li>随机森林</li>
+</ul>
+</li>
+<li>结合策略<ul>
+<li>平均法</li>
+<li>投票法</li>
+<li>学习法</li>
+</ul>
+</li>
+<li>多样性<ul>
+<li>误差-分歧分解</li>
+<li>多样性度量</li>
+<li>多样性增强</li>
+</ul>
+</li>
+</ul>
+<span id="more"></span>
+<h2 id="8-1-个体与集成"><a href="#8-1-个体与集成" class="headerlink" title="8.1 个体与集成"></a>8.1 个体与集成</h2><p><strong>集成学习</strong>（ensemble learning）：通过构建并结合多个学习器来完成学习任务的方法。又称多分类器系统（multi-classifier system）、基于委员会的学习（conmmittee-based learning）等。</p>
+<p>集成学习以不同的<em>个体学习器</em>（individual learner）可分为两类：</p>
+<ul>
+<li>同质（homogeneous）集成：仅包含同种类型的学习器。其中，个体学习器称为“<em>基学习器</em>”（base learner），构成的算法称“<em>基学习算法</em>”（base learning algorithm）。</li>
+<li>异质（heterogenous）集成：包含不同类型的学习器。其中，个体学习器称为“<em>组件学习器</em>”（component learner）。</li>
+</ul>
+<p>集成学习的强大在于结合多个学习器，常可获得比单一学习器显著优越的泛化性能。对“<em>弱学习器</em>”（weak learner）尤为明显（弱学习器是指泛化性能不佳，预测准确度仅略高于50%的学习器）。但需要注意的是，为能够获得更好的泛化性能，通常还是选择使用泛化性能较好的学习器。其次，显而易见的，对用于集成学习的学习器，要获得好的集成效果，个体学习器应“好而不同”，也即不仅需要准确性，更要具有一定的多样性（diversity）。</p>
+<p>对简单的集成模型，常用投票法（voting）对个体学习器进行集成。对一个简单的二分类问题进行分析：$y \in {-1,+1}$和真实函数$f$，并假定基分类错误率为$\epsilon$，则对每个分类器有</p>
+<script type="math/tex; mode=display">P(h_i(x) \neq f(x)) = \epsilon</script><p>通过简单投票法集成$T(odd)$个基分类器，有超过一半的分类基分类器正确，则集成分类就正确。</p>
+<script type="math/tex; mode=display">H(x) = \text{sign}(\sum^T_{i=1}h_i(x))</script><p>假设基分类器的错误率相互独立，则由Hoeffding不等式可知，集成的错误率为</p>
+<script type="math/tex; mode=display">\begin{aligned} P(H(x) \neq f(x)) &= \sum^{[T/2]}_{k=0} \binom{T}{k}(1-\epsilon)^k\epsilon^{T-k} \\ &\leqslant exp\left (-\frac{1}{2}T(1-2\epsilon)^2 \right ) \end{aligned}</script><p>从上式可以看出，在$T$增大时错误率呈指数级下降，最终趋向于零。但需要注意的是，此过程中存在一个关键假设，即各基学习器的错误率相互独立，在现实任务中显然难以成立。</p>
+<p>根据个体的生成方式，可以分为两大类：</p>
+<ul>
+<li>个体学习器间存在强依赖关系，必须串行生成的序列化方法，例：Boosting；</li>
+<li>个体学习器间不存在强依赖关系，可同时生成的并行化方法，例：Bagging和<em>随机森林</em>（Random Forest）。</li>
+</ul>
+<h2 id="8-2-Boosting"><a href="#8-2-Boosting" class="headerlink" title="8.2 Boosting"></a>8.2 Boosting</h2><p><strong>Boosting</strong>：一族将弱学习器提升为强学习器的算法。</p>
+<p>Boosting的工作机制如下：</p>
+<ol>
+<li>从出事训练集中训练出一个基学习器；</li>
+<li>根据基学习器的表现，调整训练样本集，使做错的训练样本得到更多的关注；</li>
+<li>基于调整后的样本训练下一个基学习器；</li>
+<li>重复2、3直至学习器数目达到目标$T$值。最后将这$T$个学习器加权结合。</li>
+</ol>
+<p>本节中介绍Boosting族中最著名的AdaBoost算法，并以最简单的基于“加性模型”（additive model），即基学习器的线性组合进行推导</p>
+<p>$f$为真实函数，$y_i \in {-1,+1}$，$H(x)$是集成函数，有</p>
+<script type="math/tex; mode=display">H(x) = \sum^{T}_{t=1}\alpha_t h_t(x)</script><p>其损失函数为<em>指数损失函数</em>（exponential loss function）</p>
+<script type="math/tex; mode=display">\ell _{\exp}(H|D) = \mathbb{E} _{x \sim D} [e^{-f(x)H(x)}]</script><p>对$H(x)$求偏导，得</p>
+<script type="math/tex; mode=display">\frac{\partial \ell_{\exp}(H|D)}{\partial H(x)} = -e^{-H(x)}P(f(x) = 1|x) + e^{H(x)}P(f(x)=-1|x)</script><p>令导数为零，解得</p>
+<script type="math/tex; mode=display">H(x) = \frac{1}{2}\ln \frac{P(f(x) = 1|x)}{P(f(x)=-1|x)}</script><p>则有</p>
+<script type="math/tex; mode=display">\text{sign}(H(x)) = \argmax_{y \in \{-1,+1\}} P(f(x)=y|x)</script><p>即有$H(x) \rightarrow H’(x) = 0 \rightarrow \argmax_y P(f(x)=y|x)$。因此，对应$H’(x)=0$即指数损失函数最小时，有分类错误率最小，此时称指数损失函数是原本$0/1$损失函数的一致的替代损失函数。</p>
+<p>之后，需要找出迭代的优化方法，即权重更新公式和样本分布更新公式。</p>
+<h3 id="权重更新公式"><a href="#权重更新公式" class="headerlink" title="权重更新公式"></a>权重更新公式</h3><p>在生成第一个基分类器之后，需要迭代地生成$\alpha_t$和$h_t(x)$。$\alpha_t$应使得$\alpha_t h_t(x)$最小化指数损失函数，即</p>
+<script type="math/tex; mode=display">\begin{aligned} \ell_{\exp}(\alpha_th_t|D_t) &= E_{x \sim D_t}[e^{-f(x) \alpha_t h_t(x)}] \\ &= E_{x \sim D_t}[e^{-\alpha_t}\mathbb{I}(f(x)=h_t(x)) + e^{\alpha_t}\mathbb{I}(f(x) \neq h_t(x))] \\ &= e^{-\alpha_t}P_{x \sim D_t}(h_t(x) = f(x)) + e^{\alpha}P_{x \sim D_t}(h_t(x) \neq f(x)) \\ &= e^{-\alpha_t}(1-\epsilon_t) + e^{\alpha_t}\epsilon_t \end {aligned}</script><p>其中，$\epsilon<em>t=P</em>{x \sim D_t}(h_t(x) \neq f(x))$，即错误率。对上式求导可得</p>
+<script type="math/tex; mode=display">\frac{\partial \ell_{\exp}(\alpha_th_t(x)|D_t)}{\partial \alpha_t} = -e^{-\alpha_t}(1-\epsilon_t) + e^{\alpha}\epsilon_t</script><p>令其导数为零，可解得</p>
+<script type="math/tex; mode=display">\alpha_t = \frac{1}{2}\ln\left ( \frac{1-\epsilon_t}{\epsilon_t} \right )</script><p>即得到分类器权重的更新公式。</p>
+<h3 id="样本分布更新公式"><a href="#样本分布更新公式" class="headerlink" title="样本分布更新公式"></a>样本分布更新公式</h3><p>在获得$H<em>{t-1}(x)$之后，对样本分布进行调整。目的在于使下一轮学习器$h_t$尽可能地纠正$H</em>{t-1}(x)$的错误，即最小化$H_{t-1}+h_t$的损失</p>
+<script type="math/tex; mode=display">\begin{aligned} \ell_{\exp} (H_{t-1}+h_t|D) &= E_{x \sim D} [ e^{-f(x)(H_{t-1}(x) + h_t(x))} ] \\ & = E_{x \sim D} [ e^{-f(x)H_{t-1}(x)} \cdot e^{-f(x)h_t(x))} ] \end{aligned}</script><p>由于$f^2(x) = h_t^2(x) = 1$，因此利用$e^x$的二阶泰勒展开式，有</p>
+<script type="math/tex; mode=display">\begin{aligned} \ell_{\exp} (H_{t-1}+h_t|D) &\simeq E_{x \sim D} \left [e^{-f(x)H_{t-1}(x)} \left (1-f(x)h_t(x)+\frac{1}{2}f^2(x)h_t^2(x) \right ) \right ] \\ &= E_{x \sim D} \left [e^{-f(x)H_{t-1}(x)} \left (1-f(x)h_t(x)+\frac{1}{2} \right ) \right ] \end{aligned}</script><p>所以理想的学习器$h_t$应满足</p>
+<script type="math/tex; mode=display">\begin{aligned} h_t(x) &= \argmin_h \ell_{\exp}(H_{t-1} + h_t|D) \\ &= \argmin_h E_{x \sim D} \left [e^{-f(x)H_{t-1}(x)} \left (1-f(x)h_t(x)+\frac{1}{2} \right ) \right ] \\ &= \argmax_h E_{x \sim D}\left [ e^{-f(x)H_{t-1}(x)} f(x)h_t(x)\right ] \\ &= \argmax_h E_{x \sim D}\left [ \frac{e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]} f(x)h_t(x)\right ] \end{aligned}</script><p>其中$E<em>{x \sim D}[e^{-f(x)H</em>{t-1}(x)}]$为常数，设分布</p>
+<script type="math/tex; mode=display">D_t(x) = \frac{D(x)e^{-f(x)H_{t-1}(x)}}{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]}</script><p>代入学习器$h_t$式中，可得</p>
+<script type="math/tex; mode=display">h_t(x) = \argmax_h E_{x \sim D_t}[f(x)h(x)]</script><p>由$f(x) \cdot h_t(x) \in {-1,+1}$，有</p>
+<script type="math/tex; mode=display">f(x)h(x) = 1-2 \mathbb{I}(f(x) \neq h(x))</script><p>则理想的学习器为</p>
+<script type="math/tex; mode=display">h_t(x) = \argmax_h E_{x \sim D_t}[1-2 \mathbb{I}(f(x) \neq h(x))]</script><p>所以可得$D<em>t$与$D</em>{t+1}$的关系为</p>
+<script type="math/tex; mode=display">\begin{aligned} D_{t+1}(x) &= \frac{D(x)e^{-f(x)H_{t}(x)}}{E_{x \sim D}[e^{-f(x)H_{t}(x)}]} \\ &= \frac{D(x)e^{-f(x)H_{t-1}(x)} e^{-f(x)\alpha_t h_t(x)}}{E_{x \sim D}[e^{-f(x)H_{t}(x)}]} \\ &= D_t(x)e^{-f(x)\alpha_t h_t(x)} \frac{E_{x \sim D}[e^{-f(x)H_{t-1}(x)}]}{E_{x \sim D}[e^{-f(x)H_{t}(x)}]} \end{aligned}</script><p>即得到样本分布的更新公式。</p>
+<p>在需要基学习器能对特定的数据分布进行学习时，对于可处理带权样本和不能的情况分别处理：</p>
+<ul>
+<li>可处理带权样本，“<em>重赋权法</em>”（re-weighting）：在训练过程的每一轮中，根据样本分布为每个训练样本重新赋予权重。</li>
+<li>不可赋权重型，“<em>重采样法</em>”（re-sampling）：在每一轮学习中，根据样本分布对训练集重新进行采样，再用重采样而得的样本集对基学习器进行训练。</li>
+</ul>
+<p>从偏差-方差的角度来看，Boosting主要关注于降低偏差。</p>
+<h2 id="8-3-Bagging与随机森林"><a href="#8-3-Bagging与随机森林" class="headerlink" title="8.3 Bagging与随机森林"></a>8.3 Bagging与随机森林</h2><p>前文提到，集成学习的原则是好而不同，因此，应使不同的个体学习器之间的差异尽量地大，使用采样的方法选择不同的样本对学习器进行训练；同时，不应因为仅使用部分样本对学习器进行训练而出现欠拟合，所以应使用互有交叠的样本。</p>
+<h3 id="8-3-1-Bagging"><a href="#8-3-1-Bagging" class="headerlink" title="8.3.1 Bagging"></a>8.3.1 Bagging</h3><p>Bagging是并行式集成学习方法中最著名的代表，其直接基于自助采样法（有放回的多次随机抽样）。</p>
+<p>Bagging通常使用自助采样法在$m$个样本中抽取$T$个含$m$个样本的训练集，然后基于每个采样集训练出一个基学习器，再将它们结合。对预测输出进行结合时，Bagging通常对分类任务使用简单投票法，对回归任务使用简单平均法。</p>
+<p>基学习器的性能假定为$O(m)$，则Bagging的复杂度大致为$T(O(m) + O(s))$，$O(s)$通常很小，$T$是不太大的常数。因此Bagging是一个很高效的集成学习算法，且可以直接应用于多分类、回归等任务。</p>
+<p>此外，通过自助采样法得到与原样本集大小相同的训练集，其中仅包含原样本集中$63.2\%$的样本数量。于是，可以使用剩余的$36.8\%$的样本用作验证集对泛化性能进行“<em>包外估计</em>”（out-of-bag estimate）。令$H^{oob}(x)$表示对样本$x$的包外预测，有</p>
+<script type="math/tex; mode=display">H^{oob}(x) = \argmax_{y \in \gamma} \sum^T_{t=1}\mathbb{I}(h_t(x) = y) \cdot \mathbb{I}(x \notin D_t)</script><p>则Bagging泛化误差的包外估计为</p>
+<script type="math/tex; mode=display">\epsilon^{obb} = \frac{1}{|D|} \sum_{(x,y) \in D}\mathbb{I}(H^{obb} \neq y)</script><p>并且，如果基学习器是决策树，包外估计可以用于辅助剪枝；或用于估计决策树中各结点的后验概率以辅助对零训练样本结点的处理；还可帮助神经网络减小过拟合风险。</p>
+<p>从偏差-方差的角度看，Bagging主要关注于降低方差。</p>
+<h3 id="8-3-2-随机森林"><a href="#8-3-2-随机森林" class="headerlink" title="8.3.2 随机森林"></a>8.3.2 随机森林</h3><p><strong>随机森林</strong>（Random Forest，简称RF）：是基于决策树算法作为基学习器的一种Bagging变种，在决策树的训练过程中引入了随机属性选择。其引入随机的步骤如下：</p>
+<ol>
+<li>在含有$d$个属性的样本集中，随机选取一个有$k$种属性的样本子集；</li>
+<li>从这个样本集中选取最优划分变量对子集进行划分。</li>
+</ol>
+<p>显然，其使用$k$控制引入随机性的程度，如：$k=1$时，即为随机选取一个样本进行划分；$k=d$时，即为一般的决策树算法；通常推荐使用$k=\log_2d$。</p>
+<p>随机森林相对于Bagging而言，其不仅有来自样本的扰动，更存在来自属性的扰动，所以其“多样性”更好，泛化性能更强。并且，随机森林有更高的运行效率，因为其每次训练仅需考虑一个$k$属性子集，而Bagging需要考虑全部子集。</p>
+<h2 id="8-4-结合策略"><a href="#8-4-结合策略" class="headerlink" title="8.4 结合策略"></a>8.4 结合策略</h2><p>学习器结合的优点：</p>
+<ol>
+<li>统计方面：分别使用多种假设空间，避免因误选导致泛化性能减弱；</li>
+<li>计算方面：多次计算避免单次陷入局部最小；</li>
+<li>表示方面：结合多个学习器的假设空间，扩大假设空间，避免真实假设不在假设空间的情况。</li>
+</ol>
+<p>假定包含$T$个基学习器${h_1,h_2,\dots,h_T}$的集成，其中$h_i$在示例$x$上的输出为$h_i(x)$，以此为例介绍几种常见结合策略。</p>
+<h3 id="8-4-1-平均法"><a href="#8-4-1-平均法" class="headerlink" title="8.4.1 平均法"></a>8.4.1 平均法</h3><p>对数值型输出$h_i(x) \in \mathbb{R}$，最常见的结合策略是使用平均法（average）。</p>
+<ul>
+<li>简单平均法（simple average）：<script type="math/tex">H(x) = \frac{1}{T}\sum^T_{i=1}h_i(x)</script></li>
+<li>加权平均法（weighted avergae）：<script type="math/tex">H(x) = \sum^T_{i=1} w_ih_i(x)</script>其中，$w<em>i$是个体学习器的权重，通常要求$w_i \geqslant 0$，$\sum^T</em>{i=1} w_i = 1$。</li>
+</ul>
+<p>集成学习中各种结合方法都可看作是加权平均法的特例或变体，其在集成学习中具有特别的意义。事实上，对给定的基学习器，不同的集成学习方法可以视为通过不同的方式来确定加权平均法中的权重。</p>
+<p>需要注意的是，加权平均法中的权重一般是通过对训练数据的学习而得，但在实际应用中，训练样本中通常不充分或存在噪声，这就导致学习到的权重并不可靠，特别是在规模较大的集成来说，要学习的权重较多，容易导致过拟合。因此，在现实任务中，加权平均法的性能未必优于简单平均法。一般地，我们在个体学习器性能差距不大的情况下使用简单平均法，在差距较大的时候使用加权平均法。</p>
+<h3 id="8-4-2-投票法"><a href="#8-4-2-投票法" class="headerlink" title="8.4.2 投票法"></a>8.4.2 投票法</h3><p>对分类任务来说，学习器$h_i$从类别标记集合${c_1,c_2,\dots,c_N}$中预测出一个标记，最常见的结合策略是<em>投票法</em>（voting）。假定$h^j_i(x)$是$h_i$在类别标记$c_j$上的输出，由此$h_i$在样本$x$上的预测输出即为一个$N$维向量$(h^1_i(x);h^2_i(x);…;h^N_i(x))$。</p>
+<ul>
+<li>绝对多数投票法（majority voting）：<script type="math/tex">H(x)=\begin{cases} c_j, &\text{  if } \sum^T_{i=1} h^j_i(x) > 0.5\sum^N_{k=1}\sum^T_{i=1}h^k_i(x), \\ reject, & \text{otherwise.} \end{cases}</script>即若所得票数超过半数，则为预测该标记，否则拒绝预测。绝对多数投票法的拒绝预测机制，为可靠性要求较高的学习任务提供了一个很好的机制；</li>
+<li>相对多数投票法（plurality voting）：<script type="math/tex">H(x) = c_{\argmax_j \sum^T_{i=1} h^j_i(x)}</script>即将所得票数最多的标记作为预测，如果是多个相等，就从中随机选择一个；</li>
+<li>加权投票法（weighted voting）：$$H(x) = c<em>{\argmax_j \sum^T</em>{i=1} h^j<em>i(x)}$$$w_i$是$h_i$的权重，通常$w_i \geqslant 0$，$\sum^T</em>{i=1} w_i = 1$。</li>
+</ul>
+<p>上述的方法中，个体学习器的输出类型不受限制，以此可以产生不同的类别，常见的有：</p>
+<ul>
+<li>类标记：$h^j_i \in {0,1}$，使用类标记的投票称“硬投票”；</li>
+<li>类概率：$h^j_i \in [0,1]$，使用类概率的投票称为“软投票”。</li>
+</ul>
+<p>对于在确认类标记的同时给出置信度的学习器，可以使用规范化后的置信度作为类概率进行集成。一般而言，使用类概率的结合性能比类标记更好。但需要注意的是，如果基学习器的类型不同，其类概率不能直接进行比较，此时可以转化为标记输出，使用类标记进行结合。</p>
+<h3 id="8-4-3-学习法"><a href="#8-4-3-学习法" class="headerlink" title="8.4.3 学习法"></a>8.4.3 学习法</h3><p>在训练数据很多的情况下，可以使用更为强大的结合策略——“学习法”，即通过另一个学习器进行结合。Stacking是学习法的典型代表，我们称基学习器为初级学习器，结合学习器为次级学习器或元学习器（meta-learner）。</p>
+<p>Stacking在训练完初级学习器后，将初级学习器的输出值作为次级学习器的输入特征，初始样本的标记仍作为输入标记，训练次级学习器。在训练中为减小过拟合风险，一般对训练样本集使用$k$折交叉验证或留一法，用训练样本集的初级学习器未使用的样本来产生次级学习器的训练样本。主要流程如下：</p>
+<figure class="highlight vb"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">输入：训练集D=&#123;(x1,y1),(x2,y2),...,(xm,ym)&#125;</span><br><span class="line">      初级学习算法£<span class="number">1</span>,£<span class="number">2</span>,...,£T</span><br><span class="line">      次级学习算法£</span><br><span class="line">过程：</span><br><span class="line"><span class="keyword">for</span> t = <span class="number">1</span>,<span class="number">2</span>,...,T <span class="keyword">do</span></span><br><span class="line">    ht = £t(D);</span><br><span class="line"><span class="keyword">end</span> <span class="keyword">for</span></span><br><span class="line">D` = ∅;</span><br><span class="line"><span class="keyword">for</span> i = <span class="number">1</span>,<span class="number">2</span>,...,m <span class="keyword">do</span></span><br><span class="line">    <span class="keyword">for</span> t = <span class="number">1</span>,<span class="number">2</span>,...,T <span class="keyword">do</span></span><br><span class="line">        zit = ht(xi);</span><br><span class="line">    <span class="keyword">end</span> <span class="keyword">for</span></span><br><span class="line">    D` = D` ∪ ((zi1,zi2,...,ziT),yi);</span><br><span class="line"><span class="keyword">end</span> <span class="keyword">for</span></span><br><span class="line">h` = £(D`);</span><br><span class="line">输出：H(x) = h`(h1(x),h2(x),...,ht(x))</span><br></pre></td></tr></table></figure>
+<p>Stacking的泛化性能与次级学习器的输入属性表示和次级学习器算法有很大关系。在使用初级学习器的输出类概率为输入属性，用多相应线性回归（Multi-response Linear Regression，简称MLR）作为次级学习器算法时效果教好。MLR是基于线性回归的分类器，对每个类分别进行线性回归，属于该类的训练样例标志将置为1，不属于将置为0，测试样例将被划分为概率最大的类。</p>
+<p>贝叶斯模型平均（Bayes Model Averaging，简称BMA）基于后验概率给不同模型赋予权重，可以视之为加权平均法的变种。</p>
+<p>从理论上来说，数据生成模型如果在当前考虑的模型中，且数据噪声较小，则BMA性能至少不弱于Stacking。但在现实中，难以满足前者的条件。因此，Stacking通常优于BMA，因为其鲁棒性比BMA好，且BMA对模型近似误差非常敏感。</p>
+<h2 id="8-5-多样性"><a href="#8-5-多样性" class="headerlink" title="8.5 多样性"></a>8.5 多样性</h2><h3 id="8-5-1-误差-分歧分解"><a href="#8-5-1-误差-分歧分解" class="headerlink" title="8.5.1 误差-分歧分解"></a>8.5.1 误差-分歧分解</h3><p>为得到具有更强泛化性能的学习器，需要对个体学习器的“好而不同”性质进行理论分析。</p>
+<p>假定有回归学习任务$f: \mathbb{R^d} \rightarrow \mathbb{R}$，通过使用对个体学习器$h_1,h_2,\dots,h_T$加权平均的集成来完成。于是，有示例$x$，在学习器$h_1$上的“<em>分歧</em>”（ambiguity）</p>
+<script type="math/tex; mode=display">A(h_i|x) = (h_i(x) - H(x))^2</script><p>则集成上的分歧（组内误差）为</p>
+<script type="math/tex; mode=display">\bar A(h_i|x) = \sum^T_{i=1} w_i(h_i(x) - H(x))^2</script><p>显然，此“分歧”式体现出了$x$的多样性。此外，存在</p>
+<p>个体学习器$h_i$的平方误差（组间误差）<script type="math/tex">E(h_i|x) = (f(x)-h_i(x))^2</script></p>
+<p>集成$H$的平方误差<script type="math/tex">E(H|x) = (f(x)-H(x))^2</script></p>
+<p>令$\bar E(h|x) = \sum^T_{i=1} w_i \cdot E(h_i|x)$表示个体学习器的加权均值，则有</p>
+<script type="math/tex; mode=display">\begin{aligned} \overline A(h|x) &= \sum^T_{i=1} w_iE(h_i|x)-E(H|x) \\ &= \overline E(h|x) - E(H|x). \end{aligned}</script><p>令$p(x)$为样本的概率密度，将上式推广至全样本，可得</p>
+<script type="math/tex; mode=display">\sum^T_{i=1} w_i \int A(h_i|x)p(x)dx = \sum^T_{i=1}w_i \int E(h_i|x)p(x)dx - \int E(H|x)p(x)dx</script><p>类似的，将$h_i$的泛化误差和分歧项分别推广到全样本体现为</p>
+<script type="math/tex; mode=display">E_i = \int E(h_i|x)p(x)dx</script><script type="math/tex; mode=display">A_i = \int A(h_i|x)p(x)dx</script><p>集成的泛化误差为</p>
+<script type="math/tex; mode=display">E = \int E(H|x)p(x)dx</script><p>令$\overline E = w_iE_i$表示个体学习器泛化误差的加权均值，$\overline A = w_i A_i$表示个体学习确定加权分歧值，并对应于未推广的前式，则有</p>
+<script type="math/tex; mode=display">E = \overline E - \overline A</script><p>显然，可以看出个体学习器的准确度越高，多样性越大，则集成效果越好。这一过程被称为“<em>误差-分歧分解</em>”（error-ambiguity decomposition）。</p>
+<p>但需要注意的是，这个结论无法作为学习器的优化目标进行求解，并且上述推导过程仅适用于回归学习（源于集合方差的分解），难以直接推广到分类学习中。</p>
+<h3 id="8-5-2-多样性度量"><a href="#8-5-2-多样性度量" class="headerlink" title="8.5.2 多样性度量"></a>8.5.2 多样性度量</h3><p><strong>多样性度量</strong>（diversity measure）：用于度量集成中个体分类器的多样性，即估算个体学习器的多样化程度。典型的做法是考虑个体学习器的两两相似\不相似性。</p>
+<p>对给定的数据集$D = {(x_1, y_1), (x_2, y_2), \dots, (x_m, y_m)}$，有二分类任务$y_i \in {-1, +1}$，分类器$h_i$与$h_j$的预测结果列联表（contingency table）为</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">$~$</th>
+<th style="text-align:center">$h_i = +1 \ \ \ \  h_i = -1$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">$h_j = +1$</td>
+<td style="text-align:center">$a \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ c$</td>
+</tr>
+<tr>
+<td style="text-align:center">$h_j = -1$</td>
+<td style="text-align:center">$b \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ d$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其中，$a+b+c+d = m$，基于这个列联表，下面给出一些常用的多样性度量</p>
+<ul>
+<li>不合度量（disagreement measure）$$d<em>is</em>{ij} = \frac{b+c}{m}$$$d<em>is</em>{ij}$的值域为$[0,1]$，值越大则多样性越大；<br>$~$</li>
+<li>相关系数（correlation coefficient）$$\rho<em>{ij} = \frac{ad-bc}{\sqrt{(a+b)(a+c)(c+d)(b+d)}}$$$\rho</em>{ij}$的值域为$[-1,1]$。若$h_i$与$h_j$正相关则值为正，否则为负；<br>$~$</li>
+<li>Q-统计量（Q-statistic）$$Q<em>{ij} = \frac{ad-bc}{ad+bc}$$$Q</em>{ij}$与相关系数$\rho<em>{ij}$的符号相同，且$|Q</em>{ij}| \geqslant |\rho_{ij}|$；<br>$~$</li>
+<li>$\kappa$-统计量（$\kappa$-statistic）<script type="math/tex">\kappa = \frac{p_1-p_2}{1-p_2}</script>其中，$p_1$是两个分类器取得一致的概率；$p_2$是两个分类器偶然达成一致的概率，由数据集$D$估算的计算方法为：<script type="math/tex">\begin{aligned} p_1 &= \frac{a+d}{m}, \\ p_2 &= \frac{(a+b)(a+c)+(c+d)(b+d)}{m^2}. \end{aligned}</script>若分类器$h_i$与$h_j$在$D$上完全一致，则$\kappa = 1$；若它们只是偶然达成一致，则$\kappa = 0$，在$h_i$与$h_j$达成一致的概率低于偶然性的情况下有$\kappa &lt; 0$。</li>
+</ul>
+<p>此外，上述的度量均为“成对型”（pairwise）多样性度量，可以通过2维图绘制出来，方便分析。</p>
+<h3 id="8-5-3-多样性增强"><a href="#8-5-3-多样性增强" class="headerlink" title="8.5.3 多样性增强"></a>8.5.3 多样性增强</h3><p>为增强多样性一般思路是在学习过程中引入随机性，常见的做法主要是对数据样本、输入属性、输入表示、算法参数进行扰动。以下介绍增强多样性的方法。</p>
+<ul>
+<li>数据样本扰动<br>数据样本的扰动通常基于采样法，例如：Bagging使用自助采样，AdaBoost使用序列采样。这种方法简单高效、使用最广，尤其是在决策树、神经网络等，对训练样本变化比较敏感的“不稳定基学习器”中效果拔群；相对地，在那些对训练样本变化不敏感的学习器，如线性学习器、支持向量机、朴素贝叶斯、$k$临近学习器等，这种方法的效果有限，需要使用其他方法进行扰动；<br>$~$</li>
+<li>输入属性扰动<br>训练样本通常由一组属性描述，不同的“<em>子空间</em>”（subspace，即属性子集）提供观察数据的不同视角。著名算法<em>随机子空间</em>（random subspace）算法即是依赖于属性扰动，该算法从原始数据空间中提取若干个属性子集，再基于每个属性子集训练一个基学习器。对包含大量冗余属性的数据，一方面增加基学习器的多样性，另一方面减少属性使时间开销大幅节约。但如果数据仅包含少量属性，或冗余属性很少，就不宜使用输入属性扰动；</li>
+</ul>
+<figure class="highlight vb"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">随机子空间算法</span><br><span class="line"></span><br><span class="line">输入：训练集D=&#123;(x1,y1),(x2,y2),...,(xm,ym)&#125;</span><br><span class="line">      基学习算法£</span><br><span class="line">      基学习器数T</span><br><span class="line">      子空间属性数d`</span><br><span class="line">过程：</span><br><span class="line"><span class="keyword">for</span> t = <span class="number">1</span>,<span class="number">2</span>,...,T <span class="keyword">do</span></span><br><span class="line">    Ft = RS(D,d`)</span><br><span class="line">    Dt = MapFt(D)</span><br><span class="line">    ht = £(Dt)</span><br><span class="line"><span class="keyword">end</span> <span class="keyword">for</span></span><br><span class="line">输出：$H(x) = \argmax_&#123;y \<span class="keyword">in</span> \gamma&#125; \sum^T_&#123;t=<span class="number">1</span>&#125; \mathbb&#123;I&#125;(h_t(Map_&#123;F_t&#125;)(x) = y)$</span><br></pre></td></tr></table></figure>
+<p>$~$</p>
+<ul>
+<li>输出表示扰动<br>此类做法的基本思路是对输出表示进行操纵以增强多样性，可对训练样本的类标记稍作变动，如“<em>翻转法</em>”（Flipping Output）随机改变一些训练样本的标记；也可对输出表示进行转化，如“<em>输出调制法</em>”（Output Smearing）将分类输出转化为回归输出后构建个体学习器；还可将原任务拆解为多个可同时求解的子任务，如ECOC法利用纠错输出码将多分类任务拆解为一系列二分类任务来训练基学习器。<br>$~$</li>
+<li>算法参数扰动<br>基学习算法一般都有参数需进行设置，例如神经网络的隐层神经元数、初始连接权重等，通过随机设置不同的参数，往往可产生差别较大的个体学习器。例如“<em>负相关法</em>”（Negative Correlation）显式地通过正则化项来强制个体神经网络使用不同的参数。对参数较少的算法，可同故宫将其学习过程中某些环节用其他类似方式代替，从而达到扰动的目的，例如可将决策树使用的属性选择机制替换成其他的属性选择机制。值得指出的是，使用单一学习器时通常需使用交叉验证等方法来确定参数值，这事实上已使用了不同参数训练出多个学习器，只不过最终仅选择一个学习器进行使用，而集成学习则相当于把这些学习都利用起来；由此可以看出，集成学习技术的实际计算开销并不一定比使用单一学习器大很多。</li>
+</ul>
+<p>不同的多样性增强机制可同时使用，例如<strong>8.3.2</strong>节中介绍的随机森林中同时使用了数据样本扰动和输入属性扰动，有些方法甚至同时使用了更多机制。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/10/02/Chapter8%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0/" data-id="ckv7nxmn4000fmcoj5k09cj1h" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8A%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%8B/" rel="tag">《机器学习》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/10/02/Chapter9%E8%81%9A%E7%B1%BB/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Chapter9 聚类
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2019/09/20/Chapter7%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%88%86%E7%B1%BB%E5%99%A8/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">Chapter7 贝叶斯分类器</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

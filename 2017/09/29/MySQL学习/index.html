@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    MySQL学习 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-MySQL学习" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  MySQL学习
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2017/09/29/MySQL%E5%AD%A6%E4%B9%A0/" class="article-date">
+  <time datetime="2017-09-29T10:55:21.000Z" itemprop="datePublished">2017-09-29</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <h1 id="MySQL安装"><a href="#MySQL安装" class="headerlink" title="MySQL安装"></a>MySQL安装</h1><span id="more"></span>
+<ol>
+<li>直接在官网下载并安装。</li>
+<li>在cmd中进入安装路径（例：C:\Program Files\MySQL\MySQL Server 5.7\bin）。</li>
+<li>执行</li>
+</ol>
+<pre><code>mysql -u root -p
+password:****************
+</code></pre><p>完成连接即可。</p>
+<h1 id="Database操作"><a href="#Database操作" class="headerlink" title="Database操作"></a>Database操作</h1><p>1.Database创建</p>
+<pre><code>create database 数据库名;
+</code></pre><p>2.Database删除</p>
+<pre><code>drop database 数据库名;
+</code></pre><p>3.Database查询</p>
+<pre><code>show databases;
+</code></pre><p>4.Database使用</p>
+<pre><code>use 数据库名;
+</code></pre><h1 id="Table操作"><a href="#Table操作" class="headerlink" title="Table操作"></a>Table操作</h1><p><strong>在进行Table操作之前，需先使用数据库</strong></p>
+<h2 id="表单格式操作"><a href="#表单格式操作" class="headerlink" title="表单格式操作"></a>表单格式操作</h2><p>1.Table创建</p>
+<pre><code>create table 表名;
+</code></pre><p>2.Table删除</p>
+<pre><code>drop table 表名;
+</code></pre><p>3.Table查询</p>
+<pre><code>show tables;
+</code></pre><p>4.Table改名</p>
+<pre><code>alter table [table_name] rename [new_table_name];
+</code></pre><p>5.增加列</p>
+<pre><code>alter table [table_name] add [colume_name] [data_type] (not null) (defult);
+</code></pre><p>6.删除列</p>
+<pre><code>alter table [table_name] drop [colume_name];
+</code></pre><p>7.改变列</p>
+<pre><code>alter table [table_name] change [old_colume_name] [new_colume_name] [data_type];
+</code></pre><h2 id="表单内容操作"><a href="#表单内容操作" class="headerlink" title="表单内容操作"></a>表单内容操作</h2><p>1.insert</p>
+<p>Ⅰ. 对应列数插入数据</p>
+<pre><code>insert into [table_name] values (value1，value2···);
+</code></pre><p>Ⅱ. 选择列数插入数据</p>
+<pre><code>insert into [table_name] (列1，列2···) values (value1，value2···);
+</code></pre><p><strong>进阶：与select组合</strong></p>
+<p>Ⅰ. 对应列数插入数据</p>
+<pre><code>insert into [table_name1] select 列1，列2 from [table_name2];
+</code></pre><p>Ⅱ. 选择列数插入数据</p>
+<pre><code>insert into [table_name1] (列1，列2···) select (列3，列4···) from [table_name2];
+</code></pre><p>2.select</p>
+<p>Ⅰ. 基础</p>
+<p>①. 全部</p>
+<pre><code>select * from table_name;
+</code></pre><p>②. 列名</p>
+<pre><code>select colume_name1,colume_name2 from table_name;
+</code></pre><p>Ⅱ. where</p>
+<pre><code>select * from table_name where colume_name 运算符 value;
+//支持使用 or、and 增加条件
+</code></pre><p><strong>进阶</strong></p>
+<p>①. in</p>
+<pre><code>select * from table_name where colume_name in (value1,value2···);
+
+select * from table_name1 where colume_name in (select colume_name from table_name2);
+</code></pre><p>②. between</p>
+<pre><code>select * from table_name where colume_name (not) between value1 and value2;
+</code></pre><p>③. like</p>
+<pre><code>select * form table_name where colume_name (not) like pattern;
+</code></pre><p><em>pattern:匹配。例：’abc’,’abc%’</em></p>
+<p>Ⅲ. order by</p>
+<p>①. 单列排序</p>
+<pre><code>select * from table_name (where子句) order by colume_name (asc/desc);
+</code></pre><p>②. 多列排序</p>
+<pre><code>select * from table_name (where子句) order by col1(asc/desc),col2(acs/desc);
+</code></pre><p><em>默认为asc</em></p>
+<p>Ⅳ. limit</p>
+<pre><code>select * from table_name (where子句) (order by子句) limit (offset,)rowCount;
+</code></pre><p><em>从0计数。</em><br><em>offset不填时默认从0开始。</em></p>
+<p>Ⅴ. update</p>
+<p>①. 修改单列</p>
+<pre><code>update table_name set colume_name = xxx (where子句);
+</code></pre><p>②. 修改多列</p>
+<pre><code>update table_name set colume_name1 = xxx,colume_name2 = xxx···(where子句)
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2017/09/29/MySQL%E5%AD%A6%E4%B9%A0/" data-id="ckv7nxmnn000ymcojg1sm7fx7" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MySQL/" rel="tag">MySQL</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2017/12/02/%E9%93%BE%E8%A1%A8%E5%AE%9E%E7%8E%B0(%E4%B8%80)/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      链表实现(一)
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2017/09/24/%E5%87%BD%E6%95%B0%E8%AF%95%E9%A2%98/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">函数试题</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>

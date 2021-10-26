@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    Chapter2 模型评估与选择 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-Chapter-2-模型评估与选择" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  Chapter2 模型评估与选择
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2019/08/26/Chapter-2-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8E%E9%80%89%E6%8B%A9/" class="article-date">
+  <time datetime="2019-08-26T04:58:35.000Z" itemprop="datePublished">2019-08-26</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>本文内容：</p>
+<ul>
+<li>经验误差与过拟合</li>
+<li>评估方法<ul>
+<li>留出法</li>
+<li>交叉验证法</li>
+<li>自助法</li>
+<li>调参与最终模型</li>
+</ul>
+</li>
+<li>性能度量<ul>
+<li>错误率与精度</li>
+<li>查准率、查全率与F1</li>
+<li>ROC与AUC</li>
+<li>代价敏感错误率与代价曲线</li>
+</ul>
+</li>
+<li>比较检验<ul>
+<li>偏差与方差</li>
+</ul>
+</li>
+</ul>
+<span id="more"></span>
+<h2 id="2-1-经验误差与过拟合"><a href="#2-1-经验误差与过拟合" class="headerlink" title="2.1 经验误差与过拟合"></a>2.1 经验误差与过拟合</h2><p><strong>误差</strong>（error）：学习器的实际预测输出与样本的真实值之间的差异。在训练集上的误差被称为“<em>训练误差</em>”（training error）或“<em>经验误差</em>”（empirical error），在新样本上的误差称为“<em>泛化误差</em>”（generalization error）。</p>
+<p>众所周知，在模型训练中，我们需要“泛化误差”尽可能的小，因此，在多数情况下，我们会倾向于训练出最小化“经验误差”的学习器，即“经验误差”$\rightarrow$0，对训练集的精度达到100%的情况。然而，事实上在多数情况下，这类模型的性能并不好，原因在于模型存在过拟合的情况。</p>
+<p><strong>过拟合</strong>（overfitting）：对训练集数据训练过度，导致模型将一些训练集的自身特点作为了所有潜在样本的一般性质学习。与之相对的是“<em>欠拟合</em>”（underfitting），即对训练集的一般性质尚未学好。</p>
+<p>欠拟合比较容易克服，在决策树学习中扩展分支；在神经网络中增加训练轮数等。过拟合则十分复杂，许多因素可能会导致过拟合。</p>
+<p><strong>过拟合是机器学习中面临的重要障碍。</strong> 各类学习算法必然带有一些针对过拟合的措施，但是必须认识到的是：<em>过拟合是无法彻底避免的</em>。</p>
+<p>理解这一点需要明白，机器学习解决的问题通常都是NP难甚至更难，如果可以彻底避免过拟合，仅通过经验误差最小化就能得到最优解，就意味着我们证明了“P=NP”，因此，过拟合显然是无法完全避免的。</p>
+<h2 id="2-2-评估方法"><a href="#2-2-评估方法" class="headerlink" title="2.2 评估方法"></a>2.2 评估方法</h2><p>在得到学习器后，通常使用<em>测试集</em>（testing set）进行实验，以实验得到的“<em>测试误差</em>”（testing error）作为泛化误差的近似，从而对其泛化误差进行评估并进而作出选择。</p>
+<p>需要注意的是，<strong>测试集应尽量与训练集互斥</strong>，从而避免过于“乐观”的测试结果。（<em>例：考试出原题</em>）</p>
+<p>而我们仅有一个数据集$D$，就需要对数据集进行处理，从中产生测试集$S$和训练集$T$。</p>
+<h3 id="2-2-1-留出法"><a href="#2-2-1-留出法" class="headerlink" title="2.2.1 留出法"></a>2.2.1 留出法</h3><p><strong>留出法</strong>（hold-out）：直接将数据集$D$划分为两个互斥的集合，一个作为训练集$T$，另一个作为测试集$S$。</p>
+<p>需要注意的是，在划分过程中，不能破坏原本数据集的分布方式。这一过程类似于<em>采样</em>（sampling）中的“<em>分层采样</em>”（stratified）过程。</p>
+<p>其次，因为在同一类别中抽样时的不同选择也会导致不同的训练/测试集，所以在使用留出法时，为了使结果更加可靠，往往会采用若干次随机划分、重复进行实验评估后取平均值作为留出法的结果。</p>
+<p>此外，还需注意不能因为划分测试集导致训练集不足，欠拟合的情况发生。<em>一般地，我们将数据集的$\frac{2}{3}$~$\frac{4}{5}$作为训练集，余下部分为测试集。</em></p>
+<h3 id="2-2-2-交叉验证法"><a href="#2-2-2-交叉验证法" class="headerlink" title="2.2.2 交叉验证法"></a>2.2.2 交叉验证法</h3><p><strong>交叉验证法</strong>（cross validation）：确定划分参数k，将数据集$D$划分为k个互斥集合，且每个集合大小相同或相似。每个子集$D_i$中的元素需保证依旧符合总体的分布规律。以k-1个子集的集合作为训练集，余下的子集作为测试集，重复k次，将所得结果取k次均值。（此方法又称为<em>k折交叉验证法</em>）</p>
+<p><strong>留一法</strong>（Leave-One-Out，简称LOO）：在将每个元素看作一个子集时，作交叉验证，即为留一法。相较于常规交叉验证法，留一法的训练集更接近数据集$D$，但其有较大的计算开销，并且留一法结果不总是比常规交叉验证结果更准确。</p>
+<h3 id="2-2-3-自助法"><a href="#2-2-3-自助法" class="headerlink" title="2.2.3 自助法"></a>2.2.3 自助法</h3><p><strong>自助法</strong>（bootstrapping）：在样本容量为m的数据集$D$中，利用<em>自助采样法</em>（bootstrap sampling）从$D$中抽取m个样本，构成集合$D’$。以$D’$为训练集，$D\setminus D’$为测试集，达到可以使用m个训练样本作为训练集。<em>自助采样法</em>，即有放回采样。</p>
+<p>自助法的原理如下：</p>
+<script type="math/tex; mode=display">\lim _{m \to \infty} (1-\frac{1}{m})^m = \frac{1}{e} \approx 0.368</script><p>构造m个样本的训练集$D’$后，余下部分$D \setminus D’$大约为数据集的$\frac{1}{3}$，以此作为测试集的测试结果被称为“<em>包外估计</em>”（out-of-bag estimate）。</p>
+<p>显而易见，在数据集较小或需要多个不同训练集进行集成学习时自助法相对比较有用；但对于较大的数据集，划分训练集和测试集对结果影响较小，再使用自助法不仅作用甚微反而会因为提取训练集时导致训练集的分布与原分布不符，进而引入估计偏差。</p>
+<h3 id="2-2-4-调参与最终模型"><a href="#2-2-4-调参与最终模型" class="headerlink" title="2.2.4 调参与最终模型"></a>2.2.4 调参与最终模型</h3><p><strong>调参</strong>（parameter tuning）：对算法参数进行设定的过程。</p>
+<p>机器学习中的参数分为两类：</p>
+<ol>
+<li><strong>超参数</strong> 即算法的参数，供人为选择，通常数目在10以内。</li>
+<li><strong>模型的参数</strong> 通过机器学习产生的参数，数目较多。</li>
+</ol>
+<p>显然，调参的过程与算法选择类似，因此，同样需要从数据集$D$中得到两个集合，此时为训练集和<em>验证集</em>（validation set），利用验证集上的性能进行模型选择或者调参。</p>
+<h2 id="2-3-性能度量"><a href="#2-3-性能度量" class="headerlink" title="2.3 性能度量"></a>2.3 性能度量</h2><p><strong>性能度量</strong>（performance measure）：衡量模型泛化能力的标准。针对不同的模型，需要使用不同的性能度量。例：回归最常使用“均方误差”（mean squared error，简称MSE）作为性能度量。</p>
+<p>样例集D上的MSE</p>
+<script type="math/tex; mode=display">E(f;D) = \frac{1}{m}\sum^m_{i=1}(f(x_i)-y_i)^2</script><p>对于数据分布$\mathbb{D}$和概率密度函数$p(\cdot)$，MSE为</p>
+<script type="math/tex; mode=display">E(f;\mathbb{D})=\int _{x \sim \mathbb{D}} (f(x)-y)^2p(x)dx</script><p>以下主要介绍分类任务的性能度量：</p>
+<h3 id="2-3-1-错误率与精度"><a href="#2-3-1-错误率与精度" class="headerlink" title="2.3.1 错误率与精度"></a>2.3.1 错误率与精度</h3><p>分类任务中<strong>最常用</strong>的两种度量方式：<em>错误率、精度</em>。</p>
+<p>错误率（error rate）：分类错误的样本数占样本总数的比例。<br>精度（accuracy）：分类正确的样本数占样本总数的比例。</p>
+<p>对于样例集$D$，分类错误率定义为</p>
+<script type="math/tex; mode=display">E(f;D) = \frac{1}{m} \sum^{m}_{i=1} \mathbb{I}(f(x) \neq y_i)</script><p>精度定义为</p>
+<script type="math/tex; mode=display">acc(f;D) = \frac{1}{m} \sum^{m}_{i=1} \mathbb{I}(f(x) = y_i) = 1 - E(f;D)</script><p>注：$\mathbb{I}(\cdot)$为指示函数$\cdot$为真时取1，假时取0。</p>
+<h3 id="2-3-2-查准率、查全率与F1"><a href="#2-3-2-查准率、查全率与F1" class="headerlink" title="2.3.2 查准率、查全率与F1"></a>2.3.2 查准率、查全率与F1</h3><p>对于二分类问题，将样例根据其真实类别与模型预测类别的组合划分为四类：</p>
+<ul>
+<li><strong>TP</strong> 真正例（true positive）</li>
+<li><strong>FP</strong> 假正例（false positive）</li>
+<li><strong>TN</strong> 真反例（true negative）</li>
+<li><strong>FN</strong> 假反例（false negative）</li>
+</ul>
+<p>分类结果的混淆矩阵（confusion matrix）为：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">真实情况\预测结果</th>
+<th style="text-align:center">正例</th>
+<th style="text-align:center">反例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">正例</td>
+<td style="text-align:center">TP（真正例）</td>
+<td style="text-align:center">FN（假反例）</td>
+</tr>
+<tr>
+<td style="text-align:center">反例</td>
+<td style="text-align:center">FP（假正例）</td>
+<td style="text-align:center">TN（真反例）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>则查准率（precision）P和查全率（recall）R分别定义为</p>
+<script type="math/tex; mode=display">P = \frac{TP}{TP+FP},</script><script type="math/tex; mode=display">R = \frac{TP}{TP+FN}.</script><p>而查准率与查全率是一对矛盾的度量。一般地，查准率高时，查全率往往偏低；查全率高时，查准率偏低。</p>
+<p>根据模型的预测结果，以样本是正例的可能性高低，对样本进行排序，并按此顺序依次以样本作为正例进行预测，从而可以计算得到不断更新的查全率和查准率。将其变化趋势绘制为图像，得到<em>查全率-查准率曲线</em>，简称<strong>P-R曲线</strong>，图像为P-R图。</p>
+<p>在利用P-R图比较学习器优劣时，若一个学习器的P-R曲线完全包住另一个学习器的曲线，则可断言前者的性能优于后者；若有交叉部分，则难以一般性地断言优劣。</p>
+<p>为综合考虑查准率和查全率，构造BEP和F1度量，F1度量更加常用。</p>
+<p><strong>平衡点</strong>（Break-Even Point，简称BEP）：BEP = 查准率 = 查全率</p>
+<p><strong>F1度量</strong>：</p>
+<script type="math/tex; mode=display">F1 = \frac{2 \times P \times R}{P + R} = \frac{2 \times TP}{样例总数 + TP - TN}</script><p>针对于对查准率和查全率重视程度不同的情况，构造F1度量更一般的形式——$F_\beta$</p>
+<script type="math/tex; mode=display">F_\beta = \frac{(1+\beta^2) \times P \times R}{(\beta^2 \times P) + R}</script><p><em>注：$F1$度量来源于查准率P和查全率R的调和平均数</em></p>
+<p>其中$\beta \gt 0$度量了查准率对查重率的相对重要性，$\beta = 1$时退化为标准$F1$；$\beta \gt 1$时查全率有更大影响；$\beta \lt 1$时查准率有更大影响。</p>
+<p><strong>多个二分类混淆矩阵情况</strong> 对多个二分类混淆矩阵综合考虑其查全率和查准率的问题（例如：对每次得到一个混淆矩阵的问题进行多次训练；在多个数据集上进行训练，希望估计算法的平均性能；执行多分类任务，每两两组合形成一个混淆矩阵），大致分为两种方法：</p>
+<p><strong>macro-$F$1</strong> 首先计算各混淆矩阵的查准率和查全率，记作$(P_1,R_1)，(P_2,R_2)，\dots，(P_n,R_n)$，再分别计算查准率和查全率的均值，称为“<em>宏查准率</em>”（macro-P）和“<em>宏查全率</em>”（macro-R），并计算出对应的“宏$F1$”（macro-$F1$）</p>
+<script type="math/tex; mode=display">macro-P = \frac{1}{n}\sum^n_{i=1}Pi,</script><script type="math/tex; mode=display">macro-R = \frac{1}{n}\sum^n_{i=1}Ri,</script><script type="math/tex; mode=display">macro-F1 = \frac{2 \times macro-P \times macro-R}{macro-P + macro-R}.</script><p><strong>micro-$F$1</strong> 首先计算各混淆矩阵的均值，即求出$\overline {TP}，\overline {T}，\overline {FP}，$</p>
+<h3 id="2-3-3-ROC与AUC"><a href="#2-3-3-ROC与AUC" class="headerlink" title="2.3.3 ROC与AUC"></a>2.3.3 ROC与AUC</h3><p>在学习器对测试数据预测时，一般是产生一个实值或概率值，再与一个<em>分类阈值</em>（threshold）比较，以此决定最终的判断结果。等价于将测试结果实值排序，再规定一个<em>截断点</em>（cut point），截断点前后即为正例和反例。</p>
+<p>而这个排序的质量，就反映出学习器的期望泛化性能（在一般情况下的性能），常用ROC曲线反应这一指标。</p>
+<p><strong>ROC曲线</strong>（Receiver Operating Characteristic）：受试者工作曲线，和P-R曲线的绘制方法类似，使用TPR和FPR代替P-R曲线中的P和R即可得到ROC曲线。</p>
+<p><strong>真正例率</strong>（True Positive Rate，简称TPR）：</p>
+<script type="math/tex; mode=display">TPR = \frac{TP}{TP+FN}</script><p>注：<em>其中 TP+FN=样本中所有正例=最大正例个数</em></p>
+<p><strong>假正例率</strong>（False Positive Rate，简称FPR）：</p>
+<script type="math/tex; mode=display">FPR = \frac{FP}{TN+FP}</script><p>注：<em>其中 TN+FP=样本中所有反例=最大反例个数</em></p>
+<p>使用ROC对学习器的泛化性能进行比较时，类似于P-R曲线，若一个学习器的曲线完全被另一个学习器的曲线包含，则可断定后者性能优于前者；若两曲线有重叠部分，则需要使用AUC（Area Under ROC Curve）进行判定。</p>
+<h3 id="2-3-4-代价敏感错误率与代价曲线"><a href="#2-3-4-代价敏感错误率与代价曲线" class="headerlink" title="2.3.4 代价敏感错误率与代价曲线"></a>2.3.4 代价敏感错误率与代价曲线</h3><p>为衡量不同错误所造成的不同损失，可为错误赋予“<em>非均等代价</em>”（unequal cost）。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">真实类别\预测类别</th>
+<th style="text-align:center">第0类</th>
+<th style="text-align:center">第1类</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">第0类</td>
+<td style="text-align:center">0</td>
+<td style="text-align:center">$cost_{01}$</td>
+</tr>
+<tr>
+<td style="text-align:center">第1类</td>
+<td style="text-align:center">$cost_{10}$</td>
+<td style="text-align:center">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>以二分类事件为例，设定以上的“<em>代价矩阵</em>”（cost matrix）。可以通过改变$cost<em>{01}$和$cost</em>{10}$的值，描述不同错误的不同损失情况。</p>
+<p>由此，引入一系列代价敏感的指标，如：代价敏感错误率，以$D^{+}$为正例子集$D^{-}$为反例子集，第0类为正例，第1类为反例，则</p>
+<script type="math/tex; mode=display">E(f;D;cost) = \frac{1}{m}(\sum_{x_i \in D^+} \mathbb{I}(f(x_i) \neq y_i) \times cost_{01} + \sum_{x_i \in D^-} \mathbb{I}(f(x_i) \neq y_i) \times cost_{10})</script><p>需要注意的是，在代价敏感情况下，不能直接用ROC曲线判断两学习器的泛化性能，需要引入“<em>代价曲线</em>”（cost curve）进行判断。</p>
+<p><strong>代价曲线</strong>（cost curve）：横轴为取值在[0,1]区间的正例概率代价</p>
+<script type="math/tex; mode=display">P(+)cost = \frac{p \times cost_{01}}{p \times cost_{01} + (1-p) \times cost_{10}}</script><p>p是样例为正例的概率；纵轴是取值为[0,1]的归一化代价</p>
+<script type="math/tex; mode=display">cost_{norm} = \frac{FNR \times p \times cost_{01} + FPR \times (1-p) \times cost_{10}}{p \times cost_{01} + (1-p) \times cost_{10}}</script><h2 id="2-4-比较检验"><a href="#2-4-比较检验" class="headerlink" title="2.4 比较检验"></a>2.4 比较检验</h2><p>机器学习中性能比较涉及以下因素：</p>
+<ol>
+<li>测试性能无法完全代表泛化性能</li>
+<li>测试性能与测试集的选取有非常大的关系</li>
+<li>许多机器学习算法存在一定随机性</li>
+</ol>
+<p>因此，在机器学习中比较两学习器的性能时需要用到统计假设检验（hypothesis test）的方法对上述因素进行规避，以得到较为准确的结论。</p>
+<p>—<em>由于内容较为繁琐，此处略去</em>—</p>
+<h3 id="偏差与方差"><a href="#偏差与方差" class="headerlink" title="偏差与方差"></a>偏差与方差</h3><p>通过“<em>偏差-方差分解</em>”（bias-variance decomposition）可以对一个学习算法泛化性能进行解释。</p>
+<p>对测试样本$x$，令$y_D$为$x$在数据集中的标记，$y$为$x$的真实标记，$f(x;D)$为训练集$D$上学得模型$f$在$x$上的预测输出。以回归预测为例，学习算法的期望预测为</p>
+<script type="math/tex; mode=display">\bar f(x) = E_D[f(x;D)],</script><p>使用样本数相同的不同训练集产生的方差为</p>
+<script type="math/tex; mode=display">var(x) = \mathbb{E}_D[(f(x;D) - \bar f(x))^2],</script><p>噪声为</p>
+<script type="math/tex; mode=display">\varepsilon ^2 = \mathbb{E}_D[(y_D-y)^2]</script><p>期望输出与真实标记的差别称为偏差（bias），即</p>
+<script type="math/tex; mode=display">bias^2(x) = (\bar f(x) - y)^2q</script><p>为便于讨论就，假定噪声期望为零（噪声与学习算法无关），则$\mathbb{E}_D[(y_D-y)^2]=0$，对算法期望泛化误差分解得</p>
+<script type="math/tex; mode=display">E(f;D)=\mathbb{E}_D[(f(x;D)-y_D)^2]=bias^2(x)+var(x)+\varepsilon^2</script><p>所以，泛化误差可以分解为偏差、方差与噪声之和。通过偏差-方差分解可以得知，偏差度量了学习算法预测值与真是值之间的差异，刻画学习算法本身的拟合能力；方差度量了同样大小的训练集的变动导致的学习性能的变化，刻画数据扰动所造成的影响；噪声表达了在当前任务上任何算法所能达到的下界，刻画了学习问题本身的难度。</p>
+<p>对于一个学习算法，在偏差-方差分解中可知，想要提升其性能，需要对数据进行更好的拟合（减少偏差）；数据扰动的影响小（减小方差）。然而，在正常情况下，存在<em>偏差-方差窘境</em>（bias-variance dilemma）</p>
+<p><strong>偏差-方差窘境</strong> 在欠拟合时，拟合程度不高致使偏差较大，数据扰动能力弱，泛化误差由偏差主导；过拟合时，拟合程度过高致使方差较大，数据扰动能力强，泛化误差由方差主导。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2019/08/26/Chapter-2-%E6%A8%A1%E5%9E%8B%E8%AF%84%E4%BC%B0%E4%B8%8E%E9%80%89%E6%8B%A9/" data-id="ckv7nxmmk0000mcoj3ha34alj" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E3%80%8A%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E3%80%8B/" rel="tag">《机器学习》</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  <a href="/2019/09/20/Chapter3%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B/" class="article-nav-link">
+    <strong class="article-nav-caption">Newer</strong>
+    <div class="article-nav-title">
+      
+      Chapter3 线性模型
+      
+    </div>
+  </a>
+  
+  
+  <a href="/2019/07/23/%E7%8E%B0%E4%BB%A3%E7%AE%97%E6%B3%95/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">现代算法</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>
