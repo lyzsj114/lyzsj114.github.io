@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>实验室学习时长脚本</title>
+    <url>/2021/10/28/%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%AD%A6%E4%B9%A0%E6%97%B6%E9%95%BF%E8%84%9A%E6%9C%AC/</url>
+    <content><![CDATA[<p>实验室安全教育时长需要一小时才能参加考试，并且5分钟内必须更换学习网页，所以通过Selenium控制Edge浏览器进行定时刷新，从而达到自动刷时长的方法。（仅供学习使用，勿用于破坏网络环境）</p>
+<span id="more"></span>
+<h2 id="观察问题"><a href="#观察问题" class="headerlink" title="观察问题"></a>观察问题</h2><p>校外需要通过校园VPN登入，登入后需要进入实验室安全网站进行学习等等一系列操作，因此难度极大。于是，本文采用Selenium控制Edge浏览器实现半自动脚本，通过Selenium创建Edge浏览器进程，由用户自己登录进入学习网站，之后通过简单代码进行定时刷新，即实现了自动刷时长的过程。</p>
+<h2 id="解决问题"><a href="#解决问题" class="headerlink" title="解决问题"></a>解决问题</h2><p>使用notebook环境（如jupyter notebook、jupyterlab等），先运行Selenium创建Edge进程（Selenium和Edge driver的安装参考前文：<a href="https://www.zzforgood.top/2021/10/26/%E6%A8%A1%E6%8B%9F%E7%99%BB%E5%BD%95%E8%87%AA%E5%8A%A8%E5%81%A5%E5%BA%B7%E5%A1%AB%E6%8A%A5%E8%84%9A%E6%9C%AC/">模拟登录自动健康填报脚本</a>）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">browser = webdriver.Edge(<span class="string">r&#x27;C:\Users\GeniusGrass\Downloads\edgedriver_win64\msedgedriver.exe&#x27;</span>) </span><br></pre></td></tr></table></figure>
+<p>在打开的Edge进程的空白网页中登录校园VPN（学校官网最下方）。</p>
+<p><img src="/2021/10/28/实验室学习时长脚本\login.png" alt></p>
+<p>第二步，进入实验室学习网站（没有通过VPN登录过该网站的需要在上方搜索栏输入相应网址）。</p>
+<p><img src="/2021/10/28/实验室学习时长脚本\site.png" alt></p>
+<p>第三步，打开学习界面。</p>
+<p><img src="/2021/10/28/实验室学习时长脚本\steps.png" alt></p>
+<p>第四步，运行下述代码块：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    time.sleep(<span class="number">121</span>)</span><br><span class="line">    browser.refresh()</span><br></pre></td></tr></table></figure>
+<p>脚本将2分钟刷新一次页面，保持notebook进程打开，直到1小时任务完成强制关闭即可。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>使用Selenium控制Edge会先弹出浏览器界面，对于自动化爬虫来说相对不便且耗费内存，但对于复杂任务而言，可视化界面和可交互性无可替代。因此，可以进一步发掘此类用法以优化生活。</p>
+<p><em>本文仅做技术讨论，如使用该技术造成危害概不负责。</em></p>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>爬虫</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>简单Requests爬虫——股票分时数据爬取</title>
     <url>/2021/10/28/%E7%AE%80%E5%8D%95Requests%E7%88%AC%E8%99%AB%E2%80%94%E2%80%94%E8%82%A1%E7%A5%A8%E5%88%86%E6%97%B6%E6%95%B0%E6%8D%AE%E7%88%AC%E5%8F%96/</url>
     <content><![CDATA[<p>使用Requesets包结合浏览器开发者工具分析网页结构，实现针对股票网站任意股票的单线程无代理爬虫。（仅供学习使用，勿用于破坏网络环境）</p>
