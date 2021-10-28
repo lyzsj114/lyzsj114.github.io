@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    简单Requests爬虫——股票分时数据爬取 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-简单Requests爬虫——股票分时数据爬取" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  简单Requests爬虫——股票分时数据爬取
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2021/10/28/%E7%AE%80%E5%8D%95Requests%E7%88%AC%E8%99%AB%E2%80%94%E2%80%94%E8%82%A1%E7%A5%A8%E5%88%86%E6%97%B6%E6%95%B0%E6%8D%AE%E7%88%AC%E5%8F%96/" class="article-date">
+  <time datetime="2021-10-28T06:54:34.000Z" itemprop="datePublished">2021-10-28</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>使用Requesets包结合浏览器开发者工具分析网页结构，实现针对股票网站任意股票的单线程无代理爬虫。（仅供学习使用，勿用于破坏网络环境）</p>
+<span id="more"></span>
+<p>参考推文：<a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/0f3ELHJzBehxW2LRwCqs1g">手把手教你爬取任意日期全部股票分时数据</a></p>
+<h2 id="解决思路"><a href="#解决思路" class="headerlink" title="解决思路"></a>解决思路</h2><p><strong>简单观察问题</strong> 首先观察网页结构（如下图），可以看到其分时数据是以文本形式直接体现。同时，对于单一股票的分时数据，可能会存在多页的情况，其排列顺序为时间顺序。并且，该网站不要求登录才能获取数据，这就可以确定，只需要简单的爬虫就可以实现对该网站数据进行爬取。爬取后再以csv格式本地储存。</p>
+<p><img src="/.top//简单Requests爬虫——股票分时数据爬取\fullscreen.png" alt></p>
+<p>细节方面，第一步先对网站进行分析，在数据位置右键打开选项卡选择检查（如下图），其数据存放方式简单，并且所有内容都保存在各自的相同标签下，所以可以通过对Html解析进行爬取。</p>
+<p><img src="/.top//简单Requests爬虫——股票分时数据爬取\pageanalysis.png" alt></p>
+<p>本文从另一角度进行处理，由于分时数据的快速更新特性，需要持续获取，如果大量读入Html文件可能会占用大量内存，从而无法实现大规模并发爬虫，因此使用了参考博文中从GET/POST的响应头获取数据的方法。</p>
+<p>首先，打开开发者工具中的网络选项卡，选中保留日志，刷新网页重新进入查看数据相关的GET/POST方法，通过观察各响应头对数据获取的GET/POST请求进行定位（如下图）。</p>
+<p><img src="/.top//简单Requests爬虫——股票分时数据爬取\postanalysis.png" alt></p>
+<p>观察发现，其GET/POST响应头中数据结构为：整个页面的数据放在键值对<code>&quot;data&quot;:value</code>中，其不同时间点数据表现为<code>list</code>中的元素，其每个时间点数据表现为<code>dict</code>，分别有</p>
+<p><code>&quot;t&quot;:91503, &quot;p&quot;:8990, &quot;v&quot;:21, &quot;bs&quot;:4</code></p>
+<p>其中，<code>t</code>表示时间，<code>p</code>表示成交价，<code>v</code>表示手数，<code>bs</code>表示交易类型。以上述时间点为例，表示时间为09:15:03，交易价为8.99，手数为21，交易类型为4（具体代表含义本文不做讨论）。</p>
+<h2 id="解决过程"><a href="#解决过程" class="headerlink" title="解决过程"></a>解决过程</h2><p>综上所述，已经得到了足够的信息，可以着手编写代码。首先，构造爬虫方面，导入所需包并读取响应头信息。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line">url = <span class="string">&#x27;http://push2ex.eastmoney.com/getStockFenShi&#x27;</span></span><br><span class="line">params = (</span><br><span class="line">        (<span class="string">&#x27;pagesize&#x27;</span>,<span class="string">&#x27;144&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;ut&#x27;</span>,<span class="string">&#x27;7eea3edcaed734bea9cbfc24409ed989&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;dpt&#x27;</span>,<span class="string">&#x27;wzfscj&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;cb&#x27;</span>,<span class="string">&#x27;jQuery112406727726525607527_1633998766392&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;pageindex&#x27;</span>, <span class="string">&#x27;0&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;id&#x27;</span>,<span class="string">&#x27;6000001&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;sort&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;ft&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;code&#x27;</span>,<span class="string">&#x27;600000&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;market&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;_&#x27;</span>,<span class="string">&#x27;1633998766403&#x27;</span>)</span><br><span class="line">    )</span><br><span class="line">headers = &#123;</span><br><span class="line"><span class="string">&#x27;Host&#x27;</span>:<span class="string">&#x27;push2ex.eastmoney.com&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;Connection&#x27;</span>:<span class="string">&#x27;keep-alive&#x27;</span>,</span><br><span class="line"><span class="string">&#x27;User-Agent&#x27;</span>:<span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) \</span></span><br><span class="line"><span class="string">AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 \</span></span><br><span class="line"><span class="string">    Safari/537.36 Edg/94.0.992.38&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;DNT&#x27;</span>:<span class="string">&#x27;1&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;Accept&#x27;</span>:<span class="string">&#x27;*/*&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;Referer&#x27;</span>:<span class="string">&#x27;http://quote.eastmoney.com/&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;Accept-Encoding&#x27;</span>:<span class="string">&#x27;gzip, deflate&#x27;</span>,</span><br><span class="line">    <span class="string">&#x27;Accept-Language&#x27;</span>:<span class="string">&#x27;zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line">cookies = &#123;<span class="string">&quot;one_cookie&quot;</span>:<span class="string">&quot;qgqp_b_id=c40; st_si=20784472685104; st_asi=delete; em_hq_fls=js; HAList=a-; st_pvi=47008391842977; st_sp=2021-10-12%2008%3A29%3A28; st_inirUrl=https%3A%2F%2Fcn.bing.com%2F; st_sn=6; st_psi=20211012083246623-0-4344614687&quot;</span>&#125;</span><br><span class="line">response = requests.get(url, headers=headers, params=params, cookies=cookies, verify=<span class="literal">False</span>)</span><br></pre></td></tr></table></figure>
+<p>其中，各参数可由GET/POST请求的标头中得到（<em>代码中cookie有改动</em>），如下图所示。</p>
+<p><img src="/.top//简单Requests爬虫——股票分时数据爬取\param1.png" alt><br><img src="/.top//简单Requests爬虫——股票分时数据爬取\param2.png" alt><br><img src="/.top//简单Requests爬虫——股票分时数据爬取\param3.png" alt="对应上图中的params"></p>
+<p>对运行得到的<code>response</code>内容进行初步选取，结果如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">response.text[<span class="number">43</span>:-<span class="number">2</span>]</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&#x27;&quot;rc&quot;:0,&quot;rt&quot;:108,&quot;svr&quot;:181735295,&quot;lt&quot;:2,&quot;full&quot;:0,&quot;data&quot;:</span><br><span class="line">&#123;&quot;c&quot;:&quot;600000&quot;,&quot;m&quot;:1,&quot;n&quot;:&quot;浦发银行&quot;,&quot;ct&quot;:0,&quot;cp&quot;:9150,&quot;tc&quot;:1345,</span><br><span class="line">&quot;data&quot;:</span><br><span class="line">[&#123;&quot;t&quot;:91503,&quot;p&quot;:9160,&quot;v&quot;:23,&quot;bs&quot;:4&#125;,</span><br><span class="line">&#123;&quot;t&quot;:92021,&quot;p&quot;:9150,&quot;v&quot;:143,&quot;bs&quot;:4&#125;,</span><br><span class="line">&#123;&quot;t&quot;:92403,&quot;p&quot;:9140,&quot;v&quot;:453,&quot;bs&quot;:4&#125;,</span><br><span class="line">&#123;&quot;t&quot;:92424,&quot;p&quot;:9130,&quot;v&quot;:506,&quot;bs&quot;:4&#125;,</span><br><span class="line">&#123;&quot;t&quot;:92451,&quot;p&quot;:9120,&quot;v&quot;:637,&quot;bs&quot;:4&#125;,</span><br><span class="line">&#123;&quot;t&quot;:92505,&quot;p&quot;:9120,&quot;v&quot;:793,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93000,&quot;p&quot;:9120,&quot;v&quot;:60,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93003,&quot;p&quot;:9120,&quot;v&quot;:961,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93006,&quot;p&quot;:9140,&quot;v&quot;:531,&quot;bs&quot;:2&#125;,</span><br><span class="line">......</span><br><span class="line">&#123;&quot;t&quot;:93651,&quot;p&quot;:9140,&quot;v&quot;:20,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93654,&quot;p&quot;:9140,&quot;v&quot;:24,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93657,&quot;p&quot;:9140,&quot;v&quot;:14,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93700,&quot;p&quot;:9140,&quot;v&quot;:326,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93703,&quot;p&quot;:9140,&quot;v&quot;:224,&quot;bs&quot;:2&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93706,&quot;p&quot;:9150,&quot;v&quot;:22,&quot;bs&quot;:2&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93709,&quot;p&quot;:9130,&quot;v&quot;:37,&quot;bs&quot;:1&#125;,</span><br><span class="line">&#123;&quot;t&quot;:93712,&quot;p&quot;:9130,&quot;v&quot;:1361,&quot;bs&quot;:1&#125;]&#125;&#125;&#x27;</span><br></pre></td></tr></table></figure>
+<p>其上内容包含了所有所需数据，所以可以作为初步的数据划分。由观察可以发现，可以利用<code>&#123;</code>进一步划分，划分后的<code>list</code>中从第三个元素开始直至最后一个是我们需要的数据，即<code>response.text[43:-2].split(&quot;&#123;&quot;)[2:]</code>。此时，针对其中第一个元素，其形式应该为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;&quot;t&quot;:91503,&quot;p&quot;:9160,&quot;v&quot;:23,&quot;bs&quot;:4&#125;,&quot;</span><br></pre></td></tr></table></figure>
+<p>显然，可以使用<code>:</code>再次划分，得到</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[&quot;\&quot;\&quot;t\&quot;:&quot; , &quot;91503,\&quot;p\&quot;:&quot; , &quot;9160,\&quot;v\&quot;:&quot; , &quot;23,\&quot;bs\&quot;:&quot; , &quot;4&#125;,\&quot;&quot;]</span><br></pre></td></tr></table></figure>
+<p>显然，我们关心的数据已经被完全划分出来了，只需要将数据后无用的内容割去即可，如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># i 为上文分割出的一行数据</span></span><br><span class="line">sp = i.split(<span class="string">&quot;:&quot;</span>)</span><br><span class="line">t = sp[<span class="number">1</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>] <span class="comment"># 时间</span></span><br><span class="line">p = sp[<span class="number">2</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>] <span class="comment"># 价格</span></span><br><span class="line">v = sp[<span class="number">3</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>] <span class="comment"># 交易手数</span></span><br><span class="line">bs = sp[<span class="number">4</span>].split(<span class="string">&quot;&#125;&quot;</span>)[<span class="number">0</span>] <span class="comment"># 交易类型</span></span><br><span class="line"><span class="comment"># 将时间化为 09:15:03 形式</span></span><br><span class="line">t = <span class="built_in">str</span>(t)</span><br><span class="line"><span class="keyword">if</span> <span class="built_in">len</span>(t) &lt; <span class="number">6</span>:</span><br><span class="line">    t = <span class="string">&quot;0&quot;</span> + t</span><br><span class="line">time = t[:<span class="number">2</span>] + <span class="string">&quot;:&quot;</span> + t[<span class="number">2</span>:<span class="number">4</span>] + <span class="string">&quot;:&quot;</span> + t[-<span class="number">2</span>:]</span><br></pre></td></tr></table></figure>
+<p>由此，即将一行数据中的数据依次提取出来了，结合循环即可达到取出所有行的数据。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> response.text[<span class="number">43</span>:-<span class="number">2</span>].split(<span class="string">&quot;&#123;&quot;</span>)[<span class="number">2</span>:]:</span><br><span class="line">    sp = i.split(<span class="string">&quot;:&quot;</span>)</span><br><span class="line">    t = sp[<span class="number">1</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">    p = sp[<span class="number">2</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">    v = sp[<span class="number">3</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">    bs = sp[<span class="number">4</span>].split(<span class="string">&quot;&#125;&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">    t = <span class="built_in">str</span>(t)</span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">len</span>(t) &lt; <span class="number">6</span>:</span><br><span class="line">        t = <span class="string">&quot;0&quot;</span> + t</span><br><span class="line">    time = t[:<span class="number">2</span>] + <span class="string">&quot;:&quot;</span> + t[<span class="number">2</span>:<span class="number">4</span>] + <span class="string">&quot;:&quot;</span> + t[-<span class="number">2</span>:]</span><br><span class="line">    <span class="comment"># 保存 time,p,v,bs</span></span><br></pre></td></tr></table></figure>
+<p>这样一来即获得了一页中的所有数据，而注意到在<code>params</code>中有参数<code>pageindex: 0</code>，通过改变该参数即可得到不同页面中的数据，以此就可以利用循环实现一次性自动爬取全部页面。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> page_num <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">20</span>):</span><br><span class="line"></span><br><span class="line">    params = (</span><br><span class="line">        (<span class="string">&#x27;pagesize&#x27;</span>,<span class="string">&#x27;144&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;ut&#x27;</span>,<span class="string">&#x27;7eea3edcaed734bea9cbfc24409ed989&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;dpt&#x27;</span>,<span class="string">&#x27;wzfscj&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;cb&#x27;</span>,<span class="string">&#x27;jQuery112406727726525607527_1633998766392&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;pageindex&#x27;</span>, page_num),</span><br><span class="line">        (<span class="string">&#x27;id&#x27;</span>,<span class="string">&#x27;6000001&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;sort&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;ft&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;code&#x27;</span>,<span class="string">&#x27;600000&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;market&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">        (<span class="string">&#x27;_&#x27;</span>,<span class="string">&#x27;1633998766403&#x27;</span>)</span><br><span class="line">    )</span><br><span class="line">    <span class="comment">#############################################</span></span><br><span class="line">    <span class="comment">#### 处理过程略</span></span><br><span class="line">    <span class="comment">#############################################</span></span><br><span class="line">    <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+<p>最后，添加文件读写操作，即实现了对某一只股票的全部分时数据爬取。</p>
+<h2 id="最终代码"><a href="#最终代码" class="headerlink" title="最终代码"></a>最终代码</h2><p>综上，将所有代码结合后，数据保存到当前目录下的”600000.csv”文件中，可以得到最终代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> csv</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;600000.csv&quot;</span>, <span class="string">&#x27;a&#x27;</span>, newline=<span class="string">&#x27;&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    writer = csv.writer(f)</span><br><span class="line">    writer.writerow([<span class="string">&#x27;time&#x27;</span>, <span class="string">&#x27;price&#x27;</span>, <span class="string">&#x27;num&#x27;</span>, <span class="string">&#x27;bs&#x27;</span>])</span><br><span class="line"></span><br><span class="line">    url = <span class="string">&#x27;http://push2ex.eastmoney.com/getStockFenShi&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> page_num <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">20</span>):</span><br><span class="line"></span><br><span class="line">        params = (</span><br><span class="line">            (<span class="string">&#x27;pagesize&#x27;</span>,<span class="string">&#x27;144&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;ut&#x27;</span>,<span class="string">&#x27;7eea3edcaed734bea9cbfc24409ed989&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;dpt&#x27;</span>,<span class="string">&#x27;wzfscj&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;cb&#x27;</span>,<span class="string">&#x27;jQuery112406727726525607527_1633998766392&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;pageindex&#x27;</span>, page_num),</span><br><span class="line">            (<span class="string">&#x27;id&#x27;</span>,<span class="string">&#x27;6000001&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;sort&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;ft&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;code&#x27;</span>,<span class="string">&#x27;600000&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;market&#x27;</span>,<span class="string">&#x27;1&#x27;</span>),</span><br><span class="line">            (<span class="string">&#x27;_&#x27;</span>,<span class="string">&#x27;1633998766403&#x27;</span>)</span><br><span class="line">        )</span><br><span class="line">        headers = &#123;</span><br><span class="line">        <span class="string">&#x27;Host&#x27;</span>:<span class="string">&#x27;push2ex.eastmoney.com&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;Connection&#x27;</span>:<span class="string">&#x27;keep-alive&#x27;</span>,</span><br><span class="line">        <span class="string">&#x27;User-Agent&#x27;</span>:<span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) \</span></span><br><span class="line"><span class="string">        AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 \</span></span><br><span class="line"><span class="string">            Safari/537.36 Edg/94.0.992.38&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;DNT&#x27;</span>:<span class="string">&#x27;1&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;Accept&#x27;</span>:<span class="string">&#x27;*/*&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;Referer&#x27;</span>:<span class="string">&#x27;http://quote.eastmoney.com/&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;Accept-Encoding&#x27;</span>:<span class="string">&#x27;gzip, deflate&#x27;</span>,</span><br><span class="line">            <span class="string">&#x27;Accept-Language&#x27;</span>:<span class="string">&#x27;zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6&#x27;</span></span><br><span class="line">        &#125;</span><br><span class="line">        cookies = &#123;<span class="string">&quot;one_cookie&quot;</span>:<span class="string">&quot;qgqp_b_id=e88f78d4eecdc0672be30cada8c59c40; st_si=20784472685104; st_asi=delete; em_hq_fls=js; HAList=a-sh-600000-%u6D66%u53D1%u94F6%u884C%2Cf-0-000001-%u4E0A%u8BC1%u6307%u6570; st_pvi=47008391842977; st_sp=2021-10-12%2008%3A29%3A28; st_inirUrl=https%3A%2F%2Fcn.bing.com%2F; st_sn=6; st_psi=20211012083246623-0-4344614687&quot;</span>&#125;</span><br><span class="line">        response = requests.get(url, headers=headers, params=params, cookies=cookies, verify=<span class="literal">False</span>)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> response.text[<span class="number">43</span>:-<span class="number">2</span>].split(<span class="string">&quot;&#123;&quot;</span>)[<span class="number">2</span>:]:</span><br><span class="line">            sp = i.split(<span class="string">&quot;:&quot;</span>)</span><br><span class="line">            t = sp[<span class="number">1</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">            p = sp[<span class="number">2</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">            v = sp[<span class="number">3</span>].split(<span class="string">&quot;,&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">            bs = sp[<span class="number">4</span>].split(<span class="string">&quot;&#125;&quot;</span>)[<span class="number">0</span>]</span><br><span class="line">            t = <span class="built_in">str</span>(t)</span><br><span class="line">            <span class="keyword">if</span> <span class="built_in">len</span>(t) &lt; <span class="number">6</span>:</span><br><span class="line">                t = <span class="string">&quot;0&quot;</span> + t</span><br><span class="line">            time = t[:<span class="number">2</span>] + <span class="string">&quot;:&quot;</span> + t[<span class="number">2</span>:<span class="number">4</span>] + <span class="string">&quot;:&quot;</span> + t[-<span class="number">2</span>:]</span><br><span class="line"></span><br><span class="line">            writer.writerow([time, p, v, bs])</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文对参考博文中的代码进行了补充，并附带了更加详细的思路，希望能对读者进行简单爬虫时有所启发或帮助。其中部分代码可用更优雅的方式解决，请读者自行研究。</p>
+<p>另外，在对网站进行爬取时，通常需要人为添加时间间隔，防止网站封锁ip；在对会封锁ip的网站进行爬取时，通常需要添加代理池；在爬取量较大时，通常会使用多线程方法；在对网页Html解析爬取数据时，通常需要使用<code>BeautifulSoup</code>······因此，本文仅作为抛砖引玉。</p>
+<p><em>本文仅做技术讨论，如使用该技术造成危害概不负责。</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2021/10/28/%E7%AE%80%E5%8D%95Requests%E7%88%AC%E8%99%AB%E2%80%94%E2%80%94%E8%82%A1%E7%A5%A8%E5%88%86%E6%97%B6%E6%95%B0%E6%8D%AE%E7%88%AC%E5%8F%96/" data-id="ckvaw86j0002ddsoj4nrc7zyh" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  
+  <a href="/2021/10/26/%E6%A8%A1%E6%8B%9F%E7%99%BB%E5%BD%95%E8%87%AA%E5%8A%A8%E5%81%A5%E5%BA%B7%E5%A1%AB%E6%8A%A5%E8%84%9A%E6%9C%AC/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">模拟登录自动健康填报脚本</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>
