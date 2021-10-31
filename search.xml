@@ -1,6 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>下载超星课件脚本</title>
+    <url>/2021/10/31/%E4%B8%8B%E8%BD%BD%E8%B6%85%E6%98%9F%E8%AF%BE%E4%BB%B6%E8%84%9A%E6%9C%AC/</url>
+    <content><![CDATA[<p>由于日常学习需要参考超星课件，而超星学习界面中课件加载速度慢，刷新后需要重新加载等聪明操作使得学习过程异常艰难，因此本文通过对网页代码解析，找到文件原链接对课件进行下载。（仅供学习使用，勿用于破坏网络环境）</p>
+<span id="more"></span>
+<p>参考内容：<a href="https://www.zhihu.com/question/448827791">知乎</a></p>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>首先，观察超星学习页面，最直观的信息表示，课件所在框架应该指向课件资源。但暂时无法确定其指向路径和文件类型。此时，通过搜索引擎对问题进行简单搜索，发现存在<a href="https://www.zhihu.com/question/448827791">相关信息</a>。</p>
+<p><img src="/2021/10/31/下载超星课件脚本\reference.png" alt></p>
+<p>根据其解读，可以发现课件的真实存储地址的获取方式，并且其存放类型为pdf。于是，可以通过爬虫的方法对文件进行下载。</p>
+<h2 id="解决过程"><a href="#解决过程" class="headerlink" title="解决过程"></a>解决过程</h2><p>首先导入相关包</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> requests</span><br></pre></td></tr></table></figure>
+<p>观察发现，其课件单页是以png格式存储，直接打开即可得到<code>objectid</code>，故可以接受一页课件的url地址，找出其<code>objectid</code>。其单页课件地址可以通过鼠标将其图片拖至浏览器地址栏得到，如下图所示。</p>
+<p><img src="/2021/10/31/下载超星课件脚本\get_url1.png" alt></p>
+<p><img src="/2021/10/31/下载超星课件脚本\get_url2.png" alt></p>
+<p>以某计量经济学第四章为例，定义从png图片获取<code>objectid</code>的方法：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">input_url = <span class="string">r&quot;https://s3.ananas.chaoxing.com/sv-w7/doc/60/11/0c/3b6736ce7b901056ae84a949b24d6e81/thumb/1.png&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getid</span>(<span class="params">input_url</span>):</span></span><br><span class="line">    part_url = input_url.split(<span class="string">&quot;/&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> i, part <span class="keyword">in</span> <span class="built_in">enumerate</span>(part_url):</span><br><span class="line">        <span class="keyword">if</span> part == <span class="string">&quot;thumb&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> part_url[i-<span class="number">1</span>]</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 提前定义异常</span></span><br><span class="line">fileid = getid(input_url)</span><br><span class="line"><span class="keyword">if</span> fileid == <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">raise</span> FileNotFoundError</span><br><span class="line"></span><br><span class="line">getid(input_url)</span><br></pre></td></tr></table></figure>
+<p>out: 3b6736ce7b901056ae84a949b24d6e81</p>
+<p>得到其<code>objectid</code>再转向中介页面，定义<code>axe_url</code>：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">axe_url = <span class="string">r&quot;https://mooc1-1.chaoxing.com/ananas/status/&quot;</span> + fileid + <span class="string">r&quot;?flag=normal&quot;</span></span><br></pre></td></tr></table></figure>
+<p>观察中介页面，如下图。</p>
+<p><img src="/2021/10/31/下载超星课件脚本\axe_page.png" alt></p>
+<p>显然，其明文内容为json格式。于是，可以通过读取该页面，将其内容以json格式读取为<code>dict</code>，再从中获取<code>pdf</code>的值，即得到课件的真实存储路径。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">headers = requests.utils.default_headers()</span><br><span class="line">headers[<span class="string">&#x27;User-Agent&#x27;</span>] = <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36 Edg/95.0.1020.40&quot;</span></span><br><span class="line"></span><br><span class="line">req = requests.get(axe_url, headers=headers)</span><br><span class="line">dic = json.loads(req.text)</span><br><span class="line"></span><br><span class="line">dic[<span class="string">&#x27;pdf&#x27;</span>]</span><br></pre></td></tr></table></figure>
+<p>out:<a href="https://s3.ananas.chaoxing.com/doc/60/11/0c/3b6736ce7b901056ae84a949b24d6e81/pdf/3b6736ce7b901056ae84a949b24d6e81.pdf">https://s3.ananas.chaoxing.com/doc/60/11/0c/3b6736ce7b901056ae84a949b24d6e81/pdf/3b6736ce7b901056ae84a949b24d6e81.pdf</a></p>
+<p>最后，通过爬虫方式下载并写入本地文件（例为当前目录下）即可</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">filename = <span class="string">&quot;计量经济学第四章&quot;</span></span><br><span class="line"></span><br><span class="line">df = requests.get(dic[<span class="string">&#x27;pdf&#x27;</span>])</span><br><span class="line"><span class="built_in">open</span>(filename + <span class="string">&quot;.pdf&quot;</span>,<span class="string">&#x27;wb&#x27;</span>).write(pdf.content)</span><br></pre></td></tr></table></figure>
+<h2 id="最终代码"><a href="#最终代码" class="headerlink" title="最终代码"></a>最终代码</h2><p>整合上述代码，调整结构，可得到最终代码如下：</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="comment"># 课件某页url</span></span><br><span class="line">input_url = <span class="string">r&quot;https://s3.ananas.chaoxing.com/doc/cb/49/2e/a626aad4c9dff450c728709ed983b461/thumb/2.png&quot;</span></span><br><span class="line"><span class="comment"># 存储文件名称（无需后缀）</span></span><br><span class="line">filename = <span class="string">r&quot;高等统计学正交表&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getid</span>(<span class="params">input_url</span>):</span></span><br><span class="line">    part_url = input_url.split(<span class="string">&quot;/&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> i, part <span class="keyword">in</span> <span class="built_in">enumerate</span>(part_url):</span><br><span class="line">        <span class="keyword">if</span> part == <span class="string">&quot;thumb&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> part_url[i-<span class="number">1</span>]</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">fileid = getid(input_url)</span><br><span class="line"><span class="keyword">if</span> fileid == <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">raise</span> FileNotFoundError</span><br><span class="line"></span><br><span class="line">axe_url = <span class="string">r&quot;https://mooc1-1.chaoxing.com/ananas/status/&quot;</span> + fileid + <span class="string">r&quot;?flag=normal&quot;</span></span><br><span class="line"></span><br><span class="line">headers = requests.utils.default_headers()</span><br><span class="line">headers[<span class="string">&#x27;User-Agent&#x27;</span>] = <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36 Edg/95.0.1020.40&quot;</span></span><br><span class="line"></span><br><span class="line">req = requests.get(axe_url, headers=headers)</span><br><span class="line">dic = json.loads(req.text)</span><br><span class="line"></span><br><span class="line">pdf = requests.get(dic[<span class="string">&#x27;pdf&#x27;</span>])</span><br><span class="line"><span class="built_in">open</span>(filename + <span class="string">&quot;.pdf&quot;</span>,<span class="string">&#x27;wb&#x27;</span>).write(pdf.content)</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过爬虫读取网页、下载文件都是比较常见的工作，将其结合更能实现复杂的操作，另外还可以增加对GET/POST响应头分析，就可以胜任绝大部分工作。当然，此类操作如果使用js编写，可以作为浏览器脚本使用，能够集成实现打开网页一键下载，故本文仅作为分享学习抛砖引玉，希望可以引发对学习或生活的思考。</p>
+<p><em>本文仅做技术讨论，如使用该技术造成危害概不负责。</em></p>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>爬虫</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>实验室学习时长脚本</title>
     <url>/2021/10/28/%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%AD%A6%E4%B9%A0%E6%97%B6%E9%95%BF%E8%84%9A%E6%9C%AC/</url>
     <content><![CDATA[<p>实验室安全教育时长需要一小时才能参加考试，并且5分钟内必须更换学习网页，所以通过Selenium控制Edge浏览器进行定时刷新，从而达到自动刷时长的方法。（仅供学习使用，勿用于破坏网络环境）</p>

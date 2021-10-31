@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    下载超星课件脚本 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-下载超星课件脚本" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  下载超星课件脚本
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2021/10/31/%E4%B8%8B%E8%BD%BD%E8%B6%85%E6%98%9F%E8%AF%BE%E4%BB%B6%E8%84%9A%E6%9C%AC/" class="article-date">
+  <time datetime="2021-10-31T05:23:38.000Z" itemprop="datePublished">2021-10-31</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>由于日常学习需要参考超星课件，而超星学习界面中课件加载速度慢，刷新后需要重新加载等聪明操作使得学习过程异常艰难，因此本文通过对网页代码解析，找到文件原链接对课件进行下载。（仅供学习使用，勿用于破坏网络环境）</p>
+<span id="more"></span>
+<p>参考内容：<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/448827791">知乎</a></p>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>首先，观察超星学习页面，最直观的信息表示，课件所在框架应该指向课件资源。但暂时无法确定其指向路径和文件类型。此时，通过搜索引擎对问题进行简单搜索，发现存在<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/448827791">相关信息</a>。</p>
+<p><img src="/2021/10/31/下载超星课件脚本\reference.png" alt></p>
+<p>根据其解读，可以发现课件的真实存储地址的获取方式，并且其存放类型为pdf。于是，可以通过爬虫的方法对文件进行下载。</p>
+<h2 id="解决过程"><a href="#解决过程" class="headerlink" title="解决过程"></a>解决过程</h2><p>首先导入相关包</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> requests</span><br></pre></td></tr></table></figure>
+<p>观察发现，其课件单页是以png格式存储，直接打开即可得到<code>objectid</code>，故可以接受一页课件的url地址，找出其<code>objectid</code>。其单页课件地址可以通过鼠标将其图片拖至浏览器地址栏得到，如下图所示。</p>
+<p><img src="/2021/10/31/下载超星课件脚本\get_url1.png" alt></p>
+<p><img src="/2021/10/31/下载超星课件脚本\get_url2.png" alt></p>
+<p>以某计量经济学第四章为例，定义从png图片获取<code>objectid</code>的方法：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">input_url = <span class="string">r&quot;https://s3.ananas.chaoxing.com/sv-w7/doc/60/11/0c/3b6736ce7b901056ae84a949b24d6e81/thumb/1.png&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getid</span>(<span class="params">input_url</span>):</span></span><br><span class="line">    part_url = input_url.split(<span class="string">&quot;/&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> i, part <span class="keyword">in</span> <span class="built_in">enumerate</span>(part_url):</span><br><span class="line">        <span class="keyword">if</span> part == <span class="string">&quot;thumb&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> part_url[i-<span class="number">1</span>]</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 提前定义异常</span></span><br><span class="line">fileid = getid(input_url)</span><br><span class="line"><span class="keyword">if</span> fileid == <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">raise</span> FileNotFoundError</span><br><span class="line"></span><br><span class="line">getid(input_url)</span><br></pre></td></tr></table></figure>
+<p>out: 3b6736ce7b901056ae84a949b24d6e81</p>
+<p>得到其<code>objectid</code>再转向中介页面，定义<code>axe_url</code>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">axe_url = <span class="string">r&quot;https://mooc1-1.chaoxing.com/ananas/status/&quot;</span> + fileid + <span class="string">r&quot;?flag=normal&quot;</span></span><br></pre></td></tr></table></figure>
+<p>观察中介页面，如下图。</p>
+<p><img src="/2021/10/31/下载超星课件脚本\axe_page.png" alt></p>
+<p>显然，其明文内容为json格式。于是，可以通过读取该页面，将其内容以json格式读取为<code>dict</code>，再从中获取<code>pdf</code>的值，即得到课件的真实存储路径。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">headers = requests.utils.default_headers()</span><br><span class="line">headers[<span class="string">&#x27;User-Agent&#x27;</span>] = <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36 Edg/95.0.1020.40&quot;</span></span><br><span class="line"></span><br><span class="line">req = requests.get(axe_url, headers=headers)</span><br><span class="line">dic = json.loads(req.text)</span><br><span class="line"></span><br><span class="line">dic[<span class="string">&#x27;pdf&#x27;</span>]</span><br></pre></td></tr></table></figure>
+<p>out:<a target="_blank" rel="noopener" href="https://s3.ananas.chaoxing.com/doc/60/11/0c/3b6736ce7b901056ae84a949b24d6e81/pdf/3b6736ce7b901056ae84a949b24d6e81.pdf">https://s3.ananas.chaoxing.com/doc/60/11/0c/3b6736ce7b901056ae84a949b24d6e81/pdf/3b6736ce7b901056ae84a949b24d6e81.pdf</a></p>
+<p>最后，通过爬虫方式下载并写入本地文件（例为当前目录下）即可</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">filename = <span class="string">&quot;计量经济学第四章&quot;</span></span><br><span class="line"></span><br><span class="line">df = requests.get(dic[<span class="string">&#x27;pdf&#x27;</span>])</span><br><span class="line"><span class="built_in">open</span>(filename + <span class="string">&quot;.pdf&quot;</span>,<span class="string">&#x27;wb&#x27;</span>).write(pdf.content)</span><br></pre></td></tr></table></figure>
+<h2 id="最终代码"><a href="#最终代码" class="headerlink" title="最终代码"></a>最终代码</h2><p>整合上述代码，调整结构，可得到最终代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"></span><br><span class="line"><span class="comment"># 课件某页url</span></span><br><span class="line">input_url = <span class="string">r&quot;https://s3.ananas.chaoxing.com/doc/cb/49/2e/a626aad4c9dff450c728709ed983b461/thumb/2.png&quot;</span></span><br><span class="line"><span class="comment"># 存储文件名称（无需后缀）</span></span><br><span class="line">filename = <span class="string">r&quot;高等统计学正交表&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">getid</span>(<span class="params">input_url</span>):</span></span><br><span class="line">    part_url = input_url.split(<span class="string">&quot;/&quot;</span>)</span><br><span class="line">    <span class="keyword">for</span> i, part <span class="keyword">in</span> <span class="built_in">enumerate</span>(part_url):</span><br><span class="line">        <span class="keyword">if</span> part == <span class="string">&quot;thumb&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> part_url[i-<span class="number">1</span>]</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br><span class="line"></span><br><span class="line">fileid = getid(input_url)</span><br><span class="line"><span class="keyword">if</span> fileid == <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">raise</span> FileNotFoundError</span><br><span class="line"></span><br><span class="line">axe_url = <span class="string">r&quot;https://mooc1-1.chaoxing.com/ananas/status/&quot;</span> + fileid + <span class="string">r&quot;?flag=normal&quot;</span></span><br><span class="line"></span><br><span class="line">headers = requests.utils.default_headers()</span><br><span class="line">headers[<span class="string">&#x27;User-Agent&#x27;</span>] = <span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36 Edg/95.0.1020.40&quot;</span></span><br><span class="line"></span><br><span class="line">req = requests.get(axe_url, headers=headers)</span><br><span class="line">dic = json.loads(req.text)</span><br><span class="line"></span><br><span class="line">pdf = requests.get(dic[<span class="string">&#x27;pdf&#x27;</span>])</span><br><span class="line"><span class="built_in">open</span>(filename + <span class="string">&quot;.pdf&quot;</span>,<span class="string">&#x27;wb&#x27;</span>).write(pdf.content)</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>通过爬虫读取网页、下载文件都是比较常见的工作，将其结合更能实现复杂的操作，另外还可以增加对GET/POST响应头分析，就可以胜任绝大部分工作。当然，此类操作如果使用js编写，可以作为浏览器脚本使用，能够集成实现打开网页一键下载，故本文仅作为分享学习抛砖引玉，希望可以引发对学习或生活的思考。</p>
+<p><em>本文仅做技术讨论，如使用该技术造成危害概不负责。</em></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2021/10/31/%E4%B8%8B%E8%BD%BD%E8%B6%85%E6%98%9F%E8%AF%BE%E4%BB%B6%E8%84%9A%E6%9C%AC/" data-id="ckvetz9s9000060ojgvmnd8uj" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E7%88%AC%E8%99%AB/" rel="tag">爬虫</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  
+  <a href="/2021/10/28/%E5%AE%9E%E9%AA%8C%E5%AE%A4%E5%AD%A6%E4%B9%A0%E6%97%B6%E9%95%BF%E8%84%9A%E6%9C%AC/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">实验室学习时长脚本</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>ZHWANGART</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>
