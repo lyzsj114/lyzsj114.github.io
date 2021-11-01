@@ -71,15 +71,15 @@
 <span id="more"></span>
 <p>参考博文：<a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_46018418/article/details/108102206">Python爬取blob:http//的视频</a></p>
 <h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><p>对视频进行下载应该是最容易的爬虫（广义），通常仅需要右键复制视频链接就基本完工，先观察网页内容，发现右键无法得到视频链接也没有下载按钮（经查阅是通过某tag:nodownload和return false进行实现，如下图）。</p>
-<p><img src="/2021/11/01/view1.png" alt></p>
+<p><img src="/2021/11/01/市调大赛视频下载脚本\view1.png" alt></p>
 <p>同时，可以从上图中看到其<code>src</code>地址，以<code>blob:https</code>开头，显然不是真实的视频地址，自然无法直接得到视频。此时问题开始复杂，但无论如何这都是可以无限重播的视频，自然不存在无法爬取的情况。因此，只能采用最暴力的方式，解析视频页面发送的每段视频缓存，保存全部缓存后再合并取得全视频。而视频缓存地址通常可以在GET/POST请求头中发现，可惜此页面使用了其他方式将缓存方法隐藏了（下图），这就进一步增大了爬取的难度。</p>
-<p><img src="/2021/11/01/view2.png" alt></p>
+<p><img src="/2021/11/01/市调大赛视频下载脚本\view2.png" alt></p>
 <p>通过查阅得知，部分浏览器插件可以对网页视频嗅探并分段下载。本文中使用的是Edge浏览器的插件（随便找的），开启插件并播放网页视频，可以从视频开头嗅探到以下文件（下图），可以观察到文件命名存在规律，即都是以相同文件名为基础更改最后的编号命名。</p>
-<p><img src="/2021/11/01/downloader1.png" alt></p>
+<p><img src="/2021/11/01/市调大赛视频下载脚本\downloader1.png" alt></p>
 <p>进一步对插件中的可下载分段视频使用浏览器开发者工具检查，可以找到该分段文件的下载地址（下图）。</p>
-<p><img src="/2021/11/01/downloader2.png" alt></p>
+<p><img src="/2021/11/01/市调大赛视频下载脚本\downloader2.png" alt></p>
 <p>同时，根据对文件命名规则的猜测，需要将视频进度拉至最后数十秒，观察插件嗅探到的视频分段命名，由此得到最后一个文件的编号（下图），此时即可开始着手编写代码解决问题。</p>
-<p><img src="/2021/11/01/downloader3.png" alt></p>
+<p><img src="/2021/11/01/市调大赛视频下载脚本\downloader3.png" alt></p>
 <h2 id="解决问题"><a href="#解决问题" class="headerlink" title="解决问题"></a>解决问题</h2><p>先以第一个片段为例（v.f100230_0.ts），导入相关包</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> requests</span><br></pre></td></tr></table></figure>
 <p>根据视频片段命名规则，构建地址头和地址尾。</p>
