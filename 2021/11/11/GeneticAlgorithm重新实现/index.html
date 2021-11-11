@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  
+  
+  
+  <title>
+    GeneticAlgorithm重新实现 |
+    
+    GeniusGrass&#39;s Blog
+  </title>
+  
+    <link rel="shortcut icon" href="/favicon.ico">
+    
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<script src="/js/pace.min.js"></script>
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+  <main class="content">
+    <section class="outer">
+  <article id="post-GeneticAlgorithm重新实现" class="article article-type-post" itemscope
+  itemprop="blogPost" data-scroll-reveal>
+
+  <div class="article-inner">
+    
+    <header class="article-header">
+      
+
+<h1 class="article-title" itemprop="name">
+  GeneticAlgorithm重新实现
+</h1>
+
+
+
+    </header>
+    
+
+    
+    <div class="article-meta">
+      <a href="/2021/11/11/GeneticAlgorithm%E9%87%8D%E6%96%B0%E5%AE%9E%E7%8E%B0/" class="article-date">
+  <time datetime="2021-11-11T11:00:29.000Z" itemprop="datePublished">2021-11-11</time>
+</a>
+      
+    </div>
+    
+
+    
+    
+<div class="tocbot"></div>
+
+    
+
+    <div class="article-entry" itemprop="articleBody">
+      
+      
+      
+      <p>在课程学习过程中，老师在课堂实现了该遗传算法，发现其中存在极大优化空间，于是动手重新实现了该算法。</p>
+<span id="more"></span>
+<h2 id="思路学习与课堂代码勘误"><a href="#思路学习与课堂代码勘误" class="headerlink" title="思路学习与课堂代码勘误"></a>思路学习与课堂代码勘误</h2><p>课堂参考代码（不推荐）：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">#遗传算法求函数的最值</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#求f = -(x.^4 + 3*y.^4 - 0.2*cos(3*pi*x) 1 - 0.4*cos(4*pi*y) + 0.6)的最大值</span></span><br><span class="line"><span class="string">#-3&lt;x&lt;3,-3&lt;y&lt;3，     x=+2.870123,   y=-</span></span><br><span class="line"><span class="string">#     +   2.                           -   1.</span></span><br><span class="line"><span class="string">#     +    .                           -    .</span></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"></span><br><span class="line"><span class="comment">#初始化参数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">initpar</span>():</span></span><br><span class="line">    m = <span class="number">50</span></span><br><span class="line">    DNAL = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">12</span>]</span><br><span class="line">    crorat = <span class="number">0.7</span></span><br><span class="line">    varrat = <span class="number">0.1</span></span><br><span class="line">    selrat = <span class="number">0.9</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> m, DNAL, crorat, varrat, selrat</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">init</span>(<span class="params">m,DNAL</span>):</span></span><br><span class="line">    SPEC=[]</span><br><span class="line">    DNAlen=<span class="number">2</span>*<span class="built_in">sum</span>(DNAL)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(m):</span><br><span class="line">        temp=np.random.randint(<span class="number">0</span>,<span class="number">2</span>,DNAlen)</span><br><span class="line">        temp=<span class="built_in">list</span>(temp)</span><br><span class="line">        SPEC.append(temp)</span><br><span class="line">    <span class="keyword">return</span> SPEC</span><br><span class="line"></span><br><span class="line"><span class="comment">#交叉</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">Crofer</span>(<span class="params">DNAs,crorat</span>):</span></span><br><span class="line">    m=<span class="built_in">len</span>(DNAs)</span><br><span class="line">    crossL=random.sample(DNAs, <span class="number">2</span>*<span class="built_in">int</span>(m*crorat/<span class="number">2</span>))</span><br><span class="line">    NewDNA=[]</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">int</span>(<span class="built_in">len</span>(crossL)/<span class="number">2</span>)):</span><br><span class="line">        temp1=crossL[<span class="number">2</span>*i]</span><br><span class="line">        temp2=crossL[<span class="number">2</span>*i+<span class="number">1</span>]</span><br><span class="line">        crossP=np.random.randint(<span class="number">0</span>,m)</span><br><span class="line">        tempn=temp1[<span class="number">0</span>:crossP]+temp1[crossP:]</span><br><span class="line">        NewDNA.append(tempn)</span><br><span class="line">    NDNAs=DNAs+NewDNA</span><br><span class="line">    <span class="keyword">return</span> NDNAs</span><br><span class="line"></span><br><span class="line"><span class="comment">#变异</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">Variation</span>(<span class="params">DNAs,varrat</span>):</span></span><br><span class="line">    m=<span class="built_in">len</span>(DNAs)</span><br><span class="line">    n=<span class="built_in">len</span>(DNAs[<span class="number">0</span>])</span><br><span class="line">    tempI=<span class="built_in">list</span>(<span class="built_in">range</span>(m))</span><br><span class="line">    VarI=random.sample(tempI, <span class="built_in">int</span>(m*varrat))</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(VarI)):</span><br><span class="line">        tempDNA=DNAs[VarI[i]]</span><br><span class="line">        tempP=random.randint(<span class="number">0</span>,n-<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">if</span> tempDNA[tempP]==<span class="number">0</span>:</span><br><span class="line">            tempDNA[tempP]=<span class="number">1</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            tempDNA[tempP]=<span class="number">0</span></span><br><span class="line">        DNAs[VarI[i]]=tempDNA</span><br><span class="line">    <span class="keyword">return</span> DNAs</span><br><span class="line"></span><br><span class="line"><span class="comment">#选择</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">SelDNA</span>(<span class="params">DNAs,FitL,m</span>):</span></span><br><span class="line">    tempF=FitL</span><br><span class="line">    topDNAs=[]</span><br><span class="line">    topF=[]</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(m):</span><br><span class="line">        maxI=FitL.index(<span class="built_in">max</span>(FitL))</span><br><span class="line">        topDNAs.append(DNAs[maxI])</span><br><span class="line">        topF.append(FitL[maxI])</span><br><span class="line">        DNAs.pop(maxI)</span><br><span class="line">        FitL.pop(maxI)</span><br><span class="line">    <span class="keyword">return</span> topDNAs,topF</span><br><span class="line"></span><br><span class="line"><span class="comment">#DNA的X和Y提出来，转化为十进制</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">DNAtoXY</span>(<span class="params">DNA, DNAL</span>):</span></span><br><span class="line">    Signbits = DNAL[<span class="number">0</span>];</span><br><span class="line">    Intbits = DNAL[<span class="number">1</span>];</span><br><span class="line">    Decbits = DNAL[<span class="number">2</span>]</span><br><span class="line">    dnaLen = Signbits + Intbits + Decbits</span><br><span class="line"></span><br><span class="line">    DNAx = DNA[<span class="number">0</span>:dnaLen]  <span class="comment"># [0,1,0,1,0,1,0,1,1,1,0,0,0,0,0,1]</span></span><br><span class="line">    xsign0b = DNAx[<span class="number">0</span>:Signbits];</span><br><span class="line">    xint0b = DNAx[Signbits:Signbits + Intbits]</span><br><span class="line">    xdec0b = DNAx[Signbits + Intbits:]</span><br><span class="line"></span><br><span class="line">    DNAy = DNA[dnaLen:]</span><br><span class="line">    ysign0b = DNAy[<span class="number">0</span>:Signbits];</span><br><span class="line">    yint0b = DNAy[Signbits:Signbits + Intbits]</span><br><span class="line">    ydec0b = DNAy[Signbits + Intbits:]</span><br><span class="line"></span><br><span class="line">    xint = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(Intbits):</span><br><span class="line">        xint = xint * <span class="number">2</span> + xint0b[i]</span><br><span class="line">    xdec = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(Decbits):</span><br><span class="line">        xdec = xdec / <span class="number">2</span> + xdec0b[-<span class="number">1</span> - i]</span><br><span class="line">    xdec = xdec / <span class="number">2</span></span><br><span class="line">    x = xint + xdec</span><br><span class="line">    <span class="keyword">if</span> xsign0b[<span class="number">0</span>] == <span class="number">1</span>:</span><br><span class="line">        x = -x</span><br><span class="line"></span><br><span class="line">    yint = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(Intbits):</span><br><span class="line">        yint = yint * <span class="number">2</span> + yint0b[i]</span><br><span class="line">    ydec = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(Decbits):</span><br><span class="line">        ydec = ydec / <span class="number">2</span> + ydec0b[-<span class="number">1</span> - i]</span><br><span class="line">    ydec = ydec / <span class="number">2</span></span><br><span class="line">    y = yint + ydec</span><br><span class="line">    <span class="keyword">if</span> ysign0b[<span class="number">0</span>] == <span class="number">1</span>:</span><br><span class="line">        y = -y</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> x, y</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">SpectoXY</span>(<span class="params">DNAs,DNAL</span>):</span></span><br><span class="line">    xyList=[]</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(DNAs)):</span><br><span class="line">        xi,yi=DNAtoXY(DNAs[i],DNAL)</span><br><span class="line">        xyList.append([xi,yi])</span><br><span class="line">    <span class="keyword">return</span> xyList</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fitness</span>(<span class="params">xyL</span>):</span></span><br><span class="line">    x = xyL[<span class="number">0</span>]</span><br><span class="line">    y = xyL[<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">    item1 = math.<span class="built_in">pow</span>(x, <span class="number">4</span>)</span><br><span class="line">    item2 = <span class="number">3</span> * math.<span class="built_in">pow</span>(y, <span class="number">4</span>)</span><br><span class="line">    item3 = -<span class="number">0.2</span> * math.cos(<span class="number">3</span> * x * math.pi)</span><br><span class="line">    item4 = -<span class="number">0.4</span> * math.cos(<span class="number">4</span> * y * math.pi) + <span class="number">0.6</span></span><br><span class="line">    <span class="comment"># f=-(item1 + item2 + item3 + item4)</span></span><br><span class="line">    f = -(item1 + item2)</span><br><span class="line">    <span class="keyword">return</span> f</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">calFit</span>(<span class="params">DNAs,DNAL</span>):</span></span><br><span class="line">    m=<span class="built_in">len</span>(DNAs)</span><br><span class="line">    FitL=[]</span><br><span class="line">    xyList=SpectoXY(DNAs,DNAL)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(xyList)):</span><br><span class="line">        tempF=fitness(xyList[i])</span><br><span class="line">        FitL.append(tempF)</span><br><span class="line">    <span class="keyword">return</span> FitL</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">pyGA</span>(<span class="params">DNAs,crorat,varrat,DNAL,m</span>):</span></span><br><span class="line">    DNAs=Crofer(DNAs,crorat)</span><br><span class="line">    DNAs=Variation(DNAs,varrat)</span><br><span class="line">    FitL=calFit(DNAs,DNAL)</span><br><span class="line">    DNAs,topF=SelDNA(DNAs,FitL,m)</span><br><span class="line">    <span class="keyword">return</span> DNAs,topF</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="comment"># 初始化参数</span></span><br><span class="line">    m, DNAL, crorat, varrat, selrat = initpar()</span><br><span class="line">    <span class="comment"># 初始化种群</span></span><br><span class="line">    initspec = init(m, DNAL)</span><br><span class="line">    DNAs = initspec</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">100</span>):</span><br><span class="line">        DNAs, topF = pyGA(DNAs, crorat, varrat, DNAL, m)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(DNAs)</span><br><span class="line">    <span class="built_in">print</span>(topF)</span><br></pre></td></tr></table></figure></p>
+<p>首先学习该算法主要思想和流程，并为原代码勘误，以下为勘误：</p>
+<ul>
+<li><code>19</code>、<code>21</code> 行中变量 <code>selrat</code> 未使用，可以直接删去；</li>
+<li><code>41</code> 行中第二个 <code>temp1</code> 应为 <code>temp2</code>，否则导致交叉无作用；</li>
+<li><code>64</code> 行中 <code>tempF</code> 未使用，可以直接删去；</li>
+<li><code>136</code> 行中 <code>m</code> 未使用，可以直接删去；</li>
+<li>方法 <code>DNAtoXY</code> 中存在一些<code>;</code>无用。</li>
+</ul>
+<p>主要思路整合如下（随便写的）：</p>
+<p><img src="/2021/11/11/GeneticAlgorithm重新实现\process.png" alt></p>
+<h2 id="复写过程"><a href="#复写过程" class="headerlink" title="复写过程"></a>复写过程</h2><p>复写优化过程全程参考原代码，以单次迭代过程作为复写第一步（即不考虑迭代和方法结构），并以构建GeneticAlgorithm类来实现算法为最终目的。</p>
+<p>先导入包，无优化空间</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br></pre></td></tr></table></figure>
+<p>初始化参数、种群，增加<code>var_num</code>参数，可以支持目标函数有<code>var_num</code>个输入变量；在初始化种群部分不做<code>list</code>转化，即单DNA链仍为numpy数组，这种做法的好处在于计算快速、开销更小（在后文计算中可以体现）</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 初始化参数</span></span><br><span class="line">m = <span class="number">50</span></span><br><span class="line">DNAL = [<span class="number">1</span>,<span class="number">2</span>,<span class="number">12</span>]</span><br><span class="line">poches = <span class="number">100</span></span><br><span class="line">cross_rate = <span class="number">0.5</span></span><br><span class="line">variation_rate = <span class="number">0.7</span></span><br><span class="line"></span><br><span class="line">var_num = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 初始化种群</span></span><br><span class="line">DNAlen = var_num * <span class="built_in">sum</span>(DNAL)</span><br><span class="line">spec = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(m):</span><br><span class="line">    tempDNA = np.random.randint(<span class="number">0</span>, high=<span class="number">2</span>, size=DNAlen)</span><br><span class="line">    spec.append(tempDNA)</span><br><span class="line">DNAs = spec</span><br></pre></td></tr></table></figure>
+<p>复写交叉，注意由于前文令DNA为numpy.ndarray，所以第7行需要使用<code>np.append</code>来合并两个不完整的DNA链。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">crossList = random.sample(DNAs, <span class="number">2</span> * <span class="built_in">int</span>(m * cross_rate / <span class="number">2</span>))</span><br><span class="line">newDNA = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">int</span>(<span class="built_in">len</span>(crossList) / <span class="number">2</span>)):</span><br><span class="line">    temp1 = crossList[i*<span class="number">2</span>]</span><br><span class="line">    temp2 = crossList[i*<span class="number">2</span>+<span class="number">1</span>]</span><br><span class="line">    crossP = np.random.randint(<span class="number">0</span>,m)</span><br><span class="line">    temp = np.append(temp1[:crossP],temp2[crossP:])</span><br><span class="line">    newDNA.append(temp)</span><br><span class="line">DNAs = DNAs + newDNA</span><br></pre></td></tr></table></figure>
+<p>复写变异，在变异中需要使变异位<code>0</code>变为<code>1</code>或<code>1</code>变为<code>0</code>，<code>if</code>判断开销通常大于简单函数计算，因此可以将其转化为<code>math.cos</code>方法，实现<code>0</code>和<code>1</code>互换的映射。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">m = <span class="built_in">len</span>(DNAs)</span><br><span class="line">n = <span class="built_in">len</span>(DNAs[<span class="number">0</span>])</span><br><span class="line">sample = np.random.randint(<span class="number">0</span>, n-<span class="number">1</span>, <span class="built_in">int</span>(m * variation_rate))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> sample:</span><br><span class="line">    tempP = random.randint(<span class="number">0</span>, n-<span class="number">1</span>)</span><br><span class="line">    DNAs[i][tempP] = <span class="built_in">int</span>(math.cos(DNAs[i][tempP]*math.pi/<span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+<p>复写选择之前，需要考虑如何评价，原代码中评价之前还需进行复杂的数值转换，这也是一大开销，因此先对评价方法进行复写优化。</p>
+<p>理论上讲，应该讲优化的目标函数与计算适应度的<code>fitness</code>方法分离，此处由于仅是构造前的思路整理故简单化了。此<code>fitness</code>方法实现了对单DNA链的适应度计算（属于pythonic做法），即包含了二进制转化（通过ndarry的向量乘法实现，如下图）、适应度计算（直接定义函数）。</p>
+<p><img src="/2021/11/11/GeneticAlgorithm重新实现\bintooct.png" alt></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">fitness</span>(<span class="params">dna, DNAL</span>):</span></span><br><span class="line">    intbits = DNAL[<span class="number">1</span>]</span><br><span class="line">    n = <span class="built_in">sum</span>(DNAL)</span><br><span class="line">    num = <span class="built_in">int</span>(<span class="built_in">len</span>(dna) / n)</span><br><span class="line">    X = []</span><br><span class="line">    octA = np.array([<span class="number">2</span>**(intbits-i-<span class="number">1</span>) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(n-<span class="number">1</span>)])</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(num):</span><br><span class="line">        x = np.array(dna[n*i+<span class="number">1</span>:n*(i+<span class="number">1</span>)])</span><br><span class="line">        <span class="built_in">oct</span> = np.dot(x,octA)</span><br><span class="line">        <span class="built_in">oct</span> = (-<span class="number">1</span>)**dna[n*i] * <span class="built_in">oct</span></span><br><span class="line">        X.append(<span class="built_in">oct</span>)</span><br><span class="line">    <span class="comment"># 目标函数</span></span><br><span class="line">    fn = np.power(X[<span class="number">0</span>], <span class="number">4</span>) + <span class="number">3</span> * np.power(X[<span class="number">1</span>], <span class="number">4</span>) \</span><br><span class="line">        - <span class="number">0.2</span> * np.cos(<span class="number">3</span> * X[<span class="number">0</span>] * math.pi) \</span><br><span class="line">            - <span class="number">0.4</span> * np.cos(<span class="number">4</span> * X[<span class="number">1</span>] * math.pi) + <span class="number">0.6</span></span><br><span class="line">    <span class="keyword">return</span> fn</span><br></pre></td></tr></table></figure>
+<p>有以上的<code>fitness</code>方法可以对选择进行复写，通过使用列表生成器先生成以 (DNA链, 适应度) 为元素的list，使用<code>sorted</code>排序（时间复杂度O(nlogn)远好于原代码），使用列表生成器选取其适应度最小的前面m个。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">m = <span class="number">50</span> <span class="comment"># 覆盖前面变异中的m</span></span><br><span class="line">fitness_list = [(dna,fitness(dna, DNAL)) <span class="keyword">for</span> dna <span class="keyword">in</span> DNAs]</span><br><span class="line">sorted_fitness_list = <span class="built_in">sorted</span>(fitness_list, key=<span class="keyword">lambda</span> x:x[<span class="number">1</span>])</span><br><span class="line">DNAs = [x[<span class="number">0</span>] <span class="keyword">for</span> i,x <span class="keyword">in</span> <span class="built_in">enumerate</span>(sorted_fitness_list) <span class="keyword">if</span> i &lt; m]</span><br></pre></td></tr></table></figure>
+<p>至此，所有关键函数复写完成，可以考虑将其整合为类的形式。</p>
+<h2 id="复写为方法类"><a href="#复写为方法类" class="headerlink" title="复写为方法类"></a>复写为方法类</h2><p>整合上述代码，使用类实现遗传算法如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> math</span><br><span class="line"><span class="keyword">import</span> random</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GeneticAlgorithm</span>(<span class="params"><span class="built_in">object</span></span>):</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, varn, func, signbit, intbit, decbit, m=<span class="number">50</span>, n_iter=<span class="number">100</span>, cr=<span class="number">0.7</span>, vr=<span class="number">0.1</span></span>):</span></span><br><span class="line">        <span class="comment"># 输入变量数</span></span><br><span class="line">        self.__varn = varn</span><br><span class="line">        <span class="comment"># 优化函数 / loss函数 形式为func(X) 求最小值</span></span><br><span class="line">        self.__func = func</span><br><span class="line">        <span class="comment"># DNAL 1条DNA链中1个数字的构成</span></span><br><span class="line">        <span class="comment"># 符号位数(至多1位 0=正数 1=负数)</span></span><br><span class="line">        <span class="comment"># 整数位数(2进制)</span></span><br><span class="line">        <span class="comment"># 小数位数(2进制)</span></span><br><span class="line">        self.__DNAL = [signbit,intbit,decbit]</span><br><span class="line">        <span class="comment"># 1条DNA链中1个数字所需2进制位数</span></span><br><span class="line">        self.__n = <span class="built_in">sum</span>(self.__DNAL)</span><br><span class="line">        <span class="comment"># 种群个体数</span></span><br><span class="line">        self.__m = m</span><br><span class="line">        <span class="comment"># 迭代次数</span></span><br><span class="line">        self.__n_iter = n_iter</span><br><span class="line">        <span class="comment"># cr cross_rate交叉率</span></span><br><span class="line">        self.__cr = cr</span><br><span class="line">        <span class="comment"># vr variation_rate变异率</span></span><br><span class="line">        self.__vr = vr</span><br><span class="line">        <span class="comment"># 初始化种群</span></span><br><span class="line">        DNAlen = varn * self.__n</span><br><span class="line">        spec = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(m):</span><br><span class="line">            tempDNA = np.random.randint(<span class="number">0</span>, high=<span class="number">2</span>, size=DNAlen)</span><br><span class="line">            spec.append(tempDNA)</span><br><span class="line">        self.__DNAs = spec</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 交叉</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__cross</span>(<span class="params">self</span>):</span></span><br><span class="line">        crossList = random.sample(self.__DNAs, <span class="number">2</span> * <span class="built_in">int</span>(self.__m * self.__cr / <span class="number">2</span>))</span><br><span class="line">        newDNA = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">int</span>(<span class="built_in">len</span>(crossList) / <span class="number">2</span>)):</span><br><span class="line">            temp1 = crossList[i*<span class="number">2</span>]</span><br><span class="line">            temp2 = crossList[i*<span class="number">2</span>+<span class="number">1</span>]</span><br><span class="line">            crossP = np.random.randint(<span class="number">0</span>,self.__m)</span><br><span class="line">            temp = np.append(temp1[:crossP],temp2[crossP:])</span><br><span class="line">            newDNA.append(temp)</span><br><span class="line">        self.__DNAs = self.__DNAs + newDNA</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 变异</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__variation</span>(<span class="params">self</span>):</span></span><br><span class="line">        m = <span class="built_in">len</span>(self.__DNAs)</span><br><span class="line">        n = <span class="built_in">len</span>(self.__DNAs[<span class="number">0</span>])</span><br><span class="line">        sample = np.random.randint(<span class="number">0</span>, n-<span class="number">1</span>, <span class="built_in">int</span>(m * self.__vr))</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> sample:</span><br><span class="line">            tempP = random.randint(<span class="number">0</span>, n-<span class="number">1</span>)</span><br><span class="line">            self.__DNAs[i][tempP] = <span class="built_in">int</span>(math.cos(self.__DNAs[i][tempP]*math.pi/<span class="number">2</span>))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 评价</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__fitness</span>(<span class="params">self, dna</span>):</span></span><br><span class="line">        signbits = self.__DNAL[<span class="number">0</span>]</span><br><span class="line">        intbits = self.__DNAL[<span class="number">1</span>]</span><br><span class="line">        octA = np.array([<span class="number">2</span>**(intbits-i-<span class="number">1</span>) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.__n-<span class="number">1</span>)])</span><br><span class="line">        X = []</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.__varn):</span><br><span class="line">            x = np.array(dna[self.__n*i+signbits:self.__n*(i+<span class="number">1</span>)])</span><br><span class="line">            <span class="built_in">oct</span> = np.dot(x,octA)</span><br><span class="line">            <span class="keyword">if</span> signbits == <span class="number">1</span>:</span><br><span class="line">                <span class="built_in">oct</span> = (-<span class="number">1</span>)**dna[self.__n*i] * <span class="built_in">oct</span></span><br><span class="line">            X.append(<span class="built_in">oct</span>)</span><br><span class="line">        <span class="keyword">return</span> self.__func(X)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 选择</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__selection</span>(<span class="params">self</span>):</span></span><br><span class="line">        fitness_list = [(dna,self.__fitness(dna)) <span class="keyword">for</span> dna <span class="keyword">in</span> self.__DNAs]</span><br><span class="line">        sorted_fitness_list = <span class="built_in">sorted</span>(fitness_list, key=<span class="keyword">lambda</span> x:x[<span class="number">1</span>])</span><br><span class="line">        self.__DNAs = [x[<span class="number">0</span>] <span class="keyword">for</span> i,x <span class="keyword">in</span> <span class="built_in">enumerate</span>(sorted_fitness_list) <span class="keyword">if</span> i &lt; self.__m]</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">start</span>(<span class="params">self</span>):</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(self.__n_iter):</span><br><span class="line">            self.__cross()</span><br><span class="line">            self.__variation()</span><br><span class="line">            self.__selection()</span><br><span class="line">        fitness_list = [self.__fitness(dna) <span class="keyword">for</span> dna <span class="keyword">in</span> self.__DNAs]</span><br><span class="line">        <span class="keyword">return</span> self.__DNAs, fitness_list</span><br></pre></td></tr></table></figure>
+<p>调用例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">functionA</span>(<span class="params">X</span>):</span></span><br><span class="line">    x = X[<span class="number">0</span>]</span><br><span class="line">    y = X[<span class="number">1</span>]</span><br><span class="line">    <span class="keyword">return</span> math.<span class="built_in">pow</span>(x, <span class="number">4</span>) + <span class="number">3</span> * math.<span class="built_in">pow</span>(y, <span class="number">4</span>) \</span><br><span class="line">        - <span class="number">0.2</span> * math.cos(<span class="number">3</span> * x * math.pi) \</span><br><span class="line">            -<span class="number">0.4</span> * math.cos(<span class="number">4</span> * y * math.pi) + <span class="number">0.6</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    ga = GeneticAlgorithm(<span class="number">2</span>, functionA, <span class="number">1</span>, <span class="number">2</span>, <span class="number">12</span>, m=<span class="number">50</span>, n_iter=<span class="number">100</span>, cr=<span class="number">0.7</span>, vr=<span class="number">0.1</span>)</span><br><span class="line">    DNAs, topF = ga.start()</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">print</span>(DNAs)</span><br><span class="line">    <span class="built_in">print</span>(topF)</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>综上，通过对关键部分进行优化，优化了其计算性能和开销，并简化了近100行代码，效果显著。如果读者对本文代码有所疑问，欢迎在评论区讨论或其他方式交流。（本文代码依然存在优化空间，如有建议也可进行交流）</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://www.zzforgood.top/2021/11/11/GeneticAlgorithm%E9%87%8D%E6%96%B0%E5%AE%9E%E7%8E%B0/" data-id="ckvuxyj3u00009kojasikeofq" class="article-share-link">
+        Share
+      </a>
+      
+<ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Python/" rel="tag">Python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/%E6%99%BA%E8%83%BD%E7%AE%97%E6%B3%95/" rel="tag">智能算法</a></li></ul>
+
+    </footer>
+
+  </div>
+
+  
+  
+<nav class="article-nav">
+  
+  
+  <a href="/2021/11/01/%E5%B8%82%E8%B0%83%E5%A4%A7%E8%B5%9B%E8%A7%86%E9%A2%91%E4%B8%8B%E8%BD%BD%E8%84%9A%E6%9C%AC/" class="article-nav-link">
+    <strong class="article-nav-caption">Older</strong>
+    <div class="article-nav-title">市调大赛视频下载脚本</div>
+  </a>
+  
+</nav>
+
+  
+
+  
+  
+  
+<div class="gitalk" id="gitalk-container"></div>
+
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+
+
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+
+<script src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+
+<script type="text/javascript">
+  var gitalk = new Gitalk({
+    clientID: 'b9cfa880780f6dc246f0',
+    clientSecret: 'eece6422d853f25460f68edcaa0506ce9f0b30a8',
+    repo: 'lyzsj114.github.io',
+    owner: 'lyzsj114',
+    admin: ['lyzsj114'],
+    // id: location.pathname,      // Ensure uniqueness and length less than 50
+    id: md5(location.pathname),
+    distractionFreeMode: false,  // Facebook-like distraction free mode
+    pagerDirection: 'last'
+  })
+
+  gitalk.render('gitalk-container')
+</script>
+
+  
+
+</article>
+</section>
+    <footer class="footer">
+  <div class="outer">
+    <div class="float-right">
+      <ul class="list-inline">
+  
+  <li><i class="fe fe-smile-alt"></i> <span id="busuanzi_value_site_uv"></span></li>
+  
+  <li><i class="fe fe-bookmark"></i> <span id="busuanzi_value_page_pv"></span></li>
+  
+</ul>
+    </div>
+    <ul class="list-inline">
+      <li>GeniusGrass&#39;s Blog &copy; 2021</li>
+      
+        <li>GENIUSGRASS</li>
+      
+      <li>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></li>
+      <li>theme  <a target="_blank" rel="noopener" href="https://github.com/zhwangart/hexo-theme-ocean">Ocean</a></li>
+    </ul>
+  </div>
+</footer>
+  </main>
+  <aside class="sidebar">
+    <button class="navbar-toggle"></button>
+<nav class="navbar">
+  
+  <div class="logo">
+    <a href="/"><img src="/images/hexo.svg" alt="GeniusGrass&#39;s Blog"></a>
+  </div>
+  
+  <ul class="nav nav-main">
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/">Home</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/archives">Archives</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/gallery">Gallery</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link" href="/about">About</a>
+    </li>
+    
+    <li class="nav-item">
+      <a class="nav-item-link nav-item-search" title="Search">
+        <i class="fe fe-search"></i>
+        Search
+      </a>
+    </li>
+  </ul>
+</nav>
+<nav class="navbar navbar-bottom">
+  <ul class="nav">
+    <li class="nav-item">
+      <div class="totop" id="totop">
+  <i class="fe fe-rocket"></i>
+</div>
+    </li>
+    <li class="nav-item">
+      
+      <a class="nav-item-link" target="_blank" href="/atom.xml" title="RSS Feed">
+        <i class="fe fe-feed"></i>
+      </a>
+      
+    </li>
+  </ul>
+</nav>
+<div class="search-form-wrap">
+  <div class="local-search local-search-plugin">
+  <input type="search" id="local-search-input" class="local-search-input" placeholder="Search...">
+  <div id="local-search-result" class="local-search-result"></div>
+</div>
+</div>
+  </aside>
+  
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+<script src="/js/jquery.justifiedGallery.min.js"></script>
+
+
+<script src="/js/lazyload.min.js"></script>
+
+
+<script src="/js/busuanzi-2.3.pure.min.js"></script>
+
+
+
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/copybtn.js"></script>
+
+
+
+
+
+<script src="/js/tocbot.min.js"></script>
+
+<script>
+  // Tocbot_v4.7.0  http://tscanlin.github.io/tocbot/
+  tocbot.init({
+    tocSelector: '.tocbot',
+    contentSelector: '.article-entry',
+    headingSelector: 'h1, h2, h3, h4, h5, h6',
+    hasInnerContainers: true,
+    scrollSmooth: true,
+    positionFixedSelector: '.tocbot',
+    positionFixedClass: 'is-position-fixed',
+    fixedSidebarOffset: 'auto',
+  });
+</script>
+
+
+
+<script src="/js/ocean.js"></script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>
