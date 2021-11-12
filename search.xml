@@ -1,6 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>文献管理指北</title>
+    <url>/2021/11/12/%E6%96%87%E7%8C%AE%E7%AE%A1%E7%90%86%E6%8C%87%E5%8C%97/</url>
+    <content><![CDATA[<p>研究生学习离不开阅读文献，而文献的检索、下载、分类管理等工作是开始研究的基础。本文将介绍一些工具及其基本使用，以此高效地完成基础工作。</p>
+<h2 id="工具清单"><a href="#工具清单" class="headerlink" title="工具清单"></a>工具清单</h2><h3 id="文献管理工具-Mendeley"><a href="#文献管理工具-Mendeley" class="headerlink" title="文献管理工具 - Mendeley"></a>文献管理工具 - Mendeley</h3><p><em>Zotero可能优于Mendeley，笔者暂未接触过，请读者自行选择</em></p>
+<p>文献管理工具相对而言地位比较次要，如果不使用文献管理工具也不会导致严重的后果。但是在大量阅读文献时，有好的文献管理习惯会使阅读更高效，且后期引用参考文献时更加方便，可以进行批量导出。</p>
+<p>本文选择介绍 <a href="https://www.mendeley.com/">Mendeley</a> 作为主要的文献管理工具，原因在于其主页可以直接进行文献检索（注册后可通过机构认证下载部分论文），有一定的云空间（忘记多少了）可以将已获取的论文存储在云空间中，<strong>免费</strong>（EndNote收费）。</p>
+<p><img src="/2021/11/12/文献管理指北\mendeley1.png" alt="Mendeley主页检索"></p>
+<p><img src="/2021/11/12/文献管理指北\mendeley2.png" alt="Mendeley文献管理软件"></p>
+<h3 id="文献检索网站-Google-Scholar"><a href="#文献检索网站-Google-Scholar" class="headerlink" title="文献检索网站 - Google Scholar"></a>文献检索网站 - Google Scholar</h3><p>定向检索一篇论文时，可以使用Google Scholar或者国内的百度学术等，而Google Scholar收录了绝大多数论文，基本可以覆盖大部分需求。</p>
+<p>众所周知，国内无法Google等外网，因此想要使用Google Scholar可以通过两种途径实现。</p>
+<ul>
+<li>梯子</li>
+<li>镜像网站</li>
+</ul>
+<p>本文推荐使用Google Scholar的镜像网站进行访问，镜像网站获取可以通过搜索引擎检索<code>Google Scholar镜像</code>。需要注意的是，不同的镜像网站可能会有部分资源无法访问的情况。</p>
+<p><img src="/2021/11/12/文献管理指北\googlescholar.png" alt></p>
+<h3 id="文献下载插件-EndNote-Click"><a href="#文献下载插件-EndNote-Click" class="headerlink" title="文献下载插件 - EndNote Click"></a>文献下载插件 - EndNote Click</h3><p>在使用浏览器检索文献时，因为搜索方式比较复杂，可能会有不同来源的文献，从而导致下载比较繁琐。而在浏览器中安装EndNote Click插件，可以在文献页面提供下载，并且会在EndNote Click账户中记录文献信息，有一定的文献管理功能。需要注意的是，可下载的资源仅限登录账户所在机构已购买的内容，还有公开的文献内容，其他内容无法提供下载。</p>
+<p><img src="/2021/11/12/文献管理指北\endnote1.png" alt="EndNote Click文献下载"></p>
+<p><img src="/2021/11/12/文献管理指北\endnote2.png" alt="EndNote Click文献记录"></p>
+<h3 id="文件下载网页-scihub"><a href="#文件下载网页-scihub" class="headerlink" title="文件下载网页 - scihub"></a>文件下载网页 - scihub</h3><p>由于所在机构可能存在一些数据库未购买的情况，导致无法使用上述方法下载，此时可以使用<a href="https://sci-hub.st/">Scihub</a>进行下载。可以将文献的DOI或文献页面链接输入Scihub中，然后就可以获取到相应的文献。需要注意的是，部分文献通过文献页面链接无法下载，此时可以使用DOI下载（对绝大部分情况适用）。</p>
+<p><img src="/2021/11/12/文献管理指北\scihub.png" alt="EndNote Click文献记录"></p>
+<h2 id="文献检索主要方法"><a href="#文献检索主要方法" class="headerlink" title="文献检索主要方法"></a>文献检索主要方法</h2><p>经过前文介绍，基本上大多数文献都可以检索并下载了，下文将介绍检索文献下载文献的主要方法。</p>
+<ul>
+<li>定向检索<ul>
+<li>给定论文标题，通过Google Scholar检索论文，打开页面通过EndNote Click下载；如果无法下载，复制页面链接或论文DOI，在Scihub中下载；（其后可将其加入Mendeley中管理）</li>
+</ul>
+</li>
+<li>不定向检索<ul>
+<li>给定方向，在Mendeley中检索关键词，其后流程同上。</li>
+</ul>
+</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>学习之路漫漫，如果能掌握合适的工具，可以使研究进展更加顺利，如果读者有更好的方法或其他的工具推荐，或对本文所写抱有疑问，可以在评论区中留言讨论。</p>
+]]></content>
+      <tags>
+        <tag>杂</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>GeneticAlgorithm重新实现</title>
     <url>/2021/11/11/GeneticAlgorithm%E9%87%8D%E6%96%B0%E5%AE%9E%E7%8E%B0/</url>
     <content><![CDATA[<p>在课程学习过程中，老师在课堂实现了该遗传算法，发现其中存在极大优化空间，于是动手重新实现了该算法。</p>
