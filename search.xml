@@ -1,6 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>从0开始的自适应图片添加水印脚本</title>
+    <url>/2021/12/13/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84%E8%87%AA%E9%80%82%E5%BA%94%E5%9B%BE%E7%89%87%E6%B7%BB%E5%8A%A0%E6%B0%B4%E5%8D%B0%E8%84%9A%E6%9C%AC/</url>
+    <content><![CDATA[<p><em>闲谈</em> 闲坐时发现，距离上次分享照片已经过了近半年之久，究其原因主要还是在于最近学业繁忙没有高质量的产出。其实即便有也懒得分享，毕竟可能会受到无稽的指摘，也因此，“不是所有人都能感受到美的存在”，我对这句话的感受愈加深刻（所以近一年只向少数几个朋友分享）。不过近期的心态又有所改变（也许是更懒了也说不定），单独发送是否会成为自己或他人的负担？这一想法我无法得出准确的答案，所以萌生了恢复pyq更新图片的想法，为此需要在原图上增加水印，为了方便设计了本文的水印添加脚本。</p>
+<span id="more"></span>
+<p>参考博文：</p>
+<p><a href="https://blog.csdn.net/jningwei/article/details/78241973">opencv: 图片设置透明度并叠加(cv2.addWeighted)</a><br><a href="https://cloud.tencent.com/developer/article/1652682">使用OpenCV实现图像覆盖</a><br><a href="https://www.cnblogs.com/zhaoyingjie/p/14699837.html">Python+OpenCV实现png透明图像叠加在jpg图像上</a></p>
+<h2 id="解决思路"><a href="#解决思路" class="headerlink" title="解决思路"></a>解决思路</h2><p><strong>简单观察问题</strong> 首先分析问题，要求从已有的水印文件变换到合适大小后，添加到目标图片的合适位置。拆解问题：</p>
+<ol>
+<li>读取水印图片，读取目标图片</li>
+<li>变换水印图片大小（根据目标图片大小决定）</li>
+<li>确定添加位置</li>
+<li>在目标图片中添加水印并保存</li>
+</ol>
+<p>根据以上拆解即可进行代码编写。</p>
+<h2 id="解决过程-amp-代码分析"><a href="#解决过程-amp-代码分析" class="headerlink" title="解决过程 &amp; 代码分析"></a>解决过程 &amp; 代码分析</h2><p>首先获取水印图片，利用搜索引擎随便生成一个png格式透明背景签名图，并在Photoshop中调整到合适大小，本文选用(180,500)。</p>
+<p><img src="/2021/12/13/从0开始的自适应图片添加水印脚本\sign.png" alt="GeniusGrass"></p>
+<p>新建ipynd工程文件导入相关包</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> os</span><br></pre></td></tr></table></figure>
+<p>读取签名图像和其长宽，需要注意的是，签名图像是png格式，涉及到RGB外的第四通道alpha，表示其像素点的不透明度（范围0-255：表示0-1），因此需要加额外参数<code>IMREAD_UNCHANGED</code>。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">sign = cv2.imread(<span class="string">r&quot;.\sign.png&quot;</span>, cv2.IMREAD_UNCHANGED)</span><br><span class="line">height, width, _ = sign.shape</span><br></pre></td></tr></table></figure>
+<p>读取目标图像及其长宽。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">img = cv2.imread(filename)</span><br><span class="line">x, y, _ = img.shape</span><br></pre></td></tr></table></figure>
+<p>通过在Photoshop中根据观感确定大致签名图像的比例关系及其位置，以下图为例，认为其签名图片高为目标图片高的1/8时比较合适，定位于目标图像中心最下方比较合适。</p>
+<p><img src="/2021/12/13/从0开始的自适应图片添加水印脚本\example.jpg" alt></p>
+<p>编写代码确定自适应图片大小，以签名图片的0.5倍尺寸为变化幅度，最接近其目标图片高1/8时作为变换高，进一步等比例缩放图片宽。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">resize_height = <span class="number">90</span></span><br><span class="line"><span class="keyword">while</span> <span class="built_in">abs</span>(resize_height - x/<span class="number">8</span>) &gt; <span class="number">45</span>:</span><br><span class="line">    resize_height += <span class="number">90</span></span><br><span class="line">rate = resize_height / height</span><br><span class="line">resize_width = <span class="built_in">int</span>(width * rate)</span><br></pre></td></tr></table></figure>
+<p>对签名图像进行变换</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">new_sign = cv2.resize(sign,(resize_width,resize_height))</span><br></pre></td></tr></table></figure>
+<p>此时即可进行下一步图像合并，图像合并前需要进行前提准备，为jpg格式的目标图片添加不透明度通道以辅助合并。即创建值全为255的alpha矩阵，并和对目标图像拆解后的RGB通道图像进行合并。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">b_channel, g_channel, r_channel = cv2.split(img)</span><br><span class="line">alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * <span class="number">255</span></span><br><span class="line">new_img = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))</span><br></pre></td></tr></table></figure>
+<p>进一步即可进行合并，根据之前确定的在目标图像中放置签名图像的位置。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">y1 = <span class="built_in">int</span>(y/<span class="number">2</span> - resize_width/<span class="number">2</span>)</span><br><span class="line">y2 = y1 + resize_width</span><br><span class="line">x1 = <span class="built_in">int</span>(x - resize_height)</span><br><span class="line">x2 = x1 + resize_height</span><br></pre></td></tr></table></figure>
+<p>根据不透明度进行合并，其中加入了0.75的不透明系数，使签名图像不透明度设置为0.75，从而显示不太突兀。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">alpha_sign = new_sign[:,:,<span class="number">3</span>] / <span class="number">255.0</span> * <span class="number">0.75</span></span><br><span class="line">alpha_img = <span class="number">1</span> - alpha_sign</span><br><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>):</span><br><span class="line">    new_img[x1:x2, y1:y2, c] = ((alpha_img*new_img[x1:x2, y1:y2, c]) + (alpha_sign*new_sign[:, :, c]))</span><br></pre></td></tr></table></figure>
+<p>保存文件即结束。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">cv2.imwrite(save_file, new_img)</span><br></pre></td></tr></table></figure>
+<h2 id="最终代码"><a href="#最终代码" class="headerlink" title="最终代码"></a>最终代码</h2><p>一般来说，我会在将一天或一次的拍摄图片调整结束后才进行分享，因此，仅对单张处理过于低效，可将上述代码整理后，编写为方法，配合<code>os</code>包自动读取当前文件夹下所有<code>jpg</code>格式文件进行处理，处理后创建signed文件夹保存（需要错误处理），实现完全的自动化，使用时仅需在图片文件夹下运行脚本即可。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line">sign_path = <span class="string">&#x27;签名文件路径&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sign_pic</span>(<span class="params">filename</span>):</span></span><br><span class="line">    sign = cv2.imread(sign_path, cv2.IMREAD_UNCHANGED)</span><br><span class="line">    height, width, _ = sign.shape</span><br><span class="line"></span><br><span class="line">    img = cv2.imread(filename)</span><br><span class="line">    x, y, _ = img.shape</span><br><span class="line"></span><br><span class="line">    resize_height = <span class="number">90</span></span><br><span class="line">    <span class="keyword">while</span> <span class="built_in">abs</span>(resize_height - x/<span class="number">8</span>) &gt; <span class="number">45</span>:</span><br><span class="line">        resize_height += <span class="number">90</span></span><br><span class="line">    rate = resize_height / height</span><br><span class="line">    resize_width = <span class="built_in">int</span>(width * rate)</span><br><span class="line"></span><br><span class="line">    new_sign = cv2.resize(sign,(resize_width,resize_height))</span><br><span class="line">    b_channel, g_channel, r_channel = cv2.split(img)</span><br><span class="line">    alpha_channel = np.ones(b_channel.shape, dtype=b_channel.dtype) * <span class="number">255</span></span><br><span class="line">    new_img = cv2.merge((b_channel, g_channel, r_channel, alpha_channel))</span><br><span class="line"></span><br><span class="line">    y1 = <span class="built_in">int</span>(y/<span class="number">2</span> - resize_width/<span class="number">2</span>)</span><br><span class="line">    y2 = y1 + resize_width</span><br><span class="line">    x1 = <span class="built_in">int</span>(x - resize_height)</span><br><span class="line">    x2 = x1 + resize_height</span><br><span class="line"></span><br><span class="line">    alpha_sign = new_sign[:,:,<span class="number">3</span>] / <span class="number">255.0</span> * <span class="number">0.75</span></span><br><span class="line">    alpha_img = <span class="number">1</span> - alpha_sign</span><br><span class="line">    <span class="keyword">for</span> c <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">3</span>):</span><br><span class="line">        new_img[x1:x2, y1:y2, c] = ((alpha_img*new_img[x1:x2, y1:y2, c]) + (alpha_sign*new_sign[:, :, c]))</span><br><span class="line">        </span><br><span class="line">    save_file = <span class="string">&quot;.\\signed\\&quot;</span> + filename[:-<span class="number">4</span>] + <span class="string">&quot;_signed.jpg&quot;</span></span><br><span class="line">    flag = cv2.imwrite(save_file, new_img)</span><br><span class="line">    <span class="keyword">return</span> flag</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        os.mkdir(<span class="string">r&#x27;.\signed&#x27;</span>)</span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&#x27;dir exist...&#x27;</span>)</span><br><span class="line"></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;dir create successfully!&#x27;</span>)</span><br><span class="line">    count = <span class="number">0</span></span><br><span class="line">    <span class="keyword">for</span> file <span class="keyword">in</span> os.listdir():</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&#x27;.jpg&#x27;</span> <span class="keyword">in</span> file:</span><br><span class="line">            <span class="keyword">if</span> sign_pic(file):</span><br><span class="line">                <span class="built_in">print</span>(<span class="string">&#x27;signed &#x27;</span>+file+<span class="string">&#x27; successfully&#x27;</span>)</span><br><span class="line">                count += <span class="number">1</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;finish! totally signed &#x27;</span> + <span class="built_in">str</span>(count) + <span class="string">&#x27; picture(s).&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在jupyter交互界面下显示图片需要注意，<code>cv2</code>显示图片极其繁琐，而plt显示会与原图产生一些的差异，因此在调试时需要注意。以上方法中包含了许多魔法值，但不考虑更换签名图像的前提下，能较好的简化程序。以上方法在加水印的同时也保证了图片原始数据不会产生损失，仅对水印位置进行了更改。</p>
+<p>\\TODO(maybe):</p>
+<ul>
+<li>编写图片降噪算法</li>
+<li>自动检测图片是否需要降噪</li>
+<li>编写有损图片压缩算法</li>
+<li>编写图片自动上传图床脚本</li>
+</ul>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+        <tag>图片处理</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>健康填报续——验证码识别</title>
     <url>/2021/12/04/%E5%81%A5%E5%BA%B7%E5%A1%AB%E6%8A%A5%E7%BB%AD%E2%80%94%E2%80%94%E9%AA%8C%E8%AF%81%E7%A0%81%E8%AF%86%E5%88%AB/</url>
     <content><![CDATA[<p>12月2日，校方对校园VPN登录新增加验证码选项，导致前文<a href="https://www.zzforgood.top/2021/10/26/%E6%A8%A1%E6%8B%9F%E7%99%BB%E5%BD%95%E8%87%AA%E5%8A%A8%E5%81%A5%E5%BA%B7%E5%A1%AB%E6%8A%A5%E8%84%9A%E6%9C%AC/">模拟登录</a>无法使用，因此在本文中对验证码进行突破，同时更换了selenium使用的浏览器，用edge的headless模式重新实现。（仅供学习使用，勿用于破坏网络环境）</p>
