@@ -1,6 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>基于抓取聊天表情包的微信好友分析</title>
+    <url>/2021/12/26/%E5%9F%BA%E4%BA%8E%E6%8A%93%E5%8F%96%E8%81%8A%E5%A4%A9%E8%A1%A8%E6%83%85%E5%8C%85%E7%9A%84%E5%BE%AE%E4%BF%A1%E5%A5%BD%E5%8F%8B%E5%88%86%E6%9E%90/</url>
+    <content><![CDATA[<p>近日与一猫派好友闲聊时发现其狗类表情包数量明显增多，询问后了解到原来是新室友家中有养狗，在日常交流中交换（偷）了表情包。在对其猫派身份是否动摇的怀疑中，由好奇心驱使，应用所学知识对此事件展开了一次简单的统计分析。</p>
+<span id="more"></span>
+<p>参考链接：<br><a href="https://pyautogui.readthedocs.io/en/latest/keyboard.html">PyAutoGUI API</a><br><a href="https://blog.csdn.net/as604049322/article/details/119899542">UI自动化工具轻松实现微信消息收发</a></p>
+<h2 id="起因"><a href="#起因" class="headerlink" title="起因"></a>起因</h2><p>近日与好友闲聊时发现其狗类表情包数量明显增多，但据其本人称自己是彻底的猫派，因此萌生想法对近期聊天中出现的猫狗两类表情包数量进行统计，从而检验证言是否真实。</p>
+<p><img src="/2021/12/26/基于抓取聊天表情包的微信好友分析\begin.png" alt></p>
+<h2 id="解决思路"><a href="#解决思路" class="headerlink" title="解决思路"></a>解决思路</h2><p>首先，需要将聊天内容中的表情包全部得到后才能继续分析，电脑端微信内容是无法通过爬虫获取的，这一点毋庸置疑，因此需要考虑使用模拟操作的方法来对信息逐个检索。恰巧前日看到一个可以实现简单自动化操作的Python库 <code>PyAutoGUI</code>，但因其只能实现简单的模拟鼠标移动、模拟键盘输入、截图保存、确定对应图片位置等操作，无法识别微信信息类型，所以仅使用该包难以达到要求的爬取效果。经过2min查找，发现了基于Windows API的自动化库 <code>uiautomation</code>，它可以调用Windows API来查找对应窗口检索所需元素。于是，可以通过元素检索获取表情包位置，通过截图取得表情包内容，使用模拟鼠标控制微信消息滚动，全部获取得到后即可进行分析（甚至可以引入分类器辅助统计关心内容），思路图如下。</p>
+<p><img src="/2021/12/26/基于抓取聊天表情包的微信好友分析\mind.png" alt></p>
+<p>由此，即得到了所有需要的组件，可以开始代码编写。</p>
+<h2 id="解决过程-amp-代码分析"><a href="#解决过程-amp-代码分析" class="headerlink" title="解决过程 &amp; 代码分析"></a>解决过程 &amp; 代码分析</h2><p>首先，安装所需第三方包</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">!pip install uiautomation</span><br><span class="line">!pip install pyautogui</span><br></pre></td></tr></table></figure>
+<p>导入所需包</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> uiautomation <span class="keyword">as</span> auto</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> pyautogui</span><br></pre></td></tr></table></figure>
+<p>确保微信已经打开后，使用 <code>pyautogui</code> 获取微信窗口句柄，微信窗口类型及属性可由Windows官方插件Inspect工具获取。</p>
+<p><img src="/2021/12/26/基于抓取聊天表情包的微信好友分析\wechat.png" alt></p>
+<p>获取到微信的窗口类型为 <code>Window</code>，属性 <code>Name=&quot;微信&quot;</code>，因此通过如下代码可以获取到微信的窗口句柄。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">wechat_window = auto.WindowControl(searchDepth=<span class="number">1</span>, Name=<span class="string">&quot;微信&quot;</span>, ClassName=<span class="string">&quot;WeChatMainWndForPC&quot;</span>)</span><br></pre></td></tr></table></figure>
+<p>其后，逐层深入确定聊天内容的位置，根据微信窗口句柄，取得当前聊天框的句柄，过程同上，得到消息句柄。不难发现，对方的聊天内容皆为消息窗口的子窗口，那么通过对消息窗口的子窗口遍历，即可得到对方发送的所有消息。而下面即需要对对方发送消息中的表情包进行检索。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">message = wechat_window.ListControl(Name=<span class="string">&#x27;消息&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<p>确定表情包窗口的类型及属性</p>
+<p><img src="/2021/12/26/基于抓取聊天表情包的微信好友分析\inspect.png" alt></p>
+<p>此时出现难点，表情包对象没有可以用于辨别的属性，通过多方面观察可以知道，这种不合常理的原因源自于其对象是父对象中的唯一元素，由此逐层向上可以发现，直到 <code>列表项目 [动画对象]</code> 才有用于辨别的属性。</p>
+<p>所以，可以根据列表项目确定一条表情包消息，再对其逐层深入（第二层由头像窗口和目标窗口组成）得到这个表情包对象及其属性。而我们关心的属性是窗口的位置，根据查阅<a href="https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-automation-element-propids">Windows API</a>，窗口 <code>BoundingRectangle</code> 属性对应的id为 <code>30001</code>，由此即可构建出获取表情包位置的方法（及对应输出）如下。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> text <span class="keyword">in</span> message.GetChildren()[::-<span class="number">1</span>]:</span><br><span class="line">    <span class="keyword">if</span> text.Name == <span class="string">&#x27;[动画表情]&#x27;</span>:</span><br><span class="line">        c = text.GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">1</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetPropertyValue(<span class="number">30001</span>)</span><br><span class="line">        <span class="built_in">print</span>(c)</span><br></pre></td></tr></table></figure>
+<pre><code>(1339.0, 409.0, 125.0, 125.0)
+(0.0, 0.0, 0.0, 0.0)
+(0.0, 0.0, 0.0, 0.0)
+(1339.0, -558.0, 153.0, 86.0)
+(0.0, 0.0, 0.0, 0.0)
+(0.0, 0.0, 0.0, 0.0)
+(1339.0, -1197.0, 113.0, 125.0)
+(0.0, 0.0, 0.0, 0.0)
+(0.0, 0.0, 0.0, 0.0)
+(1339.0, -2045.0, 124.0, 124.0)
+(0.0, 0.0, 0.0, 0.0)
+</code></pre><p>在输出前对子窗口列表进行了反转操作，目的是让第一个元素对应当前聊天窗口中的最后一个元素，从而逐个向上检索。</p>
+<p>根据以上内容可以发现，查找得到的表情包像素位置中存在混淆元素 <code>(0.0, 0.0, 0.0, 0.0)</code>，且其中存在负数，负数可以理解为像素在屏幕顶边之外，而调用的截图命令仅能处理屏幕内的内容，因此需要滚轮调整聊天内容位置，使其消息出现在屏幕内。此时即用到 <code>PyAutoGUI</code>。其输出位置信息对应 <code>(left, top, right, bottom)</code>，而我们仅需要其对应的 <code>top</code> 为正数即可令其出现在屏幕中（不考虑过大使得图片移动至屏幕底边之外）。</p>
+<p>通过测试可以发现，调用 <code>PyAutoGUI</code> 中的模拟滚轮操作，调用一次 <code>pyautogui.scroll()</code> 函数最多滚动像素数为747，且其函数接收参数和实际滚动像素数之间存在系数关系，通过测试可以得到系数关系为 $533/747 = 0.713520749665328$，即参数为1时滚动0.714个实际像素。</p>
+<p>那么将一次最大滚动数设定为714个像素，对应参数即为1000，当目标对象在屏幕外时，在滚动整除714像素次 <code>pyautogui.scroll(1000)</code> 后再滚动剩余像素的10/7倍即可使目标对象滚动到当前屏幕中。</p>
+<p>综上，可以编写接收下一个目标位置参数的滚动调整方法如下。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">scroll</span>(<span class="params">c</span>):</span></span><br><span class="line">    scroll_num = <span class="built_in">int</span>(-c[<span class="number">1</span>] / <span class="number">714</span>)</span><br><span class="line">    scroll_len = <span class="built_in">int</span>(-c[<span class="number">1</span>] % <span class="number">714</span> * <span class="number">10</span> / <span class="number">7</span>) + <span class="number">10</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">abs</span>(scroll_num)):</span><br><span class="line">        pyautogui.scroll(<span class="number">1000</span>)</span><br><span class="line">        time.sleep(<span class="number">0.5</span>)</span><br><span class="line">    pyautogui.scroll(scroll_len)</span><br><span class="line">    pyautogui.scroll(<span class="number">500</span>)</span><br><span class="line">    time.sleep(<span class="number">0.5</span>)</span><br></pre></td></tr></table></figure>
+<p>通过多次滚动使目标出现在屏幕内，再适当滚动一些距离使其完整出现，且因为滚动时的动画会使滚动命令无法在短时间内再次生效，所以在每次滚动后加入延迟等待滚动结束。在滚动调整后，需要再次取得目标位置才能进行截图，将上述代码组合即可得到</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">time.sleep(<span class="number">1</span>) <span class="comment"># 等待以将鼠标挪动至聊天窗口</span></span><br><span class="line"><span class="keyword">for</span> text <span class="keyword">in</span> message.GetChildren()[::-<span class="number">1</span>]:</span><br><span class="line">    <span class="keyword">if</span> text.Name == <span class="string">&#x27;[动画表情]&#x27;</span>:</span><br><span class="line">        c = text.GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">1</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetPropertyValue(<span class="number">30001</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;step1: &quot;</span>,c)</span><br><span class="line">        <span class="keyword">if</span> <span class="number">0</span> <span class="keyword">in</span> c:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">if</span> c[<span class="number">1</span>] &lt; <span class="number">0</span>:</span><br><span class="line">            scroll(c)</span><br><span class="line">        c = text.GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">1</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetPropertyValue(<span class="number">30001</span>)</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;step2: &quot;</span>,c)</span><br></pre></td></tr></table></figure>
+<pre><code>step1:  (473.0, 559.0, 124.0, 124.0)
+step2:  (473.0, 559.0, 124.0, 124.0)
+step1:  (473.0, -25.0, 125.0, 125.0)
+step2:  (473.0, 208.0, 125.0, 125.0)
+step1:  (0.0, 0.0, 0.0, 0.0)
+step1:  (0.0, 0.0, 0.0, 0.0)
+step1:  (473.0, -704.0, 153.0, 86.0)
+step2:  (473.0, 202.0, 153.0, 86.0)
+</code></pre><p>根据以上输出可以发现，滚动调整方法被正确执行，由此即可加入截图功能对获取的目标表情包进行逐个保存。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">PATH = <span class="string">&#x27;.\\stickers\\&#x27;</span></span><br><span class="line">num = <span class="number">0</span></span><br><span class="line">time.sleep(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">for</span> text <span class="keyword">in</span> message.GetChildren()[::-<span class="number">1</span>]:</span><br><span class="line">    <span class="keyword">if</span> text.Name == <span class="string">&#x27;[动画表情]&#x27;</span>:</span><br><span class="line">        c = text.GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">1</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetPropertyValue(<span class="number">30001</span>)</span><br><span class="line">        <span class="comment"># print(&quot;step1: &quot;,c)</span></span><br><span class="line">        <span class="keyword">if</span> <span class="number">0</span> <span class="keyword">in</span> c:</span><br><span class="line">            <span class="keyword">continue</span></span><br><span class="line">        <span class="keyword">if</span> c[<span class="number">1</span>] &lt; <span class="number">0</span>:</span><br><span class="line">            scroll(c)</span><br><span class="line">        c = text.GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">1</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetChildren()[<span class="number">0</span>].GetPropertyValue(<span class="number">30001</span>)</span><br><span class="line">        <span class="comment"># print(&quot;step2: &quot;,c)</span></span><br><span class="line">        pyautogui.screenshot(PATH + <span class="built_in">str</span>(num) + <span class="string">&#x27;.png&#x27;</span>,region=c)</span><br><span class="line">        num += <span class="number">1</span></span><br></pre></td></tr></table></figure>
+<p>至此，即完成爬取聊天表情包的全部代码编写，通过调用上述代码块即可对当前聊天窗口内的表情包内容进行从下往上爬取，需要注意的是，暂未加入自动点击查看更多消息（未来可能加入该功能），因为没有处理以爬内容，在查看消息后会产生不良交互。</p>
+<h2 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h2><p>根据上述代码运行后爬得的近一月内与该好友聊天表情包如下</p>
+<p><img src="/2021/12/26/基于抓取聊天表情包的微信好友分析\stickers.jpg" alt></p>
+<p>共205个项目，内容数量较少，可以简单数得因此未引入模型进行判别（可以尝试使用kaggle cats vs dogs数据集比赛中的模型，或直接使用ImageNet的模型全部判别等），数得猫类表情包使用数30左右，而狗类仅不到20，证实该好友证言无误无罪释放。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>猫派干部经受住了狗派间谍的同化攻击，可喜可贺。</p>
+]]></content>
+      <tags>
+        <tag>Python</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>从0开始的自适应图片添加水印脚本</title>
     <url>/2021/12/13/%E4%BB%8E0%E5%BC%80%E5%A7%8B%E7%9A%84%E8%87%AA%E9%80%82%E5%BA%94%E5%9B%BE%E7%89%87%E6%B7%BB%E5%8A%A0%E6%B0%B4%E5%8D%B0%E8%84%9A%E6%9C%AC/</url>
     <content><![CDATA[<p><em>闲谈</em> 闲坐时发现，距离上次分享照片已经过了近半年之久，究其原因主要还是在于最近学业繁忙没有高质量的产出。其实即便有也懒得分享，毕竟可能会受到无稽的指摘，也因此，“不是所有人都能感受到美的存在”，我对这句话的感受愈加深刻（所以近一年只向少数几个朋友分享）。不过近期的心态又有所改变（也许是更懒了也说不定），单独发送是否会成为自己或他人的负担？这一想法我无法得出准确的答案，所以萌生了恢复pyq更新图片的想法，为此需要在原图上增加水印，为了方便设计了本文的水印添加脚本。</p>
